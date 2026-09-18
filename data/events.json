@@ -1,0 +1,29 @@
+[
+  {
+    "id": "demo-google-devfest-dubai-2025",
+    "date": "2025-09-15",
+    "event": "Google DevFest Dubai [DEMO]",
+    "city": "Dubai, UAE",
+    "talk": "Kubernetes with Google Cloud",
+    "photos": [
+      "assets/events/demo-google-devfest-dubai-2025/01.jpg",
+      "assets/events/demo-google-devfest-dubai-2025/02.jpg",
+      "assets/events/demo-google-devfest-dubai-2025/03.jpg"
+    ],
+    "description": "Demo event: Deep dive into modern container orchestration, microservices patterns, and enterprise workload scaling on Google Cloud.",
+    "topics": ["Kubernetes", "Google Cloud", "DevOps"]
+  },
+  {
+    "id": "demo-cloud-native-days-2024",
+    "date": "2024-11-20",
+    "event": "Cloud Native Days [DEMO]",
+    "city": "Istanbul, Türkiye",
+    "talk": "Scaling Cloud Infrastructure with Modern DevOps",
+    "photos": [
+      "assets/events/demo-cloud-native-days-2024/01.jpg",
+      "assets/events/demo-cloud-native-days-2024/02.jpg"
+    ],
+    "description": "Demo event: Practical architectural patterns and lessons learned from production cloud native transformations.",
+    "topics": ["Cloud Architecture", "DevOps", "Containers"]
+  }
+]

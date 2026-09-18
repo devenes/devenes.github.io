@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enes Turan — Speaking Archive</title>
+  <meta name="description" content="Enes Turan (@devenes) is a Google Developer Expert and public speaker. Explore a visual archive of conferences, meetups, workshops, and keynotes worldwide.">
+  <meta name="author" content="Enes Turan">
+  
+  <!-- Open Graph / Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Enes Turan — Speaking Archive">
+  <meta property="og:description" content="Google Developer Expert and public speaker. A visual archive of conferences, meetups, workshops, panels, and community events.">
+  <meta property="og:url" content="https://devenes.github.io/">
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#events-archive" class="skip-link">Skip to archive</a>
+
+  <!-- Navigation / Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="#" class="brand-link" aria-label="Enes Turan Home">
+        <span class="brand-name">ENES TURAN</span>
+        <span class="brand-badge">GDE</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary Navigation">
+        <a href="#events-archive" class="nav-link">Archive</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="https://github.com/devenes" target="_blank" rel="noopener noreferrer" class="nav-link social-link" aria-label="GitHub Profile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a href="https://www.linkedin.com/in/devenes/" target="_blank" rel="noopener noreferrer" class="nav-link social-link" aria-label="LinkedIn Profile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+            <rect x="2" y="9" width="4" height="12"></rect>
+            <circle cx="4" cy="4" r="2"></circle>
+          </svg>
+          <span>LinkedIn</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <div class="hero-eyebrow">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>Google Developer Expert &amp; Public Speaker</span>
+        </div>
+        <h1 id="hero-title" class="hero-title">
+          <span class="name">ENES TURAN</span>
+          <span class="tagline">Speaking, everywhere.</span>
+        </h1>
+        <p class="hero-description">
+          A visual archive of conferences, meetups, workshops, panels, and community events worldwide.
+        </p>
+        <div class="hero-cta">
+          <a href="#events-archive" class="cta-button">
+            <span>Explore events</span>
+            <span class="arrow-down" aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Event Archive Section -->
+    <section id="events-archive" class="archive-section" aria-labelledby="archive-title">
+      <div class="archive-container">
+        <div class="section-header">
+          <div class="header-titles">
+            <h2 id="archive-title" class="section-title">Speaking Archive</h2>
+            <p class="section-subtitle">Chronological record of keynotes, sessions, and community talks.</p>
+          </div>
+          <div class="archive-meta">
+            <span id="event-counter" class="event-counter" aria-live="polite">Loading events...</span>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <nav id="filter-bar" class="filter-bar" aria-label="Filter events by year">
+          <!-- Dynamic year filter buttons will be rendered here by app.js -->
+        </nav>
+
+        <!-- Events Grid -->
+        <div id="events-grid" class="events-grid" role="region" aria-label="Events list">
+          <!-- Event cards will be dynamically rendered here -->
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="empty-state" class="empty-state hidden" aria-live="polite">
+          <div class="empty-icon" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h3>No events found</h3>
+          <p id="empty-state-message">Add events to <code>data/events.json</code> to start building your speaking archive.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section" aria-labelledby="about-title">
+      <div class="about-container">
+        <div class="about-card">
+          <div class="about-header">
+            <span class="about-label">BIOGRAPHY</span>
+            <h2 id="about-title" class="about-title">About Enes Turan</h2>
+          </div>
+          <div class="about-body">
+            <p class="about-text">
+              Enes Turan is a Google Developer Expert and public speaker sharing knowledge across cloud, Kubernetes, developer technologies, and the broader developer community.
+            </p>
+            <div class="about-links">
+              <a href="https://www.linkedin.com/in/devenes/" target="_blank" rel="noopener noreferrer" class="button-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                  <rect x="2" y="9" width="4" height="12"></rect>
+                  <circle cx="4" cy="4" r="2"></circle>
+                </svg>
+                <span>LinkedIn</span>
+                <span class="external-icon" aria-hidden="true">↗</span>
+              </a>
+              <a href="https://github.com/devenes" target="_blank" rel="noopener noreferrer" class="button-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                <span>GitHub</span>
+                <span class="external-icon" aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Dialog for Event Details & Photo Gallery -->
+  <dialog id="event-modal" class="event-modal" closedby="any" aria-labelledby="modal-title">
+    <div class="modal-inner">
+      <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close dialog">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Modal Gallery Viewer -->
+      <div class="modal-gallery">
+        <div class="gallery-stage" id="gallery-stage">
+          <!-- Main active photograph or placeholder rendered dynamically -->
+        </div>
+        <div class="gallery-nav-bar" id="gallery-nav-bar">
+          <button type="button" class="gallery-arrow prev" id="gallery-prev-btn" aria-label="Previous photograph">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <span class="gallery-counter" id="gallery-counter">1 / 1</span>
+          <button type="button" class="gallery-arrow next" id="gallery-next-btn" aria-label="Next photograph">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="gallery-thumbnails" id="gallery-thumbnails">
+          <!-- Thumbnails rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Modal Details Content -->
+      <div class="modal-info">
+        <div class="modal-meta-row">
+          <span class="modal-date" id="modal-date"></span>
+          <span class="modal-city" id="modal-city"></span>
+        </div>
+        <h2 id="modal-title" class="modal-event-name"></h2>
+        <div class="modal-talk-box">
+          <span class="talk-box-label">TALK</span>
+          <h3 id="modal-talk" class="modal-talk-title"></h3>
+        </div>
+        <div id="modal-extra" class="modal-extra">
+          <!-- Description, topics, links dynamically placed here if available -->
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <p class="footer-copy">&copy; <span id="current-year"></span> Enes Turan. Built with static simplicity for GitHub Pages.</p>
+      </div>
+      <div class="footer-right">
+        <a href="#main-content" class="back-to-top">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
