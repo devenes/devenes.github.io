@@ -1,29 +1,630 @@
 [
   {
-    "id": "demo-google-devfest-dubai-2025",
-    "date": "2025-09-15",
-    "event": "Google DevFest Dubai [DEMO]",
+    "id": "devfest-dubai-2026",
+    "date": "2026-09-27",
+    "event": "DevFest Dubai 2026",
     "city": "Dubai, UAE",
-    "talk": "Kubernetes with Google Cloud",
-    "photos": [
-      "assets/events/demo-google-devfest-dubai-2025/01.jpg",
-      "assets/events/demo-google-devfest-dubai-2025/02.jpg",
-      "assets/events/demo-google-devfest-dubai-2025/03.jpg"
-    ],
-    "description": "Demo event: Deep dive into modern container orchestration, microservices patterns, and enterprise workload scaling on Google Cloud.",
-    "topics": ["Kubernetes", "Google Cloud", "DevOps"]
+    "talk": "Kubernetes for AI",
+    "photos": [],
+    "description": "Architecting and managing scalable Kubernetes infrastructure and GKE clusters for artificial intelligence and machine learning workloads.",
+    "topics": [
+      "Kubernetes",
+      "AI",
+      "GKE",
+      "Google Cloud"
+    ]
   },
   {
-    "id": "demo-cloud-native-days-2024",
-    "date": "2024-11-20",
-    "event": "Cloud Native Days [DEMO]",
+    "id": "io-extended-cairo-2026",
+    "date": "2026-06-19",
+    "event": "Google I/O Extended 2026 Cairo",
+    "city": "Cairo, Egypt",
+    "talk": "From Cloud to Code: Navigating Google’s 2026 AI and Platform Innovations",
+    "photos": [],
+    "description": "Keynote exploring Google Cloud's latest AI advancements, developer experience enhancements, and cloud platform innovations.",
+    "topics": [
+      "Google Cloud",
+      "AI",
+      "Platform Engineering",
+      "Developer Experience"
+    ]
+  },
+  {
+    "id": "build-with-ai-prishtina-hackathon-2026",
+    "date": "2026-05-16",
+    "event": "Build with AI Prishtina Hackathon 2026",
+    "city": "Pristina, Kosovo",
+    "talk": "Build with AI: Architecting Intelligent Systems",
+    "photos": [],
+    "description": "Opening keynote and technical architecture mentoring for participants building intelligent applications with Google AI.",
+    "topics": [
+      "Build with AI",
+      "AI Agents",
+      "Hackathon",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "sre-summit-istanbul-2026",
+    "date": "2026-04-15",
+    "event": "SRE Summit 2026",
     "city": "Istanbul, Türkiye",
-    "talk": "Scaling Cloud Infrastructure with Modern DevOps",
-    "photos": [
-      "assets/events/demo-cloud-native-days-2024/01.jpg",
-      "assets/events/demo-cloud-native-days-2024/02.jpg"
-    ],
-    "description": "Demo event: Practical architectural patterns and lessons learned from production cloud native transformations.",
-    "topics": ["Cloud Architecture", "DevOps", "Containers"]
+    "talk": "SRE at Global Scale at Google",
+    "photos": [],
+    "description": "Site Reliability Engineering principles, production resilience patterns, and operational practices running systems at Google scale.",
+    "topics": [
+      "SRE",
+      "Reliability",
+      "Google Cloud",
+      "Observability"
+    ]
+  },
+  {
+    "id": "devfest-bursa-2025",
+    "date": "2025-12-20",
+    "event": "DevFest Bursa 2025",
+    "city": "Bursa, Türkiye",
+    "talk": "Building Intelligent Agents and ADK",
+    "photos": [],
+    "description": "Designing and deploying production-ready autonomous agents using the Google Agent Development Kit (ADK).",
+    "topics": [
+      "AI Agents",
+      "ADK",
+      "Generative AI",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "devfest-denizli-2025",
+    "date": "2025-11-29",
+    "event": "DevFest Denizli 2025",
+    "city": "Denizli, Türkiye",
+    "talk": "AI Agents and ADK",
+    "photos": [],
+    "description": "Exploring agentic workflows, memory structures, tool calling, and integration using Agent Development Kit.",
+    "topics": [
+      "AI Agents",
+      "ADK",
+      "Generative AI",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "devfest-almaty-2025",
+    "date": "2025-11-22",
+    "event": "DevFest Almaty 2025",
+    "city": "Almaty, Kazakhstan",
+    "talk": "Building and Deploying AI Agents with Vertex AI",
+    "photos": [],
+    "description": "End-to-end implementation of intelligent agent workflows deployed on Google Cloud Vertex AI infrastructure.",
+    "topics": [
+      "Vertex AI",
+      "AI Agents",
+      "Google Cloud",
+      "Machine Learning"
+    ]
+  },
+  {
+    "id": "devfest-kashkadarya-2025",
+    "date": "2025-11-20",
+    "event": "DevFest Kashkadarya 2025",
+    "city": "Kashkadarya, Uzbekistan",
+    "talk": "AI Agents and Vertex AI",
+    "photos": [],
+    "description": "Leveraging Google Cloud Vertex AI and foundation models to build robust, multi-step intelligent agents.",
+    "topics": [
+      "AI Agents",
+      "Vertex AI",
+      "Generative AI",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "pre-devfest-tashkent-2025",
+    "date": "2025-11-15",
+    "event": "Pre-DevFest Tashkent 2025",
+    "city": "Tashkent, Uzbekistan",
+    "talk": "AI Agents and GKE",
+    "photos": [],
+    "description": "Deploying, scaling, and managing containerized AI agents and inference pipelines on Google Kubernetes Engine.",
+    "topics": [
+      "AI Agents",
+      "GKE",
+      "Kubernetes",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "devfest-sousse-2025",
+    "date": "2025-11-09",
+    "event": "DevFest Sousse 2025",
+    "city": "Sousse, Tunisia",
+    "talk": "MLOps with GKE",
+    "photos": [],
+    "description": "Streamlining ML lifecycle management, model training automation, and high-availability serving with GKE.",
+    "topics": [
+      "MLOps",
+      "GKE",
+      "Kubernetes",
+      "Machine Learning"
+    ]
+  },
+  {
+    "id": "devfest-sarajevo-2025",
+    "date": "2025-11-01",
+    "event": "DevFest Sarajevo 2025",
+    "city": "Sarajevo, Bosnia and Herzegovina",
+    "talk": "End-to-End AI Agent Architectures",
+    "photos": [],
+    "description": "Architectural blueprints for resilient, enterprise-grade AI agent systems from prompt orchestration to cloud serving.",
+    "topics": [
+      "AI Agents",
+      "Architecture",
+      "Google Cloud",
+      "Generative AI"
+    ]
+  },
+  {
+    "id": "devfest-kastamonu-2025",
+    "date": "2025-10-11",
+    "event": "DevFest Kastamonu 2025",
+    "city": "Kastamonu, Türkiye",
+    "talk": "Building AI Agents",
+    "photos": [],
+    "description": "Core concepts and architectural patterns for creating intelligent agents with Gemini and modern AI toolkits.",
+    "topics": [
+      "AI Agents",
+      "Google Cloud",
+      "Generative AI"
+    ]
+  },
+  {
+    "id": "devfest-taldykorgan-2025",
+    "date": "2025-10-10",
+    "event": "DevFest Taldykorgan 2025",
+    "city": "Taldykorgan, Kazakhstan",
+    "talk": "AI Keynote: The Next Frontier of Generative AI",
+    "photos": [],
+    "description": "Conference opening keynote covering emerging AI paradigms, agentic systems, and developer platform evolution.",
+    "topics": [
+      "Keynote",
+      "AI",
+      "Generative AI",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "devfest-bishkek-2025",
+    "date": "2025-09-21",
+    "event": "DevFest Bishkek 2025",
+    "city": "Bishkek, Kyrgyzstan",
+    "talk": "MLOps with Google Kubernetes Engine",
+    "photos": [],
+    "description": "Operationalizing machine learning workflows and deploying scalable inference endpoints on Google Kubernetes Engine.",
+    "topics": [
+      "MLOps",
+      "GKE",
+      "Kubernetes",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "ai-day-egypt-2025",
+    "date": "2025-08-23",
+    "event": "AI Day in Egypt - Build with AI",
+    "city": "Cairo, Egypt",
+    "talk": "MLOps with Google Kubernetes Engine",
+    "photos": [],
+    "description": "Best practices for production MLOps, GPU scheduling, and model serving architectures on GKE.",
+    "topics": [
+      "MLOps",
+      "GKE",
+      "Build with AI",
+      "Kubernetes"
+    ]
+  },
+  {
+    "id": "build-with-ai-kosovo-2025",
+    "date": "2025-06-14",
+    "event": "Build With AI Kosovo 2025",
+    "city": "Pristina, Kosovo",
+    "talk": "Panel Discussion and Q&A",
+    "photos": [],
+    "description": "Interactive panel discussion and audience Q&A tackling generative AI adoption, engineering hurdles, and developer tools.",
+    "topics": [
+      "Panel",
+      "AI",
+      "Build with AI",
+      "Community"
+    ]
+  },
+  {
+    "id": "selcuk-tech-summit-2025",
+    "date": "2025-05-29",
+    "event": "Selçuk University Tech Summit",
+    "city": "Konya, Türkiye",
+    "talk": "Google Cloud Solutions Keynote",
+    "photos": [],
+    "description": "Keynote presentation detailing Google Cloud architectural solutions, enterprise scalability, and cloud engineering careers.",
+    "topics": [
+      "Google Cloud",
+      "Keynote",
+      "Cloud Architecture"
+    ]
+  },
+  {
+    "id": "digifest-agadir-2025",
+    "date": "2025-05-04",
+    "event": "DigiFest Agadir 2025",
+    "city": "Agadir, Morocco",
+    "talk": "Deploying High-Scale AI/ML Workloads on Google Kubernetes Engine",
+    "photos": [],
+    "description": "Strategies for running, autoscaling, and optimizing resource utilization for large-scale AI/ML workloads on GKE.",
+    "topics": [
+      "Kubernetes",
+      "GKE",
+      "AI/ML",
+      "Scale"
+    ]
+  },
+  {
+    "id": "devfest-6th-of-october-2024",
+    "date": "2024-12-21",
+    "event": "DevFest 6th of October 2024",
+    "city": "6th of October City, Egypt",
+    "talk": "Working with High-Scale AI/ML Workloads on Google Kubernetes Engine",
+    "photos": [],
+    "description": "Deep dive into orchestrating distributed AI/ML training and inference at scale using Google Kubernetes Engine.",
+    "topics": [
+      "Kubernetes",
+      "GKE",
+      "AI/ML",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "devfest-atyrau-2024",
+    "date": "2024-12-14",
+    "event": "DevFest Atyrau 2024",
+    "city": "Online",
+    "talk": "Generative AI with Google Cloud",
+    "photos": [],
+    "description": "Harnessing Vertex AI and Google Cloud foundational models to build real-world generative AI applications.",
+    "topics": [
+      "Generative AI",
+      "Google Cloud",
+      "Vertex AI"
+    ]
+  },
+  {
+    "id": "devfest-sarajevo-2024",
+    "date": "2024-11-02",
+    "event": "DevFest Sarajevo 2024",
+    "city": "Sarajevo, Bosnia and Herzegovina",
+    "talk": "MLOps with GKE",
+    "photos": [],
+    "description": "Building continuous delivery pipelines for machine learning models using Google Kubernetes Engine and cloud-native tools.",
+    "topics": [
+      "MLOps",
+      "GKE",
+      "Kubernetes",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "gdg-on-campus-gtu-2024",
+    "date": "2024-10-30",
+    "event": "GDG On Campus GTU",
+    "city": "Online",
+    "talk": "Introduction to Google Cloud Infrastructure",
+    "photos": [],
+    "description": "Fundamental overview of Google Cloud core services, computing options, networking, and security primitives.",
+    "topics": [
+      "Google Cloud",
+      "Infrastructure",
+      "Cloud Computing"
+    ]
+  },
+  {
+    "id": "build-with-ai-hackathon-caucasus-2024",
+    "date": "2024-08-30",
+    "event": "Build With AI for Sustainable Growth Hackathon",
+    "city": "Online",
+    "talk": "Google Cloud Keynote: Build With AI for Sustainable Growth",
+    "photos": [],
+    "description": "Keynote address inspiring hackathon builders across Caucasus and Central Asia to architect sustainable AI platforms.",
+    "topics": [
+      "Keynote",
+      "Build with AI",
+      "Google Cloud",
+      "Sustainability"
+    ]
+  },
+  {
+    "id": "io-extended-baku-2024",
+    "date": "2024-07-20",
+    "event": "Google I/O Extended 2024 Baku",
+    "city": "Baku, Azerbaijan",
+    "talk": "AI/ML Platforms with Google Kubernetes Engine",
+    "photos": [],
+    "description": "Architecting developer platforms on top of GKE tailored for high-demand AI and machine learning workloads.",
+    "topics": [
+      "AI/ML",
+      "GKE",
+      "Kubernetes",
+      "Platform Engineering"
+    ]
+  },
+  {
+    "id": "io-extended-pavlodar-2024",
+    "date": "2024-07-13",
+    "event": "Google I/O Extended Pavlodar 2024",
+    "city": "Pavlodar, Kazakhstan",
+    "talk": "AI/ML with GKE",
+    "photos": [],
+    "description": "Practical patterns for deploying, autoscaling, and operating machine learning workloads on Google Kubernetes Engine.",
+    "topics": [
+      "GKE",
+      "AI/ML",
+      "Kubernetes",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "io-extended-almaty-stream-2024",
+    "date": "2024-07-11",
+    "event": "Google I/O Extended 2024 Almaty (YouTube Live)",
+    "city": "Online",
+    "talk": "Google Cloud & AI Platform Innovations",
+    "photos": [],
+    "description": "Live-streamed broadcast sharing Google Cloud developer announcements, AI updates, and cloud engineering tips.",
+    "topics": [
+      "Google Cloud",
+      "AI",
+      "Cloud Architecture"
+    ]
+  },
+  {
+    "id": "io-extended-almaty-2024",
+    "date": "2024-07-11",
+    "event": "Google I/O Extended 2024 Almaty",
+    "city": "Almaty, Kazakhstan",
+    "talk": "AI/ML Platform on Google Kubernetes Engine",
+    "photos": [],
+    "description": "Designing and maintaining enterprise AI/ML platforms using Google Kubernetes Engine and cloud-native practices.",
+    "topics": [
+      "GKE",
+      "AI/ML",
+      "Platform Engineering",
+      "Kubernetes"
+    ]
+  },
+  {
+    "id": "hi-tech-summit-iku-2024",
+    "date": "2024-05-13",
+    "event": "Hi-Tech Teknoloji Zirvesi - Istanbul Kültür University",
+    "city": "Istanbul, Türkiye",
+    "talk": "Transforming Modern Software Delivery with Cloud & Kubernetes",
+    "photos": [],
+    "description": "Campus tech summit keynote on the evolution of cloud platforms, developer experience, and Kubernetes adoption.",
+    "topics": [
+      "Cloud Engineering",
+      "DevOps",
+      "Kubernetes"
+    ]
+  },
+  {
+    "id": "career-paths-cloud-engineering-2024",
+    "date": "2024-05-01",
+    "event": "Cloud Career Talk",
+    "city": "Online",
+    "talk": "Exploring Career Paths in Cloud Engineering",
+    "photos": [],
+    "description": "Guidance on technical skills, certifications, and career progression paths in cloud infrastructure and platform engineering.",
+    "topics": [
+      "Career",
+      "Cloud Engineering",
+      "DevOps"
+    ]
+  },
+  {
+    "id": "gdsc-tarsus-gcp-intro-2024",
+    "date": "2024-04-07",
+    "event": "GDSC Tarsus University",
+    "city": "Online",
+    "talk": "Introduction to Google Cloud Infrastructure",
+    "photos": [],
+    "description": "Student developer workshop explaining cloud fundamentals, compute options, and hands-on Google Cloud practices.",
+    "topics": [
+      "Google Cloud",
+      "Infrastructure",
+      "Cloud Computing"
+    ]
+  },
+  {
+    "id": "duzce-university-google-cloud-2023",
+    "date": "2023-12-22",
+    "event": "Düzce University Google Cloud 2023",
+    "city": "Düzce, Türkiye",
+    "talk": "Google Cloud Ecosystem & Modern Cloud Architecture",
+    "photos": [],
+    "description": "University session introducing cloud computing paradigms, managed services, and Google Cloud platform capabilities.",
+    "topics": [
+      "Google Cloud",
+      "Cloud Architecture",
+      "DevOps"
+    ]
+  },
+  {
+    "id": "study-jam-piri-reis-2023",
+    "date": "2023-12-19",
+    "event": "Google Cloud Study Jam - Piri Reis University",
+    "city": "Istanbul, Türkiye",
+    "talk": "Google Cloud Study Jam: Hands-On Fundamentals",
+    "photos": [],
+    "description": "Interactive study jam guiding students through practical cloud labs, compute instances, and cloud security basics.",
+    "topics": [
+      "Google Cloud",
+      "Study Jam",
+      "Cloud Computing"
+    ]
+  },
+  {
+    "id": "serverless-app-dev-iauv-2023",
+    "date": "2023-12-12",
+    "event": "GDSC İstanbul Aydın University",
+    "city": "Istanbul, Türkiye",
+    "talk": "Serverless App Development with Google Cloud",
+    "photos": [],
+    "description": "Modern serverless development workflows leveraging Google Cloud Run, Cloud Functions, and managed microservices.",
+    "topics": [
+      "Serverless",
+      "Cloud Run",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "gke-best-practices-bursa-2023",
+    "date": "2023-12-09",
+    "event": "GDG Bursa Tech Day",
+    "city": "Bursa, Türkiye",
+    "talk": "Understanding Best Practices for Google Kubernetes Engine",
+    "photos": [],
+    "description": "Production hardening, autoscaling strategies, cost optimization, and networking best practices for GKE clusters.",
+    "topics": [
+      "Kubernetes",
+      "GKE",
+      "Best Practices",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "devfest-sarajevo-2023",
+    "date": "2023-12-02",
+    "event": "DevFest Sarajevo 2023",
+    "city": "Sarajevo, Bosnia and Herzegovina",
+    "talk": "Best Practices for Google Kubernetes Engine with GKE Enterprise",
+    "photos": [],
+    "description": "Fleet management, unified security policies, and multi-cluster Kubernetes operations powered by GKE Enterprise.",
+    "topics": [
+      "Kubernetes",
+      "GKE Enterprise",
+      "Multi-Cluster",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "president-tech-award-tashkent-2023",
+    "date": "2023-11-23",
+    "event": "President Tech Award Finals",
+    "city": "Tashkent, Uzbekistan",
+    "talk": "Google Cloud Architecture for Scaling Projects",
+    "photos": [],
+    "description": "Architectural patterns and scaling methodologies on Google Cloud for high-growth tech ventures and startups.",
+    "topics": [
+      "Cloud Architecture",
+      "Scaling",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "devfest-ulaanbaatar-2023",
+    "date": "2023-11-18",
+    "event": "DevFest 2023 Ulaanbaatar",
+    "city": "Ulaanbaatar, Mongolia",
+    "talk": "The Next Evolution of Kubernetes: GKE Enterprise",
+    "photos": [],
+    "description": "Deep dive into GKE Enterprise features, multi-cloud cluster governance, and enterprise container platform patterns.",
+    "topics": [
+      "Kubernetes",
+      "GKE Enterprise",
+      "Hybrid Cloud"
+    ]
+  },
+  {
+    "id": "community-safety-panel-ulaanbaatar-2023",
+    "date": "2023-11-18",
+    "event": "DevFest 2023 Ulaanbaatar - Panel Session",
+    "city": "Ulaanbaatar, Mongolia",
+    "talk": "The Role of Technology in Enhancing the Safety of Children and Communities",
+    "photos": [],
+    "description": "Panel discussion examining ethical technology development, digital safety tools, and community resilience.",
+    "topics": [
+      "Panel",
+      "Community",
+      "Digital Safety"
+    ]
+  },
+  {
+    "id": "devfest-kocaeli-2023",
+    "date": "2023-11-04",
+    "event": "DevFest Kocaeli 2023",
+    "city": "İzmit, Türkiye",
+    "talk": "A New Era for Kubernetes: Google Kubernetes Engine Enterprise",
+    "photos": [],
+    "description": "Exploring next-generation Kubernetes management and enterprise multi-cluster operations with GKE Enterprise.",
+    "topics": [
+      "Kubernetes",
+      "GKE Enterprise",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "devfest-astana-2023",
+    "date": "2023-10-12",
+    "event": "DevFest Astana 2023",
+    "city": "Astana, Kazakhstan",
+    "talk": "Introduction to Best Practices for Google Kubernetes Engine and GKE Autopilot",
+    "photos": [],
+    "description": "Best practices for deploying workloads on GKE Standard and GKE Autopilot with built-in security and operational automation.",
+    "topics": [
+      "Kubernetes",
+      "GKE Autopilot",
+      "Cloud Operations"
+    ]
+  },
+  {
+    "id": "digital-bridge-astana-2023",
+    "date": "2023-10-12",
+    "event": "Digital Bridge 2023",
+    "city": "Astana, Kazakhstan",
+    "talk": "Opportunities and Trends with Generative AI",
+    "photos": [],
+    "description": "Analyzing enterprise trends, generative AI model adoption, and practical developer integration paths.",
+    "topics": [
+      "Generative AI",
+      "AI Trends",
+      "Innovation",
+      "Google Cloud"
+    ]
+  },
+  {
+    "id": "kubernetes-scheduling-istanbul-2023",
+    "date": "2023-06-14",
+    "event": "Cloud Native Community Istanbul",
+    "city": "Istanbul, Türkiye",
+    "talk": "Unraveling the Mystery Behind Kubernetes Scheduling",
+    "photos": [],
+    "description": "Deep architectural walkthrough of the Kubernetes scheduler, scoring algorithms, taints, tolerations, and affinity.",
+    "topics": [
+      "Kubernetes",
+      "Scheduling",
+      "Cloud Native"
+    ]
+  },
+  {
+    "id": "serverless-cloud-run-knative-2023",
+    "date": "2023-06-12",
+    "event": "Google Cloud Developer Community Istanbul",
+    "city": "Istanbul, Türkiye",
+    "talk": "Serverless Application Deployment Processes: Cloud Run and Knative",
+    "photos": [],
+    "description": "Comprehensive comparison and implementation guide for containerized serverless workflows on Cloud Run and Knative.",
+    "topics": [
+      "Serverless",
+      "Cloud Run",
+      "Knative",
+      "Containers"
+    ]
   }
 ]

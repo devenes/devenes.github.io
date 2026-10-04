@@ -10,7 +10,7 @@ This directory documents the structure and client-side routing convention for sp
   `https://devenes.github.io/#<event-id>`
 
   For example:
-  - `https://devenes.github.io/#demo-google-devfest-dubai-2025`
+  - `https://devenes.github.io/#devfest-dubai-2026`
 
 ## Adding an Event
 
