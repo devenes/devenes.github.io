@@ -94,7 +94,7 @@ You can optionally include extra metadata at any time:
 ```text
 /
 ├── index.html                  # Semantic, accessible website markup
-├── styles.css                  # Modern dark theme & responsive styles
+├── styles.css                  # Editorial design system & responsive archive styles
 ├── app.js                      # Vanilla JavaScript rendering engine
 ├── README.md                   # Site documentation & maintenance guide
 │
