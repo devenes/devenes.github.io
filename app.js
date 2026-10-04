@@ -1,13 +1,13 @@
 /**
- * Enes Turan — Speaking Archive Application Engine
- * Pure Vanilla JavaScript Data Architecture
+ * Enes Turan — Speaking Archive Engine
+ * Streamlined Vanilla JavaScript Data Architecture
  */
 
 (function () {
   'use strict';
 
   // ==========================================================================
-  // Known Geographic Coordinates for Map Projection (Equirectangular 1000x500)
+  // Geographic Coordinates for Vector Map Projection (1000x500 Equirectangular)
   // ==========================================================================
   const CITY_COORDINATES = {
     'Dubai, UAE': { lat: 25.2048, lon: 55.2708, label: 'Dubai' },
@@ -35,7 +35,6 @@
     'Ulaanbaatar, Mongolia': { lat: 47.8864, lon: 106.9057, label: 'Ulaanbaatar' }
   };
 
-  // Month names for clean editorial display
   const MONTH_NAMES_SHORT = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
   const MONTH_NAMES_FULL = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -47,7 +46,6 @@
   // ==========================================================================
   let allEvents = [];
   let activeYear = 'all';
-  let activeTopic = 'all';
   let activeCity = 'all';
   let searchQuery = '';
   let activeEvent = null;
@@ -57,65 +55,48 @@
   // ==========================================================================
   // DOM References
   // ==========================================================================
-  // Metrics
   const statTalks = document.getElementById('stat-talks');
   const statYears = document.getElementById('stat-years');
-  const statVenues = document.getElementById('stat-venues');
 
-  // Archive Controls
   const filterYearsContainer = document.getElementById('filter-years');
-  const filterTopicsContainer = document.getElementById('filter-topics');
   const archiveSearchInput = document.getElementById('archive-search');
   const searchClearBtn = document.getElementById('search-clear-btn');
-  const statusCount = document.getElementById('status-count');
-  const statusFilters = document.getElementById('status-filters');
-  const resetAllFiltersBtn = document.getElementById('reset-all-filters-btn');
+  const archiveCount = document.getElementById('archive-count');
   const archiveLedger = document.getElementById('archive-ledger');
+  const activeCityBar = document.getElementById('active-city-bar');
+  const activeCityText = document.getElementById('active-city-text');
+  const clearCityBtn = document.getElementById('clear-city-btn');
   const emptyState = document.getElementById('empty-state');
-  const emptyStateMessage = document.getElementById('empty-state-message');
   const emptyResetBtn = document.getElementById('empty-reset-btn');
 
-  // Map & Roster
+  // Map & Locations
   const mapMarkersGroup = document.getElementById('map-markers');
   const mapTooltip = document.getElementById('map-tooltip');
   const mapViewContainer = document.getElementById('map-view-container');
   const citiesRoster = document.getElementById('cities-roster');
-  const rosterResetBtn = document.getElementById('roster-reset-btn');
 
   // Modal Dialog
   const eventModal = document.getElementById('event-modal');
   const modalCloseBtn = document.getElementById('modal-close-btn');
-  const modalRecordId = document.getElementById('modal-record-id');
   const modalDate = document.getElementById('modal-date');
   const modalLocation = document.getElementById('modal-location');
-  const modalEventName = document.getElementById('modal-event-name');
   const modalTalk = document.getElementById('modal-talk');
+  const modalEventName = document.getElementById('modal-event-name');
   const modalDescription = document.getElementById('modal-description');
   const modalTopics = document.getElementById('modal-topics');
+  const modalTopicsBlock = document.getElementById('modal-topics-block');
   const modalResources = document.getElementById('modal-resources');
-  const modalResourcesGroup = document.getElementById('modal-resources-group');
-  const modalGalleryCol = document.getElementById('modal-photo-col');
+  const modalResourcesBlock = document.getElementById('modal-resources-block');
   const galleryStage = document.getElementById('gallery-stage');
   const galleryCounter = document.getElementById('gallery-counter');
   const galleryPrevBtn = document.getElementById('gallery-prev-btn');
   const galleryNextBtn = document.getElementById('gallery-next-btn');
+  const galleryNavRow = document.getElementById('gallery-nav-row');
   const galleryThumbnails = document.getElementById('gallery-thumbnails');
 
-  // Footer copyright
-  const currentYearSpan = document.getElementById('current-year');
-  if (currentYearSpan) {
-    currentYearSpan.textContent = new Date().getFullYear();
-  }
-
   // ==========================================================================
-  // Date & Text Formatting Utilities
+  // Date & Text Utilities
   // ==========================================================================
-  /**
-   * Format ISO date string into month & year (e.g., "SEP 2026")
-   * Day is intentionally not displayed prominently per editorial specs.
-   * @param {string} dateStr
-   * @returns {string}
-   */
   function formatMonthYear(dateStr) {
     if (!dateStr) return '';
     try {
@@ -134,11 +115,6 @@
     }
   }
 
-  /**
-   * Format date into full month name and year for archival dossiers (e.g., "September 2026")
-   * @param {string} dateStr
-   * @returns {string}
-   */
   function formatFullMonthYear(dateStr) {
     if (!dateStr) return '';
     try {
@@ -157,11 +133,6 @@
     }
   }
 
-  /**
-   * Sanitize text against XSS
-   * @param {string} str
-   * @returns {string}
-   */
   function escapeHtml(str) {
     if (typeof str !== 'string') return '';
     return str
@@ -172,12 +143,6 @@
       .replace(/'/g, '&#039;');
   }
 
-  /**
-   * Project geographic coordinates to SVG equirectangular plane (1000x500)
-   * @param {number} lat
-   * @param {number} lon
-   * @returns {{x: number, y: number}}
-   */
   function projectCoordinates(lat, lon) {
     const x = (lon + 180.0) * (1000.0 / 360.0);
     const y = (90.0 - lat) * (500.0 / 180.0);
@@ -185,57 +150,49 @@
   }
 
   // ==========================================================================
-  // Data Fetching & Architecture Initialization
+  // Initialization
   // ==========================================================================
   async function initApplication() {
     try {
-      if (statusCount) {
-        statusCount.textContent = 'Loading speaking archive...';
-      }
+      if (archiveCount) archiveCount.textContent = 'Loading...';
 
       const response = await fetch('data/events.json', { cache: 'no-cache' });
       if (!response.ok) {
-        throw new Error(`Failed to load event data. Status: ${response.status}`);
+        throw new Error(`Failed to load event data: ${response.status}`);
       }
 
       const data = await response.json();
       if (!Array.isArray(data)) {
-        throw new Error('Expected array of speaking events in data/events.json');
+        throw new Error('Expected array in data/events.json');
       }
 
-      // Sort newest events first (chronological archive descending)
+      // Sort newest first
       allEvents = data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
       updateHeroMetrics(allEvents);
       renderYearFilters(allEvents);
-      renderTopicFilters(allEvents);
       renderGlobalReachMap(allEvents);
-      renderVenuesRoster(allEvents);
+      renderLocationsRoster(allEvents);
       applyFilters();
       setupInteractiveTriggers();
       handleInitialRoute();
     } catch (err) {
       console.error('Archive Initialization Error:', err);
-      if (statusCount) {
-        statusCount.textContent = 'Error loading archive';
-      }
+      if (archiveCount) archiveCount.textContent = 'Error loading archive';
       if (emptyState) {
         emptyState.classList.remove('hidden');
-        emptyStateMessage.textContent = 'Could not load event data from data/events.json. Please verify file integrity.';
       }
     }
   }
 
   // ==========================================================================
-  // Metrics Computation
+  // Hero Metrics Derived from Data
   // ==========================================================================
   function updateHeroMetrics(events) {
-    const totalCount = events.length;
     if (statTalks) {
-      statTalks.textContent = totalCount.toString();
+      statTalks.textContent = events.length.toString();
     }
 
-    // Compute years span
     const years = events
       .map((e) => (e.date ? parseInt(e.date.substring(0, 4), 10) : null))
       .filter((y) => !isNaN(y) && y !== null);
@@ -245,16 +202,10 @@
       const maxYear = Math.max(...years);
       statYears.textContent = minYear === maxYear ? `${minYear}` : `${minYear} — ${maxYear}`;
     }
-
-    // Unique venues/cities count (including Online)
-    const uniqueLocations = new Set(events.map((e) => e.city).filter(Boolean));
-    if (statVenues) {
-      statVenues.textContent = uniqueLocations.size.toString();
-    }
   }
 
   // ==========================================================================
-  // Year & Topic Filter Controls
+  // Year Filter Buttons
   // ==========================================================================
   function renderYearFilters(events) {
     if (!filterYearsContainer) return;
@@ -268,116 +219,45 @@
       )
     ).sort((a, b) => b - a);
 
-    // "All" Button
+    // "ALL" button
     const allBtn = document.createElement('button');
     allBtn.type = 'button';
-    allBtn.className = `filter-btn ${activeYear === 'all' ? 'active' : ''}`;
-    allBtn.textContent = `ALL (${events.length})`;
+    allBtn.className = `year-filter-btn ${activeYear === 'all' ? 'active' : ''}`;
+    allBtn.textContent = 'ALL';
     allBtn.setAttribute('data-year', 'all');
     allBtn.setAttribute('aria-pressed', activeYear === 'all' ? 'true' : 'false');
-    allBtn.addEventListener('click', () => {
-      setYearFilter('all');
-    });
+    allBtn.addEventListener('click', () => setYearFilter('all'));
     filterYearsContainer.appendChild(allBtn);
 
-    // Year Buttons
+    // Year buttons
     years.forEach((yr) => {
-      const count = events.filter((e) => e.date && e.date.startsWith(yr)).length;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = `filter-btn ${activeYear === yr ? 'active' : ''}`;
-      btn.textContent = `${yr} (${count})`;
+      btn.className = `year-filter-btn ${activeYear === yr ? 'active' : ''}`;
+      btn.textContent = yr;
       btn.setAttribute('data-year', yr);
       btn.setAttribute('aria-pressed', activeYear === yr ? 'true' : 'false');
-      btn.addEventListener('click', () => {
-        setYearFilter(yr);
-      });
+      btn.addEventListener('click', () => setYearFilter(yr));
       filterYearsContainer.appendChild(btn);
     });
   }
 
-  function renderTopicFilters(events) {
-    if (!filterTopicsContainer) return;
-    filterTopicsContainer.innerHTML = '';
-
-    // Calculate frequency of topics across all events
-    const topicCounts = {};
-    events.forEach((ev) => {
-      if (Array.isArray(ev.topics)) {
-        ev.topics.forEach((t) => {
-          topicCounts[t] = (topicCounts[t] || 0) + 1;
-        });
-      }
-    });
-
-    // Select curated priority topics with count >= 2
-    const sortedTopics = Object.entries(topicCounts)
-      .sort((a, b) => b[1] - a[1])
-      .map(([t]) => t);
-
-    // Add "All Topics" chip
-    const allChip = document.createElement('button');
-    allChip.type = 'button';
-    allChip.className = `topic-chip ${activeTopic === 'all' ? 'active' : ''}`;
-    allChip.textContent = 'All Topics';
-    allChip.addEventListener('click', () => {
-      setTopicFilter('all');
-    });
-    filterTopicsContainer.appendChild(allChip);
-
-    // Render top 12 most frequent topics
-    const topTopics = sortedTopics.slice(0, 12);
-    topTopics.forEach((t) => {
-      const count = topicCounts[t];
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = `topic-chip ${activeTopic === t ? 'active' : ''}`;
-      chip.textContent = `${t} (${count})`;
-      chip.setAttribute('data-topic', t);
-      chip.addEventListener('click', () => {
-        setTopicFilter(t === activeTopic ? 'all' : t);
-      });
-      filterTopicsContainer.appendChild(chip);
-    });
-  }
-
-  // ==========================================================================
-  // Filter Application & Execution
-  // ==========================================================================
   function setYearFilter(yr) {
     activeYear = yr;
     updateYearButtonStates();
     applyFilters();
   }
 
-  function setTopicFilter(topic) {
-    activeTopic = topic;
-    updateTopicButtonStates();
-    applyFilters();
-  }
-
   function setCityFilter(city) {
     activeCity = city;
-    updateCityRosterStates();
-    applyFilters();
-  }
-
-  function clearAllFilters() {
-    activeYear = 'all';
-    activeTopic = 'all';
-    activeCity = 'all';
-    searchQuery = '';
-    if (archiveSearchInput) archiveSearchInput.value = '';
-    if (searchClearBtn) searchClearBtn.classList.add('hidden');
-    updateYearButtonStates();
-    updateTopicButtonStates();
+    updateCityBar();
     updateCityRosterStates();
     applyFilters();
   }
 
   function updateYearButtonStates() {
     if (!filterYearsContainer) return;
-    const btns = filterYearsContainer.querySelectorAll('.filter-btn');
+    const btns = filterYearsContainer.querySelectorAll('.year-filter-btn');
     btns.forEach((btn) => {
       const yr = btn.getAttribute('data-year');
       const isActive = yr === activeYear;
@@ -386,49 +266,55 @@
     });
   }
 
-  function updateTopicButtonStates() {
-    if (!filterTopicsContainer) return;
-    const chips = filterTopicsContainer.querySelectorAll('.topic-chip');
-    chips.forEach((chip) => {
-      const t = chip.getAttribute('data-topic') || 'all';
-      const isActive = t === activeTopic;
-      chip.classList.toggle('active', isActive);
-    });
+  function updateCityBar() {
+    if (!activeCityBar || !activeCityText) return;
+    if (activeCity === 'all') {
+      activeCityBar.classList.add('hidden');
+    } else {
+      activeCityBar.classList.remove('hidden');
+      activeCityText.textContent = `Showing talks in: ${activeCity}`;
+    }
   }
 
   function updateCityRosterStates() {
     if (!citiesRoster) return;
-    const chips = citiesRoster.querySelectorAll('.city-roster-chip');
-    chips.forEach((chip) => {
-      const c = chip.getAttribute('data-city');
-      const isActive = c === activeCity;
-      chip.classList.toggle('active', isActive);
+    const pills = citiesRoster.querySelectorAll('.city-pill-btn');
+    pills.forEach((p) => {
+      const c = p.getAttribute('data-city');
+      p.classList.toggle('active', c === activeCity);
     });
-    if (rosterResetBtn) {
-      rosterResetBtn.classList.toggle('hidden', activeCity === 'all');
-    }
   }
 
+  function clearAllFilters() {
+    activeYear = 'all';
+    activeCity = 'all';
+    searchQuery = '';
+    if (archiveSearchInput) archiveSearchInput.value = '';
+    if (searchClearBtn) searchClearBtn.classList.add('hidden');
+    updateYearButtonStates();
+    updateCityBar();
+    updateCityRosterStates();
+    applyFilters();
+  }
+
+  // ==========================================================================
+  // Filter Execution
+  // ==========================================================================
   function applyFilters() {
     const q = searchQuery.trim().toLowerCase();
 
     const filtered = allEvents.filter((ev) => {
-      // Year check
+      // Year filter
       if (activeYear !== 'all') {
         if (!ev.date || !ev.date.startsWith(activeYear)) return false;
       }
 
-      // Topic check
-      if (activeTopic !== 'all') {
-        if (!Array.isArray(ev.topics) || !ev.topics.includes(activeTopic)) return false;
-      }
-
-      // City check
+      // City filter
       if (activeCity !== 'all') {
         if (ev.city !== activeCity) return false;
       }
 
-      // Search query check (talk, event, city, description, topics)
+      // Search query
       if (q) {
         const inTalk = (ev.talk || '').toLowerCase().includes(q);
         const inEvent = (ev.event || '').toLowerCase().includes(q);
@@ -442,93 +328,35 @@
     });
 
     renderArchiveLedger(filtered);
-    updateStatusBar(filtered);
+    updateArchiveCounter(filtered.length);
   }
 
-  function updateStatusBar(filtered) {
-    const total = allEvents.length;
-    const count = filtered.length;
-
-    if (statusCount) {
-      if (activeYear === 'all' && activeTopic === 'all' && activeCity === 'all' && !searchQuery) {
-        statusCount.textContent = `Showing all ${count} talks`;
-      } else {
-        statusCount.textContent = `Showing ${count} of ${total} talks`;
-      }
+  function updateArchiveCounter(count) {
+    if (!archiveCount) return;
+    if (activeYear === 'all' && activeCity === 'all' && !searchQuery) {
+      archiveCount.textContent = `${count} talks`;
+    } else if (activeYear !== 'all' && activeCity === 'all' && !searchQuery) {
+      archiveCount.textContent = `${count} talks in ${activeYear}`;
+    } else {
+      archiveCount.textContent = `${count} of ${allEvents.length} talks`;
     }
-
-    // Active filters display
-    if (statusFilters) {
-      statusFilters.innerHTML = '';
-      const hasFilter = activeYear !== 'all' || activeTopic !== 'all' || activeCity !== 'all' || searchQuery;
-
-      if (resetAllFiltersBtn) {
-        resetAllFiltersBtn.classList.toggle('hidden', !hasFilter);
-      }
-
-      if (activeYear !== 'all') {
-        const badge = createActiveFilterBadge(`Year: ${activeYear}`, () => setYearFilter('all'));
-        statusFilters.appendChild(badge);
-      }
-
-      if (activeTopic !== 'all') {
-        const badge = createActiveFilterBadge(`Topic: #${activeTopic}`, () => setTopicFilter('all'));
-        statusFilters.appendChild(badge);
-      }
-
-      if (activeCity !== 'all') {
-        const badge = createActiveFilterBadge(`Location: ${activeCity}`, () => setCityFilter('all'));
-        statusFilters.appendChild(badge);
-      }
-
-      if (searchQuery) {
-        const badge = createActiveFilterBadge(`Query: "${searchQuery}"`, () => {
-          searchQuery = '';
-          if (archiveSearchInput) archiveSearchInput.value = '';
-          if (searchClearBtn) searchClearBtn.classList.add('hidden');
-          applyFilters();
-        });
-        statusFilters.appendChild(badge);
-      }
-    }
-  }
-
-  function createActiveFilterBadge(label, onRemove) {
-    const span = document.createElement('span');
-    span.className = 'active-filter-badge';
-    span.innerHTML = `
-      <span>${escapeHtml(label)}</span>
-      <button type="button" class="badge-clear" aria-label="Remove filter">✕</button>
-    `;
-    const btn = span.querySelector('.badge-clear');
-    btn.addEventListener('click', onRemove);
-    return span;
   }
 
   // ==========================================================================
-  // Chronological Archive Ledger Rendering
+  // Archive Ledger Rendering
   // ==========================================================================
   function renderArchiveLedger(events) {
     if (!archiveLedger) return;
     archiveLedger.innerHTML = '';
 
     if (events.length === 0) {
-      if (emptyState) {
-        emptyState.classList.remove('hidden');
-        if (searchQuery) {
-          emptyStateMessage.textContent = `No speaking sessions matched "${searchQuery}".`;
-        } else {
-          emptyStateMessage.textContent = 'No speaking sessions matched your filter criteria.';
-        }
-      }
+      if (emptyState) emptyState.classList.remove('hidden');
       return;
     }
 
-    if (emptyState) {
-      emptyState.classList.add('hidden');
-    }
+    if (emptyState) emptyState.classList.add('hidden');
 
-    // Group filtered events by year (descending)
+    // Group by year descending
     const grouped = {};
     events.forEach((ev) => {
       const yr = ev.date ? ev.date.substring(0, 4) : 'ARCHIVE';
@@ -538,35 +366,22 @@
 
     const years = Object.keys(grouped).sort((a, b) => b - a);
 
-    years.forEach((year) => {
-      const yearEvents = grouped[year];
+    years.forEach((yr) => {
+      const yearEvents = grouped[yr];
       const yearGroup = document.createElement('div');
-      yearGroup.className = 'year-divider-group';
+      yearGroup.className = 'archive-year-group';
 
-      // Year Header
-      const header = document.createElement('div');
-      header.className = 'year-divider-header';
-
-      let statusNote = 'RECORD';
-      if (year === '2026') statusNote = 'CURRENT & FORTHCOMING';
-      else if (year === '2025') statusNote = 'AGENTIC SYSTEMS';
-      else if (year === '2024') statusNote = 'AI/ML ON KUBERNETES';
-      else if (year === '2023') statusNote = 'FOUNDATIONAL CLOUD';
-
-      header.innerHTML = `
-        <h3 class="year-divider-num">${escapeHtml(year)}</h3>
-        <span class="year-divider-meta">${yearEvents.length} ${yearEvents.length === 1 ? 'TALK' : 'TALKS'} · ${statusNote}</span>
-      `;
+      const header = document.createElement('h3');
+      header.className = 'archive-year-header';
+      header.textContent = yr;
       yearGroup.appendChild(header);
 
-      // List of entries
       const list = document.createElement('div');
-      list.className = 'year-entries-list';
+      list.className = 'archive-year-list';
 
-      yearEvents.forEach((event, idx) => {
-        const itemNumber = (idx + 1).toString().padStart(2, '0');
-        const entry = renderArchiveEntry(event, itemNumber);
-        list.appendChild(entry);
+      yearEvents.forEach((ev) => {
+        const row = renderArchiveRow(ev);
+        list.appendChild(row);
       });
 
       yearGroup.appendChild(list);
@@ -574,82 +389,79 @@
     });
   }
 
-  function renderArchiveEntry(event, itemNumber) {
-    const article = document.createElement('article');
-    article.className = 'archive-entry';
-    article.setAttribute('tabindex', '0');
-    article.setAttribute('role', 'button');
-    article.setAttribute('aria-haspopup', 'dialog');
-    article.setAttribute('aria-label', `Examine talk record: ${event.talk} at ${event.event}`);
-    article.setAttribute('data-id', event.id);
+  function renderArchiveRow(event) {
+    const row = document.createElement('article');
+    row.className = 'archive-ledger-row';
+    row.setAttribute('tabindex', '0');
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-haspopup', 'dialog');
+    row.setAttribute('aria-label', `View details for ${event.talk} at ${event.event}`);
+    row.setAttribute('data-id', event.id);
 
     const formattedDate = formatMonthYear(event.date);
     const photos = Array.isArray(event.photos) ? event.photos : [];
     const hasPhotos = photos.length > 0;
 
-    article.innerHTML = `
-      <div class="entry-meta-col">
-        <time class="entry-date">${escapeHtml(formattedDate)}</time>
-        <span class="entry-location">${escapeHtml(event.city || 'ONLINE')}</span>
-        <span class="entry-index-num">RECORD #${itemNumber}</span>
+    row.innerHTML = `
+      <div class="row-meta-col">
+        <time class="row-date">${escapeHtml(formattedDate)}</time>
+        <span class="row-location">${escapeHtml(event.city || 'ONLINE')}</span>
       </div>
 
-      <div class="entry-content-col">
-        <h4 class="entry-talk-title">${escapeHtml(event.talk)}</h4>
-        <div class="entry-event-name">${escapeHtml(event.event)}</div>
-        ${event.description ? `<p class="entry-summary">${escapeHtml(event.description)}</p>` : ''}
+      <div class="row-content-col">
+        <h4 class="row-talk-title">${escapeHtml(event.talk)}</h4>
+        <div class="row-event-name">${escapeHtml(event.event)}</div>
+        ${event.description ? `<p class="row-abstract">${escapeHtml(event.description)}</p>` : ''}
         ${
           Array.isArray(event.topics) && event.topics.length > 0
-            ? `<div class="entry-topics-row">
-                ${event.topics.slice(0, 4).map((t) => `<span class="entry-topic-tag">#${escapeHtml(t)}</span>`).join('')}
+            ? `<div class="row-topics-line">
+                ${event.topics.slice(0, 4).map((t) => `<span class="row-topic-chip">#${escapeHtml(t)}</span>`).join('')}
               </div>`
             : ''
         }
       </div>
 
-      <div class="entry-action-col">
-        <span class="entry-inspect-link">
-          <span>Examine Record</span>
+      <div class="row-action-col">
+        <span class="row-inspect-btn">
+          <span>Inspect</span>
           <span aria-hidden="true">↗</span>
         </span>
         ${
           hasPhotos
-            ? `<span class="entry-photo-indicator">
+            ? `<span class="row-photo-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
                   <polyline points="21 15 16 10 5 21"></polyline>
                 </svg>
-                <span>${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}</span>
+                <span>${photos.length}</span>
               </span>`
             : ''
         }
       </div>
     `;
 
-    // Click & Keyboard interactions
-    article.addEventListener('click', () => {
+    row.addEventListener('click', () => {
       openEventDetails(event);
     });
 
-    article.addEventListener('keydown', (e) => {
+    row.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         openEventDetails(event);
       }
     });
 
-    return article;
+    return row;
   }
 
   // ==========================================================================
-  // Global Reach Map Rendering
+  // Vector Reach Map
   // ==========================================================================
   function renderGlobalReachMap(events) {
     if (!mapMarkersGroup) return;
     mapMarkersGroup.innerHTML = '';
 
-    // Count physical speaking engagements per city
     const cityTalks = {};
     events.forEach((ev) => {
       if (ev.city && ev.city !== 'Online') {
@@ -657,7 +469,6 @@
       }
     });
 
-    // Plot markers
     Object.entries(cityTalks).forEach(([cityName, count]) => {
       const coords = CITY_COORDINATES[cityName];
       if (!coords) return;
@@ -670,14 +481,12 @@
       group.setAttribute('role', 'button');
       group.setAttribute('aria-label', `${cityName}: ${count} ${count === 1 ? 'talk' : 'talks'}`);
 
-      // Radar pulse ring
       const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       pulse.setAttribute('class', 'marker-pulse');
       pulse.setAttribute('cx', proj.x.toString());
       pulse.setAttribute('cy', proj.y.toString());
       pulse.setAttribute('r', '7');
 
-      // Center point
       const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       point.setAttribute('class', 'marker-point');
       point.setAttribute('cx', proj.x.toString());
@@ -687,23 +496,17 @@
       group.appendChild(pulse);
       group.appendChild(point);
 
-      // Tooltip handling
-      const showTooltip = (e) => {
+      const showTooltip = () => {
         if (!mapTooltip || !mapViewContainer) return;
-        const rect = mapViewContainer.getBoundingClientRect();
-        // Calculate relative position based on SVG coordinates
         const svgElem = document.getElementById('world-map-svg');
         if (!svgElem) return;
         const svgRect = svgElem.getBoundingClientRect();
         const scaleX = svgRect.width / 1000;
         const scaleY = svgRect.height / 500;
 
-        const posX = (proj.x * scaleX);
-        const posY = (proj.y * scaleY);
-
         mapTooltip.textContent = `${cityName} — ${count} ${count === 1 ? 'talk' : 'talks'}`;
-        mapTooltip.style.left = `${posX}px`;
-        mapTooltip.style.top = `${posY}px`;
+        mapTooltip.style.left = `${proj.x * scaleX}px`;
+        mapTooltip.style.top = `${proj.y * scaleY}px`;
         mapTooltip.classList.add('visible');
       };
 
@@ -716,7 +519,6 @@
       group.addEventListener('focus', showTooltip);
       group.addEventListener('blur', hideTooltip);
 
-      // Click to filter archive
       group.addEventListener('click', () => {
         setCityFilter(cityName);
         scrollToArchive();
@@ -734,50 +536,48 @@
     });
   }
 
-  function renderVenuesRoster(events) {
+  function renderLocationsRoster(events) {
     if (!citiesRoster) return;
     citiesRoster.innerHTML = '';
 
-    // Calculate count per location
     const cityCounts = {};
     events.forEach((ev) => {
       const c = ev.city || 'Online';
       cityCounts[c] = (cityCounts[c] || 0) + 1;
     });
 
-    // Sort locations by frequency
-    const sortedCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]);
+    const sorted = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]);
 
-    sortedCities.forEach(([cityName, count]) => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = `city-roster-chip ${activeCity === cityName ? 'active' : ''}`;
-      chip.textContent = `${cityName} (${count})`;
-      chip.setAttribute('data-city', cityName);
-      chip.addEventListener('click', () => {
+    sorted.forEach(([cityName]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `city-pill-btn ${activeCity === cityName ? 'active' : ''}`;
+      btn.textContent = cityName;
+      btn.setAttribute('data-city', cityName);
+      btn.addEventListener('click', () => {
         setCityFilter(activeCity === cityName ? 'all' : cityName);
         scrollToArchive();
       });
-      citiesRoster.appendChild(chip);
+      citiesRoster.appendChild(btn);
     });
   }
 
   function scrollToArchive() {
-    const archiveSection = document.getElementById('archive');
-    if (archiveSection) {
-      archiveSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const archiveSec = document.getElementById('archive');
+    if (archiveSec) {
+      archiveSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
   // ==========================================================================
-  // Speaking Journey & Topic Interaction Triggers
+  // Interactive Triggers (Journey & Topics)
   // ==========================================================================
   function setupInteractiveTriggers() {
-    // Journey Buttons
-    const journeyBtns = document.querySelectorAll('.journey-action-btn');
-    journeyBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const yr = btn.getAttribute('data-year');
+    // Journey Nodes
+    const journeyNodes = document.querySelectorAll('.journey-node');
+    journeyNodes.forEach((node) => {
+      node.addEventListener('click', () => {
+        const yr = node.getAttribute('data-year');
         if (yr) {
           setYearFilter(yr);
           scrollToArchive();
@@ -785,19 +585,22 @@
       });
     });
 
-    // Topic Pillar Buttons
-    const topicBtns = document.querySelectorAll('.pillar-filter-btn');
-    topicBtns.forEach((btn) => {
+    // Topic Jump Buttons
+    const topicJumpBtns = document.querySelectorAll('.topic-jump-btn');
+    topicJumpBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         const topic = btn.getAttribute('data-topic');
         if (topic) {
-          setTopicFilter(topic);
+          searchQuery = topic;
+          if (archiveSearchInput) archiveSearchInput.value = topic;
+          if (searchClearBtn) searchClearBtn.classList.remove('hidden');
+          applyFilters();
           scrollToArchive();
         }
       });
     });
 
-    // Search Input with Debounce
+    // Search Input
     if (archiveSearchInput) {
       let debounceTimer = null;
       archiveSearchInput.addEventListener('input', (e) => {
@@ -808,7 +611,7 @@
             searchClearBtn.classList.toggle('hidden', !searchQuery);
           }
           applyFilters();
-        }, 150);
+        }, 120);
       });
     }
 
@@ -822,22 +625,19 @@
       });
     }
 
-    // Reset Buttons
-    if (resetAllFiltersBtn) {
-      resetAllFiltersBtn.addEventListener('click', clearAllFilters);
-    }
     if (emptyResetBtn) {
       emptyResetBtn.addEventListener('click', clearAllFilters);
     }
-    if (rosterResetBtn) {
-      rosterResetBtn.addEventListener('click', () => {
+
+    if (clearCityBtn) {
+      clearCityBtn.addEventListener('click', () => {
         setCityFilter('all');
       });
     }
   }
 
   // ==========================================================================
-  // Archival Record Dossier / Modal Dialog
+  // Event Detail Modal
   // ==========================================================================
   function openEventDetails(event) {
     if (!eventModal || !event) return;
@@ -846,88 +646,76 @@
     activeEvent = event;
     activePhotoIndex = 0;
 
-    // Header metadata stamps
-    if (modalRecordId) {
-      modalRecordId.textContent = `SLUG #${event.id}`;
-    }
     if (modalDate) {
       modalDate.textContent = formatFullMonthYear(event.date);
     }
     if (modalLocation) {
       modalLocation.textContent = event.city || 'ONLINE';
     }
-
-    // Content
-    if (modalEventName) {
-      modalEventName.textContent = event.event || 'Speaking Event';
-    }
     if (modalTalk) {
       modalTalk.textContent = event.talk || 'Technical Session';
     }
-    if (modalDescription) {
-      modalDescription.textContent =
-        event.description ||
-        'Session abstract and presentation record recorded under Enes Turan speaker catalog.';
+    if (modalEventName) {
+      modalEventName.textContent = event.event || 'Speaking Event';
     }
 
-    // Topics list
-    if (modalTopics) {
-      modalTopics.innerHTML = '';
-      if (Array.isArray(event.topics) && event.topics.length > 0) {
-        event.topics.forEach((t) => {
-          const chip = document.createElement('span');
-          chip.className = 'modal-topic-chip';
-          chip.textContent = `#${t}`;
-          modalTopics.appendChild(chip);
-        });
+    if (modalDescription) {
+      if (event.description) {
+        modalDescription.textContent = event.description;
+        modalDescription.parentElement.classList.remove('hidden');
       } else {
-        const chip = document.createElement('span');
-        chip.className = 'modal-topic-chip';
-        chip.textContent = '#Cloud & Architecture';
-        modalTopics.appendChild(chip);
+        modalDescription.parentElement.classList.add('hidden');
       }
     }
 
-    // Session Resources (Slides, Video, Event, LinkedIn)
-    if (modalResources && modalResourcesGroup) {
+    if (modalTopics && modalTopicsBlock) {
+      modalTopics.innerHTML = '';
+      if (Array.isArray(event.topics) && event.topics.length > 0) {
+        modalTopicsBlock.classList.remove('hidden');
+        event.topics.forEach((t) => {
+          const tag = document.createElement('span');
+          tag.className = 'modal-topic-tag';
+          tag.textContent = `#${t}`;
+          modalTopics.appendChild(tag);
+        });
+      } else {
+        modalTopicsBlock.classList.add('hidden');
+      }
+    }
+
+    // Resources
+    if (modalResources && modalResourcesBlock) {
       modalResources.innerHTML = '';
-      const resources = [];
+      const links = [];
+      if (event.slidesUrl) links.push({ label: 'Slides Deck', url: event.slidesUrl });
+      if (event.recordingUrl) links.push({ label: 'Video Recording', url: event.recordingUrl });
+      if (event.eventUrl) links.push({ label: 'Event Website', url: event.eventUrl });
+      if (event.linkedinUrl) links.push({ label: 'LinkedIn Post', url: event.linkedinUrl });
 
-      if (event.slidesUrl) resources.push({ label: 'Presentation Slides', url: event.slidesUrl });
-      if (event.recordingUrl) resources.push({ label: 'Video Recording', url: event.recordingUrl });
-      if (event.eventUrl) resources.push({ label: 'Conference Page', url: event.eventUrl });
-      if (event.linkedinUrl) resources.push({ label: 'LinkedIn Post', url: event.linkedinUrl });
-
-      if (resources.length > 0) {
-        modalResourcesGroup.classList.remove('hidden');
-        resources.forEach((res) => {
+      if (links.length > 0) {
+        modalResourcesBlock.classList.remove('hidden');
+        links.forEach((l) => {
           const a = document.createElement('a');
           a.className = 'modal-resource-link';
-          a.href = res.url;
+          a.href = l.url;
           a.target = '_blank';
           a.rel = 'noopener noreferrer';
-          a.innerHTML = `
-            <span>${escapeHtml(res.label)}</span>
-            <span aria-hidden="true">↗</span>
-          `;
+          a.innerHTML = `<span>${escapeHtml(l.label)}</span><span aria-hidden="true">↗</span>`;
           modalResources.appendChild(a);
         });
       } else {
-        modalResourcesGroup.classList.add('hidden');
+        modalResourcesBlock.classList.add('hidden');
       }
     }
 
-    // Gallery Render
     renderModalGallery(event);
 
-    // Update URL hash without causing viewport jump
     if (history.pushState) {
       history.pushState(null, '', `#${encodeURIComponent(event.id)}`);
     } else {
       window.location.hash = `#${encodeURIComponent(event.id)}`;
     }
 
-    // Show native dialog modal
     if (!eventModal.open) {
       eventModal.showModal();
     }
@@ -942,38 +730,35 @@
     const total = photos.length;
 
     if (total <= 1) {
-      if (galleryPrevBtn) galleryPrevBtn.style.display = 'none';
-      if (galleryNextBtn) galleryNextBtn.style.display = 'none';
+      if (galleryNavRow) galleryNavRow.style.display = 'none';
       if (galleryThumbnails) galleryThumbnails.style.display = 'none';
     } else {
-      if (galleryPrevBtn) galleryPrevBtn.style.display = 'inline-flex';
-      if (galleryNextBtn) galleryNextBtn.style.display = 'inline-flex';
+      if (galleryNavRow) galleryNavRow.style.display = 'flex';
       if (galleryThumbnails) galleryThumbnails.style.display = 'flex';
     }
 
-    // Render thumbnails
     if (galleryThumbnails && total > 1) {
       galleryThumbnails.innerHTML = '';
-      photos.forEach((photoUrl, idx) => {
-        const thumbBtn = document.createElement('button');
-        thumbBtn.type = 'button';
-        thumbBtn.className = `gallery-thumbnail-btn ${idx === activePhotoIndex ? 'active' : ''}`;
-        thumbBtn.setAttribute('aria-label', `View photo ${idx + 1} of ${total}`);
+      photos.forEach((url, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `gallery-thumb-btn ${idx === activePhotoIndex ? 'active' : ''}`;
+        btn.setAttribute('aria-label', `Photo ${idx + 1}`);
 
         const img = document.createElement('img');
-        img.className = 'gallery-thumbnail-img';
-        img.src = photoUrl;
+        img.className = 'gallery-thumb-img';
+        img.src = url;
         img.alt = `Thumbnail ${idx + 1}`;
         img.loading = 'lazy';
         img.addEventListener('error', () => {
-          thumbBtn.style.display = 'none';
+          btn.style.display = 'none';
         });
 
-        thumbBtn.appendChild(img);
-        thumbBtn.addEventListener('click', () => {
+        btn.appendChild(img);
+        btn.addEventListener('click', () => {
           setGalleryPhoto(idx);
         });
-        galleryThumbnails.appendChild(thumbBtn);
+        galleryThumbnails.appendChild(btn);
       });
     }
 
@@ -988,33 +773,29 @@
     galleryStage.innerHTML = '';
 
     if (total === 0) {
-      const notice = document.createElement('div');
-      notice.className = 'gallery-pending-notice';
-      notice.innerHTML = `
-        <span class="pending-stamp">PHOTOGRAPHS PENDING</span>
-        <span class="pending-sub">Archival photographs for ${escapeHtml(activeEvent.event)} will be filed upon photo acquisition.</span>
-      `;
-      galleryStage.appendChild(notice);
+      const p = document.createElement('div');
+      p.className = 'gallery-pending';
+      p.textContent = 'Photographs pending archival filing.';
+      galleryStage.appendChild(p);
       if (galleryCounter) galleryCounter.textContent = '0 / 0';
       return;
     }
 
     const currentUrl = photos[activePhotoIndex];
-    const mainImg = document.createElement('img');
-    mainImg.className = 'gallery-stage-image';
-    mainImg.src = currentUrl;
-    mainImg.alt = `${activeEvent.event} — Photo ${activePhotoIndex + 1}`;
+    const img = document.createElement('img');
+    img.className = 'gallery-img';
+    img.src = currentUrl;
+    img.alt = `${activeEvent.event} — Photo ${activePhotoIndex + 1}`;
 
-    mainImg.addEventListener('error', () => {
+    img.addEventListener('error', () => {
       galleryStage.innerHTML = `
-        <div class="gallery-pending-notice">
-          <span class="pending-stamp">PHOTO RECORD</span>
-          <span class="pending-sub">${escapeHtml(activeEvent.event)}</span>
+        <div class="gallery-pending">
+          ${escapeHtml(activeEvent.event)}
         </div>
       `;
     });
 
-    galleryStage.appendChild(mainImg);
+    galleryStage.appendChild(img);
 
     if (galleryCounter) {
       galleryCounter.textContent = `${activePhotoIndex + 1} / ${total}`;
@@ -1023,20 +804,19 @@
     if (galleryPrevBtn) galleryPrevBtn.disabled = activePhotoIndex === 0;
     if (galleryNextBtn) galleryNextBtn.disabled = activePhotoIndex === total - 1;
 
-    // Update active thumbnail
     if (galleryThumbnails) {
-      const thumbs = galleryThumbnails.querySelectorAll('.gallery-thumbnail-btn');
-      thumbs.forEach((th, idx) => {
-        th.classList.toggle('active', idx === activePhotoIndex);
+      const btns = galleryThumbnails.querySelectorAll('.gallery-thumb-btn');
+      btns.forEach((b, i) => {
+        b.classList.toggle('active', i === activePhotoIndex);
       });
     }
   }
 
-  function setGalleryPhoto(index) {
+  function setGalleryPhoto(idx) {
     if (!activeEvent) return;
     const photos = Array.isArray(activeEvent.photos) ? activeEvent.photos : [];
-    if (index >= 0 && index < photos.length) {
-      activePhotoIndex = index;
+    if (idx >= 0 && idx < photos.length) {
+      activePhotoIndex = idx;
       updateGalleryStage();
     }
   }
@@ -1047,7 +827,6 @@
     }
     activeEvent = null;
 
-    // Clean hash without reload
     if (window.location.hash) {
       if (history.pushState) {
         history.pushState('', document.title, window.location.pathname + window.location.search);
@@ -1092,7 +871,6 @@
       });
     }
 
-    // Keyboard controls for modal
     window.addEventListener('keydown', (e) => {
       if (!eventModal || !eventModal.open) return;
 
@@ -1107,7 +885,6 @@
       }
     });
 
-    // Hash change support (back/forward browser buttons)
     window.addEventListener('hashchange', () => {
       const rawHash = window.location.hash.replace(/^#/, '').trim();
       if (!rawHash) {
@@ -1126,7 +903,6 @@
       }
     });
 
-    // Fallback light-dismiss for browsers without native closedby support
     if (eventModal) {
       if (!('closedBy' in HTMLDialogElement.prototype)) {
         eventModal.addEventListener('click', (event) => {
@@ -1155,7 +931,6 @@
     }
   }
 
-  // Start application on DOM ready
   document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     initApplication();
