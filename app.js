@@ -1,14 +1,14 @@
 /**
- * Enes Turan — Speaking Archive Engine
- * Streamlined Vanilla JavaScript Data Architecture
+ * Enes Turan — Technical Speaker Constellation
+ * Pure Vanilla JavaScript Data Architecture & Interactive Canvas System
  */
 
 (function () {
   'use strict';
 
-  // ==========================================================================
+  const DATA_URL = 'data/events.json';
+
   // Geographic Coordinates for Vector Map Projection (1000x500 Equirectangular)
-  // ==========================================================================
   const CITY_COORDINATES = {
     'Dubai, UAE': { lat: 25.2048, lon: 55.2708, label: 'Dubai' },
     'Cairo, Egypt': { lat: 30.0444, lon: 31.2357, label: 'Cairo' },
@@ -35,112 +35,129 @@
     'Ulaanbaatar, Mongolia': { lat: 47.8864, lon: 106.9057, label: 'Ulaanbaatar' }
   };
 
-  const MONTH_NAMES_SHORT = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-  const MONTH_NAMES_FULL = [
+  const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const FULL_MONTH_NAMES = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // ==========================================================================
   // Application State
-  // ==========================================================================
-  let allEvents = [];
-  let activeYear = 'all';
-  let activeCity = 'all';
-  let searchQuery = '';
-  let activeEvent = null;
-  let activePhotoIndex = 0;
-  let previousFocusedElement = null;
+  const state = {
+    events: [],
+    year: 'all',
+    topic: 'all',
+    city: 'all',
+    query: '',
+    selectedId: null,
+    hoveredTopic: null,
+    hoveredNodeId: null,
+    activePhotoIndex: 0,
+    positions: new Map(),
+    previousFocusedElement: null
+  };
+
+  // DOM Elements Cache
+  const els = {
+    heroTalkCount: document.getElementById('hero-talk-count'),
+    heroYearRange: document.getElementById('hero-year-range'),
+    yearButtons: document.getElementById('year-buttons'),
+    topicStrip: document.getElementById('topic-strip'),
+    search: document.getElementById('archive-search'),
+    clearSearch: document.getElementById('clear-search'),
+    fieldWrap: document.getElementById('field-wrap'),
+    canvas: document.getElementById('constellation-canvas'),
+    fieldYears: document.getElementById('field-years'),
+    fieldNodes: document.getElementById('field-nodes'),
+    nodeTooltip: document.getElementById('node-tooltip'),
+    fieldStatus: document.getElementById('field-status'),
+    yearReadouts: document.getElementById('year-readouts'),
+    archiveList: document.getElementById('archive-list'),
+    archiveCount: document.getElementById('archive-count'),
+    archiveFilterNote: document.getElementById('archive-filter-note'),
+    emptyState: document.getElementById('empty-state'),
+    emptyResetBtn: document.getElementById('empty-reset-btn'),
+    threadGrid: document.getElementById('thread-grid'),
+    reachCount: document.getElementById('reach-count'),
+    onlineCount: document.getElementById('online-count'),
+    mapMarkers: document.getElementById('map-markers'),
+    mapTooltip: document.getElementById('map-tooltip'),
+    mapViewContainer: document.getElementById('map-view-container'),
+    cityRoster: document.getElementById('city-roster'),
+    // Modal Dialog
+    dialog: document.getElementById('event-dialog'),
+    dialogClose: document.getElementById('dialog-close'),
+    dialogIndex: document.getElementById('dialog-index'),
+    dialogDate: document.getElementById('dialog-date'),
+    dialogLocation: document.getElementById('dialog-location'),
+    dialogEvent: document.getElementById('dialog-event'),
+    dialogTitle: document.getElementById('dialog-title'),
+    dialogDescription: document.getElementById('dialog-description'),
+    dialogTopics: document.getElementById('dialog-topics'),
+    dialogResourcesBlock: document.getElementById('dialog-resources-block'),
+    dialogResources: document.getElementById('dialog-resources'),
+    galleryCounter: document.getElementById('gallery-counter'),
+    galleryStage: document.getElementById('gallery-stage'),
+    galleryNavRow: document.getElementById('gallery-nav-row'),
+    galleryPrevBtn: document.getElementById('gallery-prev-btn'),
+    galleryNextBtn: document.getElementById('gallery-next-btn'),
+    galleryThumbnails: document.getElementById('gallery-thumbnails')
+  };
 
   // ==========================================================================
-  // DOM References
+  // Helper Utilities
   // ==========================================================================
-  const statTalks = document.getElementById('stat-talks');
-  const statYears = document.getElementById('stat-years');
-
-  const filterYearsContainer = document.getElementById('filter-years');
-  const archiveSearchInput = document.getElementById('archive-search');
-  const searchClearBtn = document.getElementById('search-clear-btn');
-  const archiveCount = document.getElementById('archive-count');
-  const archiveLedger = document.getElementById('archive-ledger');
-  const activeCityBar = document.getElementById('active-city-bar');
-  const activeCityText = document.getElementById('active-city-text');
-  const clearCityBtn = document.getElementById('clear-city-btn');
-  const emptyState = document.getElementById('empty-state');
-  const emptyResetBtn = document.getElementById('empty-reset-btn');
-
-  // Map & Locations
-  const mapMarkersGroup = document.getElementById('map-markers');
-  const mapTooltip = document.getElementById('map-tooltip');
-  const mapViewContainer = document.getElementById('map-view-container');
-  const citiesRoster = document.getElementById('cities-roster');
-
-  // Modal Dialog
-  const eventModal = document.getElementById('event-modal');
-  const modalCloseBtn = document.getElementById('modal-close-btn');
-  const modalDate = document.getElementById('modal-date');
-  const modalLocation = document.getElementById('modal-location');
-  const modalTalk = document.getElementById('modal-talk');
-  const modalEventName = document.getElementById('modal-event-name');
-  const modalDescription = document.getElementById('modal-description');
-  const modalTopics = document.getElementById('modal-topics');
-  const modalTopicsBlock = document.getElementById('modal-topics-block');
-  const modalResources = document.getElementById('modal-resources');
-  const modalResourcesBlock = document.getElementById('modal-resources-block');
-  const galleryStage = document.getElementById('gallery-stage');
-  const galleryCounter = document.getElementById('gallery-counter');
-  const galleryPrevBtn = document.getElementById('gallery-prev-btn');
-  const galleryNextBtn = document.getElementById('gallery-next-btn');
-  const galleryNavRow = document.getElementById('gallery-nav-row');
-  const galleryThumbnails = document.getElementById('gallery-thumbnails');
-
-  // ==========================================================================
-  // Date & Text Utilities
-  // ==========================================================================
-  function formatMonthYear(dateStr) {
-    if (!dateStr) return '';
-    try {
-      const parts = dateStr.split('-');
-      if (parts.length >= 2) {
-        const year = parts[0];
-        const monthIndex = parseInt(parts[1], 10) - 1;
-        if (monthIndex >= 0 && monthIndex < 12) {
-          return `${MONTH_NAMES_SHORT[monthIndex]} ${year}`;
-        }
-      }
-      const d = new Date(dateStr);
-      return `${MONTH_NAMES_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-    } catch {
-      return dateStr;
-    }
-  }
-
-  function formatFullMonthYear(dateStr) {
-    if (!dateStr) return '';
-    try {
-      const parts = dateStr.split('-');
-      if (parts.length >= 2) {
-        const year = parts[0];
-        const monthIndex = parseInt(parts[1], 10) - 1;
-        if (monthIndex >= 0 && monthIndex < 12) {
-          return `${MONTH_NAMES_FULL[monthIndex]} ${year}`;
-        }
-      }
-      const d = new Date(dateStr);
-      return `${MONTH_NAMES_FULL[d.getMonth()]} ${d.getFullYear()}`;
-    } catch {
-      return dateStr;
-    }
-  }
-
   function escapeHtml(str) {
-    if (typeof str !== 'string') return '';
-    return str
+    if (str === null || str === undefined) return '';
+    return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+      .replace(/'/g, '&#39;');
+  }
+
+  function yearOf(event) {
+    return event && event.date ? event.date.substring(0, 4) : '';
+  }
+
+  function formatDateShort(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length >= 3) {
+        const y = parts[0];
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        return `${d} ${MONTH_NAMES[m]} ${y}`;
+      }
+    } catch {
+      // fallback
+    }
+    return dateStr;
+  }
+
+  function formatDateFull(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length >= 3) {
+        const y = parts[0];
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        return `${FULL_MONTH_NAMES[m]} ${d}, ${y}`;
+      }
+    } catch {
+      // fallback
+    }
+    return dateStr;
+  }
+
+  function stableHash(str) {
+    let hash = 2166136261;
+    for (let i = 0; i < str.length; i += 1) {
+      hash = Math.imul(hash ^ str.charCodeAt(i), 16777619);
+    }
+    return (hash >>> 0) / 4294967295;
   }
 
   function projectCoordinates(lat, lon) {
@@ -150,542 +167,946 @@
   }
 
   // ==========================================================================
-  // Initialization
+  // Filtering Logic
   // ==========================================================================
-  async function initApplication() {
-    try {
-      if (archiveCount) archiveCount.textContent = 'Loading...';
+  function matchesEvent(event) {
+    if (state.year !== 'all' && yearOf(event) !== state.year) return false;
+    if (state.topic !== 'all' && !(event.topics || []).includes(state.topic)) return false;
+    if (state.city !== 'all' && (event.city || 'Online') !== state.city) return false;
 
-      const response = await fetch('data/events.json', { cache: 'no-cache' });
-      if (!response.ok) {
-        throw new Error(`Failed to load event data: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!Array.isArray(data)) {
-        throw new Error('Expected array in data/events.json');
-      }
-
-      // Sort newest first
-      allEvents = data.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      updateHeroMetrics(allEvents);
-      renderYearFilters(allEvents);
-      renderGlobalReachMap(allEvents);
-      renderLocationsRoster(allEvents);
-      applyFilters();
-      setupInteractiveTriggers();
-      handleInitialRoute();
-    } catch (err) {
-      console.error('Archive Initialization Error:', err);
-      if (archiveCount) archiveCount.textContent = 'Error loading archive';
-      if (emptyState) {
-        emptyState.classList.remove('hidden');
-      }
+    if (state.query) {
+      const q = state.query.toLowerCase();
+      const inTalk = (event.talk || '').toLowerCase().includes(q);
+      const inEvent = (event.event || '').toLowerCase().includes(q);
+      const inCity = (event.city || '').toLowerCase().includes(q);
+      const inDesc = (event.description || '').toLowerCase().includes(q);
+      const inTopics = Array.isArray(event.topics) && event.topics.some((t) => t.toLowerCase().includes(q));
+      if (!inTalk && !inEvent && !inCity && !inDesc && !inTopics) return false;
     }
+
+    return true;
+  }
+
+  function getFilteredEvents() {
+    return state.events.filter(matchesEvent);
+  }
+
+  function getTopicCounts(eventsList) {
+    const counts = new Map();
+    eventsList.forEach((e) => {
+      (e.topics || []).forEach((t) => {
+        counts.set(t, (counts.get(t) || 0) + 1);
+      });
+    });
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   }
 
   // ==========================================================================
-  // Hero Metrics Derived from Data
+  // Constellation Calculations
   // ==========================================================================
-  function updateHeroMetrics(events) {
-    if (statTalks) {
-      statTalks.textContent = events.length.toString();
-    }
+  function computeNodeLayout(events) {
+    const width = els.fieldWrap ? els.fieldWrap.clientWidth || 1000 : 1000;
+    const height = els.fieldWrap ? els.fieldWrap.clientHeight || 580 : 580;
 
-    const years = events
-      .map((e) => (e.date ? parseInt(e.date.substring(0, 4), 10) : null))
-      .filter((y) => !isNaN(y) && y !== null);
+    // Sort chronologically ascending for left-to-right flow
+    const sorted = events.slice().sort((a, b) => a.date.localeCompare(b.date));
+    if (sorted.length === 0) return new Map();
 
-    if (years.length > 0 && statYears) {
-      const minYear = Math.min(...years);
-      const maxYear = Math.max(...years);
-      statYears.textContent = minYear === maxYear ? `${minYear}` : `${minYear} — ${maxYear}`;
-    }
+    const firstTime = new Date(`${sorted[0].date}T12:00:00`).getTime();
+    const lastTime = new Date(`${sorted[sorted.length - 1].date}T12:00:00`).getTime();
+
+    // 35 days buffer before and after so nodes never touch boundary walls
+    const buffer = 35 * 24 * 60 * 60 * 1000;
+    const minTime = firstTime - buffer;
+    const maxTime = lastTime + buffer;
+    const timeSpan = Math.max(1, maxTime - minTime);
+
+    // Group siblings by identical date to distribute into vertical lanes
+    const byDate = new Map();
+    sorted.forEach((e) => {
+      const arr = byDate.get(e.date) || [];
+      arr.push(e);
+      byDate.set(e.date, arr);
+    });
+
+    const positions = new Map();
+    const paddingX = 64;
+    const availableWidth = Math.max(1, width - paddingX * 2);
+
+    sorted.forEach((e) => {
+      const t = new Date(`${e.date}T12:00:00`).getTime();
+      const x = paddingX + ((t - minTime) / timeSpan) * availableWidth;
+
+      const siblings = byDate.get(e.date) || [e];
+      const sibIdx = siblings.indexOf(e);
+      const laneOffset = (sibIdx - (siblings.length - 1) / 2) * 28;
+
+      // Deterministic vertical placement based on topics hash
+      const topicStr = (e.topics || []).slice(0, 3).join('|');
+      const seed = stableHash(e.id + topicStr);
+
+      // Clamp y comfortably inside field
+      const minY = 72;
+      const maxY = height - 76;
+      let y = minY + seed * (maxY - minY) + laneOffset;
+      if (y < minY) y = minY + 10;
+      if (y > maxY) y = maxY - 10;
+
+      positions.set(e.id, {
+        x: Math.round(x * 10) / 10,
+        y: Math.round(y * 10) / 10,
+        event: e,
+        year: yearOf(e)
+      });
+    });
+
+    return positions;
   }
 
-  // ==========================================================================
-  // Year Filter Buttons
-  // ==========================================================================
-  function renderYearFilters(events) {
-    if (!filterYearsContainer) return;
-    filterYearsContainer.innerHTML = '';
+  // Draw Glowing Network Threads & Canvas Guidelines
+  function drawConstellation() {
+    if (!els.canvas || !els.fieldWrap) return;
 
-    const years = Array.from(
-      new Set(
-        events
-          .map((e) => (e.date ? e.date.substring(0, 4) : null))
-          .filter(Boolean)
-      )
-    ).sort((a, b) => b - a);
+    const wrapRect = els.fieldWrap.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = wrapRect.width;
+    const height = wrapRect.height;
 
-    // "ALL" button
-    const allBtn = document.createElement('button');
-    allBtn.type = 'button';
-    allBtn.className = `year-filter-btn ${activeYear === 'all' ? 'active' : ''}`;
-    allBtn.textContent = 'ALL';
-    allBtn.setAttribute('data-year', 'all');
-    allBtn.setAttribute('aria-pressed', activeYear === 'all' ? 'true' : 'false');
-    allBtn.addEventListener('click', () => setYearFilter('all'));
-    filterYearsContainer.appendChild(allBtn);
+    els.canvas.width = Math.round(width * dpr);
+    els.canvas.height = Math.round(height * dpr);
+    els.canvas.style.width = `${width}px`;
+    els.canvas.style.height = `${height}px`;
 
-    // Year buttons
+    const ctx = els.canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    state.positions = computeNodeLayout(state.events);
+    const posMap = state.positions;
+    if (posMap.size === 0) return;
+
+    // Draw Subtle Year Grid Guidelines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.lineWidth = 1;
+
+    const years = Array.from(new Set(state.events.map(yearOf))).sort();
+    years.forEach((yr, idx) => {
+      const yrEvents = state.events.filter((e) => yearOf(e) === yr);
+      if (yrEvents.length > 0 && posMap.has(yrEvents[0].id)) {
+        const xPos = posMap.get(yrEvents[0].id).x;
+        ctx.beginPath();
+        ctx.setLineDash([4, 6]);
+        ctx.moveTo(xPos, 36);
+        ctx.lineTo(xPos, height - 36);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    });
+
+    // Determine Topic to highlight (hovered topic or active topic)
+    const activeHighlightTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
+    const hoveredNode = state.hoveredNodeId ? state.events.find((e) => e.id === state.hoveredNodeId) : null;
+    const hoveredNodeTopics = hoveredNode ? new Set(hoveredNode.topics || []) : null;
+
+    // Draw Topic Threads (Curved Bézier Paths)
+    const topicGroups = new Map();
+    state.events.forEach((ev) => {
+      (ev.topics || []).forEach((top) => {
+        const arr = topicGroups.get(top) || [];
+        arr.push(ev);
+        topicGroups.set(top, arr);
+      });
+    });
+
+    const renderedConnections = new Set();
+
+    topicGroups.forEach((groupEvents, topicName) => {
+      const isTopicActive = activeHighlightTopic === topicName;
+      const isTopicConnectedToHoveredNode = hoveredNodeTopics && hoveredNodeTopics.has(topicName);
+
+      // Only draw non-highlighted threads with low opacity, and active ones with vibrant glow
+      const sortedInTopic = groupEvents.slice().sort((a, b) => a.date.localeCompare(b.date));
+
+      for (let i = 1; i < sortedInTopic.length; i += 1) {
+        const e1 = sortedInTopic[i - 1];
+        const e2 = sortedInTopic[i];
+        const p1 = posMap.get(e1.id);
+        const p2 = posMap.get(e2.id);
+        if (!p1 || !p2) continue;
+
+        const connectionKey = `${e1.id}__${e2.id}`;
+        const reverseKey = `${e2.id}__${e1.id}`;
+
+        if (renderedConnections.has(connectionKey) || renderedConnections.has(reverseKey)) {
+          // If already drawn in dim, but now active, redraw in active
+          if (!isTopicActive && !isTopicConnectedToHoveredNode) continue;
+        }
+
+        renderedConnections.add(connectionKey);
+
+        const midX = (p1.x + p2.x) / 2;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.bezierCurveTo(midX, p1.y, midX, p2.y, p2.x, p2.y);
+
+        if (isTopicActive) {
+          ctx.strokeStyle = 'rgba(136, 161, 255, 0.9)';
+          ctx.lineWidth = 2;
+          ctx.shadowColor = 'rgba(136, 161, 255, 0.6)';
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        } else if (isTopicConnectedToHoveredNode) {
+          ctx.strokeStyle = 'rgba(96, 165, 250, 0.75)';
+          ctx.lineWidth = 1.6;
+          ctx.shadowColor = 'rgba(96, 165, 250, 0.4)';
+          ctx.shadowBlur = 6;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        } else if (!activeHighlightTopic && !hoveredNode) {
+          // Ambient constellation connectivity
+          ctx.strokeStyle = 'rgba(68, 77, 94, 0.18)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    });
+
+    renderFieldDOMOverlays(posMap);
+  }
+
+  // Render DOM Buttons and Year Markings in Constellation
+  function renderFieldDOMOverlays(posMap) {
+    if (!els.fieldWrap || !els.fieldYears || !els.fieldNodes) return;
+
+    const width = els.fieldWrap.clientWidth || 1000;
+    const height = els.fieldWrap.clientHeight || 580;
+
+    // 1. Year Markers
+    const years = Array.from(new Set(state.events.map(yearOf))).sort();
+    els.fieldYears.innerHTML = years.map((yr) => {
+      const yrEvents = state.events.filter((e) => yearOf(e) === yr);
+      if (!yrEvents.length || !posMap.has(yrEvents[0].id)) return '';
+      const x = posMap.get(yrEvents[0].id).x;
+      const leftPct = (x / width) * 100;
+      return `<div class="field-year-mark" style="left:${leftPct.toFixed(2)}%">${yr}</div>`;
+    }).join('');
+
+    // 2. Node Buttons
+    const activeHighlightTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
+    const hoveredNode = state.hoveredNodeId ? state.events.find((e) => e.id === state.hoveredNodeId) : null;
+    const hoveredNodeTopics = hoveredNode ? new Set(hoveredNode.topics || []) : null;
+
+    let nodesHtml = '';
+    state.events.forEach((ev) => {
+      const pos = posMap.get(ev.id);
+      if (!pos) return;
+
+      const isMatch = matchesEvent(ev);
+      const isSelected = ev.id === state.selectedId;
+
+      let isHighlighted = false;
+      if (activeHighlightTopic && (ev.topics || []).includes(activeHighlightTopic)) {
+        isHighlighted = true;
+      }
+      if (hoveredNodeTopics && (ev.topics || []).some((t) => hoveredNodeTopics.has(t))) {
+        isHighlighted = true;
+      }
+
+      const leftPct = (pos.x / width) * 100;
+      const topPct = (pos.y / height) * 100;
+
+      const classes = [
+        'field-node-btn',
+        isSelected ? 'selected' : '',
+        !isMatch ? 'dim' : '',
+        isHighlighted ? 'highlighted' : ''
+      ].filter(Boolean).join(' ');
+
+      nodesHtml += `
+        <button type="button"
+          class="${classes}"
+          style="left:${leftPct.toFixed(2)}%;top:${topPct.toFixed(2)}%"
+          data-id="${escapeHtml(ev.id)}"
+          aria-label="${escapeHtml(ev.talk)} — ${escapeHtml(ev.event)} (${escapeHtml(ev.date)})"
+          tabindex="0">
+          <span class="node-dot" aria-hidden="true"></span>
+        </button>
+      `;
+    });
+
+    els.fieldNodes.innerHTML = nodesHtml;
+    attachNodeEventListeners(posMap);
+  }
+
+  function attachNodeEventListeners(posMap) {
+    const buttons = els.fieldNodes.querySelectorAll('.field-node-btn');
+    buttons.forEach((btn) => {
+      const id = btn.getAttribute('data-id');
+      const pos = posMap.get(id);
+      if (!pos) return;
+
+      const onEnter = () => {
+        state.hoveredNodeId = id;
+        showNodeTooltip(pos);
+        // Redraw canvas to illuminate connections
+        drawConstellationOnly(posMap);
+      };
+
+      const onLeave = () => {
+        state.hoveredNodeId = null;
+        hideNodeTooltip();
+        drawConstellationOnly(posMap);
+      };
+
+      btn.addEventListener('mouseenter', onEnter);
+      btn.addEventListener('mouseleave', onLeave);
+      btn.addEventListener('focus', onEnter);
+      btn.addEventListener('blur', onLeave);
+
+      btn.addEventListener('click', () => {
+        state.previousFocusedElement = btn;
+        openEvent(id);
+      });
+    });
+  }
+
+  function drawConstellationOnly(posMap) {
+    if (!els.canvas || !els.fieldWrap) return;
+    const wrapRect = els.fieldWrap.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = wrapRect.width;
+    const height = wrapRect.height;
+
+    const ctx = els.canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    // Subtle guidelines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.lineWidth = 1;
+    const years = Array.from(new Set(state.events.map(yearOf))).sort();
     years.forEach((yr) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = `year-filter-btn ${activeYear === yr ? 'active' : ''}`;
-      btn.textContent = yr;
-      btn.setAttribute('data-year', yr);
-      btn.setAttribute('aria-pressed', activeYear === yr ? 'true' : 'false');
-      btn.addEventListener('click', () => setYearFilter(yr));
-      filterYearsContainer.appendChild(btn);
+      const yrEvents = state.events.filter((e) => yearOf(e) === yr);
+      if (yrEvents.length > 0 && posMap.has(yrEvents[0].id)) {
+        const xPos = posMap.get(yrEvents[0].id).x;
+        ctx.beginPath();
+        ctx.setLineDash([4, 6]);
+        ctx.moveTo(xPos, 36);
+        ctx.lineTo(xPos, height - 36);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    });
+
+    const activeHighlightTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
+    const hoveredNode = state.hoveredNodeId ? state.events.find((e) => e.id === state.hoveredNodeId) : null;
+    const hoveredNodeTopics = hoveredNode ? new Set(hoveredNode.topics || []) : null;
+
+    const topicGroups = new Map();
+    state.events.forEach((ev) => {
+      (ev.topics || []).forEach((top) => {
+        const arr = topicGroups.get(top) || [];
+        arr.push(ev);
+        topicGroups.set(top, arr);
+      });
+    });
+
+    const renderedConnections = new Set();
+
+    topicGroups.forEach((groupEvents, topicName) => {
+      const isTopicActive = activeHighlightTopic === topicName;
+      const isTopicConnectedToHoveredNode = hoveredNodeTopics && hoveredNodeTopics.has(topicName);
+
+      const sortedInTopic = groupEvents.slice().sort((a, b) => a.date.localeCompare(b.date));
+      for (let i = 1; i < sortedInTopic.length; i += 1) {
+        const e1 = sortedInTopic[i - 1];
+        const e2 = sortedInTopic[i];
+        const p1 = posMap.get(e1.id);
+        const p2 = posMap.get(e2.id);
+        if (!p1 || !p2) continue;
+
+        const connectionKey = `${e1.id}__${e2.id}`;
+        const reverseKey = `${e2.id}__${e1.id}`;
+
+        if (renderedConnections.has(connectionKey) || renderedConnections.has(reverseKey)) {
+          if (!isTopicActive && !isTopicConnectedToHoveredNode) continue;
+        }
+
+        renderedConnections.add(connectionKey);
+
+        const midX = (p1.x + p2.x) / 2;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.bezierCurveTo(midX, p1.y, midX, p2.y, p2.x, p2.y);
+
+        if (isTopicActive) {
+          ctx.strokeStyle = 'rgba(136, 161, 255, 0.9)';
+          ctx.lineWidth = 2;
+          ctx.shadowColor = 'rgba(136, 161, 255, 0.6)';
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        } else if (isTopicConnectedToHoveredNode) {
+          ctx.strokeStyle = 'rgba(96, 165, 250, 0.8)';
+          ctx.lineWidth = 1.8;
+          ctx.shadowColor = 'rgba(96, 165, 250, 0.5)';
+          ctx.shadowBlur = 6;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        } else if (!activeHighlightTopic && !hoveredNode) {
+          ctx.strokeStyle = 'rgba(68, 77, 94, 0.18)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    });
+
+    // Update node button highlighted / selected classes without re-creating DOM
+    const buttons = els.fieldNodes.querySelectorAll('.field-node-btn');
+    buttons.forEach((btn) => {
+      const id = btn.getAttribute('data-id');
+      const ev = state.events.find((e) => e.id === id);
+      if (!ev) return;
+
+      const isMatch = matchesEvent(ev);
+      const isSelected = ev.id === state.selectedId;
+
+      let isHighlighted = false;
+      if (activeHighlightTopic && (ev.topics || []).includes(activeHighlightTopic)) {
+        isHighlighted = true;
+      }
+      if (hoveredNodeTopics && (ev.topics || []).some((t) => hoveredNodeTopics.has(t))) {
+        isHighlighted = true;
+      }
+
+      btn.classList.toggle('selected', isSelected);
+      btn.classList.toggle('dim', !isMatch);
+      btn.classList.toggle('highlighted', isHighlighted);
     });
   }
 
-  function setYearFilter(yr) {
-    activeYear = yr;
-    updateYearButtonStates();
-    applyFilters();
+  function showNodeTooltip(pos) {
+    if (!els.nodeTooltip || !els.fieldWrap) return;
+    const event = pos.event;
+    const wrapWidth = els.fieldWrap.clientWidth;
+
+    els.nodeTooltip.innerHTML = `
+      <div class="tooltip-date">${escapeHtml(formatDateShort(event.date))} · ${escapeHtml(event.city || 'Online')}</div>
+      <div class="tooltip-title">${escapeHtml(event.talk)}</div>
+      <div class="tooltip-event">${escapeHtml(event.event)}</div>
+    `;
+
+    // Position tooltip above node, clamped within horizontal bounds
+    const tooltipWidth = 260;
+    let leftPos = pos.x;
+    if (leftPos - tooltipWidth / 2 < 12) {
+      leftPos = 12 + tooltipWidth / 2;
+    } else if (leftPos + tooltipWidth / 2 > wrapWidth - 12) {
+      leftPos = wrapWidth - 12 - tooltipWidth / 2;
+    }
+
+    let topPos = pos.y - 18;
+    if (topPos < 70) {
+      // If near top, flip below
+      topPos = pos.y + 45;
+    }
+
+    els.nodeTooltip.style.left = `${leftPos}px`;
+    els.nodeTooltip.style.top = `${topPos}px`;
+    els.nodeTooltip.style.transform = 'translate(-50%, -100%)';
+    els.nodeTooltip.classList.add('visible');
   }
 
-  function setCityFilter(city) {
-    activeCity = city;
-    updateCityBar();
-    updateCityRosterStates();
-    applyFilters();
-  }
-
-  function updateYearButtonStates() {
-    if (!filterYearsContainer) return;
-    const btns = filterYearsContainer.querySelectorAll('.year-filter-btn');
-    btns.forEach((btn) => {
-      const yr = btn.getAttribute('data-year');
-      const isActive = yr === activeYear;
-      btn.classList.toggle('active', isActive);
-      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-    });
-  }
-
-  function updateCityBar() {
-    if (!activeCityBar || !activeCityText) return;
-    if (activeCity === 'all') {
-      activeCityBar.classList.add('hidden');
-    } else {
-      activeCityBar.classList.remove('hidden');
-      activeCityText.textContent = `Showing talks in: ${activeCity}`;
+  function hideNodeTooltip() {
+    if (els.nodeTooltip) {
+      els.nodeTooltip.classList.remove('visible');
     }
   }
 
-  function updateCityRosterStates() {
-    if (!citiesRoster) return;
-    const pills = citiesRoster.querySelectorAll('.city-pill-btn');
-    pills.forEach((p) => {
-      const c = p.getAttribute('data-city');
-      p.classList.toggle('active', c === activeCity);
-    });
-  }
-
-  function clearAllFilters() {
-    activeYear = 'all';
-    activeCity = 'all';
-    searchQuery = '';
-    if (archiveSearchInput) archiveSearchInput.value = '';
-    if (searchClearBtn) searchClearBtn.classList.add('hidden');
-    updateYearButtonStates();
-    updateCityBar();
-    updateCityRosterStates();
-    applyFilters();
-  }
-
   // ==========================================================================
-  // Filter Execution
+  // Render Components
   // ==========================================================================
-  function applyFilters() {
-    const q = searchQuery.trim().toLowerCase();
+  function renderYearControls() {
+    if (!els.yearButtons) return;
+    const years = Array.from(new Set(state.events.map(yearOf))).sort().reverse();
 
-    const filtered = allEvents.filter((ev) => {
-      // Year filter
-      if (activeYear !== 'all') {
-        if (!ev.date || !ev.date.startsWith(activeYear)) return false;
-      }
+    els.yearButtons.innerHTML = years.map((yr) => `
+      <button type="button" class="tool-btn ${state.year === yr ? 'active' : ''}" data-year="${yr}" aria-pressed="${state.year === yr}">
+        ${yr}
+      </button>
+    `).join('');
 
-      // City filter
-      if (activeCity !== 'all') {
-        if (ev.city !== activeCity) return false;
-      }
-
-      // Search query
-      if (q) {
-        const inTalk = (ev.talk || '').toLowerCase().includes(q);
-        const inEvent = (ev.event || '').toLowerCase().includes(q);
-        const inCity = (ev.city || '').toLowerCase().includes(q);
-        const inDesc = (ev.description || '').toLowerCase().includes(q);
-        const inTopics = Array.isArray(ev.topics) && ev.topics.some((t) => t.toLowerCase().includes(q));
-        if (!inTalk && !inEvent && !inCity && !inDesc && !inTopics) return false;
-      }
-
-      return true;
-    });
-
-    renderArchiveLedger(filtered);
-    updateArchiveCounter(filtered.length);
-  }
-
-  function updateArchiveCounter(count) {
-    if (!archiveCount) return;
-    if (activeYear === 'all' && activeCity === 'all' && !searchQuery) {
-      archiveCount.textContent = `${count} talks`;
-    } else if (activeYear !== 'all' && activeCity === 'all' && !searchQuery) {
-      archiveCount.textContent = `${count} talks in ${activeYear}`;
-    } else {
-      archiveCount.textContent = `${count} of ${allEvents.length} talks`;
+    const allBtn = document.querySelector('.year-switch .tool-btn[data-year="all"]');
+    if (allBtn) {
+      allBtn.classList.toggle('active', state.year === 'all');
+      allBtn.setAttribute('aria-pressed', state.year === 'all');
     }
+
+    const btns = document.querySelectorAll('.year-switch .tool-btn[data-year]');
+    btns.forEach((b) => {
+      b.onclick = () => {
+        setYear(b.dataset.year);
+      };
+    });
   }
 
-  // ==========================================================================
-  // Archive Ledger Rendering
-  // ==========================================================================
-  function renderArchiveLedger(events) {
-    if (!archiveLedger) return;
-    archiveLedger.innerHTML = '';
+  function renderTopicStrip() {
+    if (!els.topicStrip) return;
+    const topics = getTopicCounts(state.events);
 
-    if (events.length === 0) {
-      if (emptyState) emptyState.classList.remove('hidden');
+    const allBtn = `
+      <button type="button" class="topic-chip ${state.topic === 'all' ? 'active' : ''}" data-topic="all">
+        ALL TOPICS
+      </button>
+    `;
+
+    const topicChips = topics.slice(0, 16).map(([topic, count]) => `
+      <button type="button" class="topic-chip ${state.topic === topic ? 'active' : ''}" data-topic="${escapeHtml(topic)}">
+        ${escapeHtml(topic)} <span>(${count})</span>
+      </button>
+    `).join('');
+
+    els.topicStrip.innerHTML = allBtn + topicChips;
+
+    const chips = els.topicStrip.querySelectorAll('.topic-chip');
+    chips.forEach((c) => {
+      const top = c.getAttribute('data-topic');
+      c.onclick = () => {
+        setTopic(top);
+      };
+      c.onmouseenter = () => {
+        if (top !== 'all') {
+          state.hoveredTopic = top;
+          drawConstellationOnly(state.positions);
+        }
+      };
+      c.onmouseleave = () => {
+        state.hoveredTopic = null;
+        drawConstellationOnly(state.positions);
+      };
+      c.onfocus = () => {
+        if (top !== 'all') {
+          state.hoveredTopic = top;
+          drawConstellationOnly(state.positions);
+        }
+      };
+      c.onblur = () => {
+        state.hoveredTopic = null;
+        drawConstellationOnly(state.positions);
+      };
+    });
+  }
+
+  function renderYearReadouts() {
+    if (!els.yearReadouts) return;
+    const years = Array.from(new Set(state.events.map(yearOf))).sort();
+
+    els.yearReadouts.innerHTML = years.map((yr) => {
+      const yrEvents = state.events.filter((e) => yearOf(e) === yr);
+      const topTopics = getTopicCounts(yrEvents).slice(0, 3).map(([t]) => t).join(' · ');
+      return `
+        <button type="button" class="year-readout-card ${state.year === yr ? 'active' : ''}" data-year="${yr}">
+          <span class="readout-year-count">${yr} · ${yrEvents.length} talks</span>
+          <span class="readout-topics">${escapeHtml(topTopics)}</span>
+        </button>
+      `;
+    }).join('');
+
+    const cards = els.yearReadouts.querySelectorAll('.year-readout-card');
+    cards.forEach((card) => {
+      card.onclick = () => {
+        setYear(card.dataset.year === state.year ? 'all' : card.dataset.year);
+      };
+    });
+  }
+
+  function renderArchiveLedger() {
+    if (!els.archiveList) return;
+    const filtered = getFilteredEvents().sort((a, b) => b.date.localeCompare(a.date));
+
+    if (filtered.length === 0) {
+      els.archiveList.innerHTML = '';
+      if (els.emptyState) els.emptyState.classList.remove('hidden');
+      updateArchiveMeta(0);
       return;
     }
 
-    if (emptyState) emptyState.classList.add('hidden');
+    if (els.emptyState) els.emptyState.classList.add('hidden');
 
     // Group by year descending
-    const grouped = {};
-    events.forEach((ev) => {
-      const yr = ev.date ? ev.date.substring(0, 4) : 'ARCHIVE';
-      if (!grouped[yr]) grouped[yr] = [];
-      grouped[yr].push(ev);
+    const grouped = new Map();
+    filtered.forEach((ev) => {
+      const yr = yearOf(ev);
+      const arr = grouped.get(yr) || [];
+      arr.push(ev);
+      grouped.set(yr, arr);
     });
 
-    const years = Object.keys(grouped).sort((a, b) => b - a);
-
-    years.forEach((yr) => {
-      const yearEvents = grouped[yr];
-      const yearGroup = document.createElement('div');
-      yearGroup.className = 'archive-year-group';
-
-      const header = document.createElement('h3');
-      header.className = 'archive-year-header';
-      header.textContent = yr;
-      yearGroup.appendChild(header);
-
-      const list = document.createElement('div');
-      list.className = 'archive-year-list';
+    let html = '';
+    grouped.forEach((yearEvents, yr) => {
+      html += `
+        <div class="archive-year-group">
+          <h3 class="archive-year-header">
+            <span>${yr}</span>
+            <span class="archive-year-count">${yearEvents.length} ${yearEvents.length === 1 ? 'talk' : 'talks'}</span>
+          </h3>
+          <div class="archive-year-list">
+      `;
 
       yearEvents.forEach((ev) => {
-        const row = renderArchiveRow(ev);
-        list.appendChild(row);
+        const photos = Array.isArray(ev.photos) ? ev.photos : [];
+        const hasPhotos = photos.length > 0;
+        const formattedDate = formatDateShort(ev.date);
+
+        html += `
+          <article class="archive-row" tabindex="0" role="button" aria-haspopup="dialog" data-id="${escapeHtml(ev.id)}" aria-label="View details for ${escapeHtml(ev.talk)} at ${escapeHtml(ev.event)}">
+            <div class="archive-row-meta">
+              <time class="archive-date">${escapeHtml(formattedDate)}</time>
+              <span class="archive-location">${escapeHtml(ev.city || 'Online')}</span>
+            </div>
+
+            <div class="archive-row-content">
+              <div class="archive-talk-btn">
+                <h4 class="archive-talk-title">${escapeHtml(ev.talk)}</h4>
+              </div>
+              <div class="archive-event-name">${escapeHtml(ev.event)}</div>
+              ${ev.description ? `<p class="archive-abstract-snippet">${escapeHtml(ev.description)}</p>` : ''}
+              ${
+                Array.isArray(ev.topics) && ev.topics.length > 0
+                  ? `<div class="archive-topics-list">
+                      ${ev.topics.slice(0, 4).map((t) => `<span class="archive-topic-tag">#${escapeHtml(t)}</span>`).join('')}
+                    </div>`
+                  : ''
+              }
+            </div>
+
+            <div class="archive-row-action">
+              <span class="archive-inspect-btn">
+                <span>Inspect</span>
+                <span aria-hidden="true">↗</span>
+              </span>
+              ${
+                hasPhotos
+                  ? `<span class="archive-photo-badge" aria-label="${photos.length} photographs available">
+                      <span>📸</span>
+                      <span>${photos.length}</span>
+                    </span>`
+                  : ''
+              }
+            </div>
+          </article>
+        `;
       });
 
-      yearGroup.appendChild(list);
-      archiveLedger.appendChild(yearGroup);
-    });
-  }
-
-  function renderArchiveRow(event) {
-    const row = document.createElement('article');
-    row.className = 'archive-ledger-row';
-    row.setAttribute('tabindex', '0');
-    row.setAttribute('role', 'button');
-    row.setAttribute('aria-haspopup', 'dialog');
-    row.setAttribute('aria-label', `View details for ${event.talk} at ${event.event}`);
-    row.setAttribute('data-id', event.id);
-
-    const formattedDate = formatMonthYear(event.date);
-    const photos = Array.isArray(event.photos) ? event.photos : [];
-    const hasPhotos = photos.length > 0;
-
-    row.innerHTML = `
-      <div class="row-meta-col">
-        <time class="row-date">${escapeHtml(formattedDate)}</time>
-        <span class="row-location">${escapeHtml(event.city || 'ONLINE')}</span>
-      </div>
-
-      <div class="row-content-col">
-        <h4 class="row-talk-title">${escapeHtml(event.talk)}</h4>
-        <div class="row-event-name">${escapeHtml(event.event)}</div>
-        ${event.description ? `<p class="row-abstract">${escapeHtml(event.description)}</p>` : ''}
-        ${
-          Array.isArray(event.topics) && event.topics.length > 0
-            ? `<div class="row-topics-line">
-                ${event.topics.slice(0, 4).map((t) => `<span class="row-topic-chip">#${escapeHtml(t)}</span>`).join('')}
-              </div>`
-            : ''
-        }
-      </div>
-
-      <div class="row-action-col">
-        <span class="row-inspect-btn">
-          <span>Inspect</span>
-          <span aria-hidden="true">↗</span>
-        </span>
-        ${
-          hasPhotos
-            ? `<span class="row-photo-badge">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-                <span>${photos.length}</span>
-              </span>`
-            : ''
-        }
-      </div>
-    `;
-
-    row.addEventListener('click', () => {
-      openEventDetails(event);
+      html += `
+          </div>
+        </div>
+      `;
     });
 
-    row.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        openEventDetails(event);
-      }
-    });
+    els.archiveList.innerHTML = html;
 
-    return row;
-  }
-
-  // ==========================================================================
-  // Vector Reach Map
-  // ==========================================================================
-  function renderGlobalReachMap(events) {
-    if (!mapMarkersGroup) return;
-    mapMarkersGroup.innerHTML = '';
-
-    const cityTalks = {};
-    events.forEach((ev) => {
-      if (ev.city && ev.city !== 'Online') {
-        cityTalks[ev.city] = (cityTalks[ev.city] || 0) + 1;
-      }
-    });
-
-    Object.entries(cityTalks).forEach(([cityName, count]) => {
-      const coords = CITY_COORDINATES[cityName];
-      if (!coords) return;
-
-      const proj = projectCoordinates(coords.lat, coords.lon);
-
-      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      group.setAttribute('class', 'map-marker-item');
-      group.setAttribute('tabindex', '0');
-      group.setAttribute('role', 'button');
-      group.setAttribute('aria-label', `${cityName}: ${count} ${count === 1 ? 'talk' : 'talks'}`);
-
-      const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      pulse.setAttribute('class', 'marker-pulse');
-      pulse.setAttribute('cx', proj.x.toString());
-      pulse.setAttribute('cy', proj.y.toString());
-      pulse.setAttribute('r', '7');
-
-      const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      point.setAttribute('class', 'marker-point');
-      point.setAttribute('cx', proj.x.toString());
-      point.setAttribute('cy', proj.y.toString());
-      point.setAttribute('r', '3');
-
-      group.appendChild(pulse);
-      group.appendChild(point);
-
-      const showTooltip = () => {
-        if (!mapTooltip || !mapViewContainer) return;
-        const svgElem = document.getElementById('world-map-svg');
-        if (!svgElem) return;
-        const svgRect = svgElem.getBoundingClientRect();
-        const scaleX = svgRect.width / 1000;
-        const scaleY = svgRect.height / 500;
-
-        mapTooltip.textContent = `${cityName} — ${count} ${count === 1 ? 'talk' : 'talks'}`;
-        mapTooltip.style.left = `${proj.x * scaleX}px`;
-        mapTooltip.style.top = `${proj.y * scaleY}px`;
-        mapTooltip.classList.add('visible');
+    // Attach click and keyboard events
+    const rows = els.archiveList.querySelectorAll('.archive-row');
+    rows.forEach((row) => {
+      const id = row.getAttribute('data-id');
+      const open = () => {
+        state.previousFocusedElement = row;
+        openEvent(id);
       };
 
-      const hideTooltip = () => {
-        if (mapTooltip) mapTooltip.classList.remove('visible');
-      };
-
-      group.addEventListener('mouseenter', showTooltip);
-      group.addEventListener('mouseleave', hideTooltip);
-      group.addEventListener('focus', showTooltip);
-      group.addEventListener('blur', hideTooltip);
-
-      group.addEventListener('click', () => {
-        setCityFilter(cityName);
-        scrollToArchive();
-      });
-
-      group.addEventListener('keydown', (e) => {
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          setCityFilter(cityName);
-          scrollToArchive();
+          open();
         }
       });
+    });
 
-      mapMarkersGroup.appendChild(group);
+    updateArchiveMeta(filtered.length);
+  }
+
+  function updateArchiveMeta(count) {
+    if (els.archiveCount) {
+      els.archiveCount.textContent = `${count} ${count === 1 ? 'talk' : 'talks'}`;
+    }
+
+    if (els.archiveFilterNote) {
+      const parts = [];
+      if (state.year !== 'all') parts.push(state.year);
+      if (state.topic !== 'all') parts.push(`#${state.topic}`);
+      if (state.city !== 'all') parts.push(state.city);
+      if (state.query) parts.push(`"${state.query}"`);
+
+      els.archiveFilterNote.textContent = parts.length > 0 ? parts.join(' · ') : 'All speaking events';
+    }
+  }
+
+  function renderTechnicalThreads() {
+    if (!els.threadGrid) return;
+    const topTopics = getTopicCounts(state.events).slice(0, 9);
+
+    els.threadGrid.innerHTML = topTopics.map(([topic, count], idx) => {
+      const activeYears = Array.from(new Set(
+        state.events
+          .filter((e) => (e.topics || []).includes(topic))
+          .map(yearOf)
+      )).sort();
+
+      const yearSpan = activeYears.length > 1
+        ? `${activeYears[0]} — ${activeYears[activeYears.length - 1]}`
+        : activeYears[0];
+
+      return `
+        <button type="button" class="thread-card ${state.topic === topic ? 'active' : ''}" data-topic="${escapeHtml(topic)}">
+          <div class="thread-card-top">
+            <span class="thread-rank">TOPIC ${String(idx + 1).padStart(2, '0')}</span>
+            <span class="thread-count">${count}</span>
+          </div>
+          <div class="thread-card-bottom">
+            <h3 class="thread-title">${escapeHtml(topic)}</h3>
+            <p class="thread-meta">${activeYears.length} active years (${yearSpan})</p>
+          </div>
+        </button>
+      `;
+    }).join('');
+
+    const cards = els.threadGrid.querySelectorAll('.thread-card');
+    cards.forEach((c) => {
+      const top = c.getAttribute('data-topic');
+      c.onclick = () => {
+        setTopic(top === state.topic ? 'all' : top);
+        const constSec = document.getElementById('constellation');
+        if (constSec) constSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      c.onmouseenter = () => {
+        state.hoveredTopic = top;
+        drawConstellationOnly(state.positions);
+      };
+      c.onmouseleave = () => {
+        state.hoveredTopic = null;
+        drawConstellationOnly(state.positions);
+      };
     });
   }
 
-  function renderLocationsRoster(events) {
-    if (!citiesRoster) return;
-    citiesRoster.innerHTML = '';
-
-    const cityCounts = {};
-    events.forEach((ev) => {
-      const c = ev.city || 'Online';
-      cityCounts[c] = (cityCounts[c] || 0) + 1;
+  function renderGeographicLayer() {
+    const cityCounts = new Map();
+    state.events.forEach((e) => {
+      const c = e.city || 'Online';
+      cityCounts.set(c, (cityCounts.get(c) || 0) + 1);
     });
 
-    const sorted = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]);
+    const entries = Array.from(cityCounts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const nonOnline = entries.filter(([c]) => c !== 'Online');
+    const onlineTalks = state.events.filter((e) => e.city === 'Online');
 
-    sorted.forEach(([cityName]) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = `city-pill-btn ${activeCity === cityName ? 'active' : ''}`;
-      btn.textContent = cityName;
-      btn.setAttribute('data-city', cityName);
-      btn.addEventListener('click', () => {
-        setCityFilter(activeCity === cityName ? 'all' : cityName);
-        scrollToArchive();
+    if (els.reachCount) els.reachCount.textContent = nonOnline.length;
+    if (els.onlineCount) els.onlineCount.textContent = onlineTalks.length;
+
+    // 1. Vector World Map Markers
+    if (els.mapMarkers) {
+      els.mapMarkers.innerHTML = '';
+      nonOnline.forEach(([cityName, count]) => {
+        const coords = CITY_COORDINATES[cityName];
+        if (!coords) return;
+
+        const proj = projectCoordinates(coords.lat, coords.lon);
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('class', 'map-marker-item');
+        group.setAttribute('tabindex', '0');
+        group.setAttribute('role', 'button');
+        group.setAttribute('aria-label', `${cityName}: ${count} ${count === 1 ? 'talk' : 'talks'}`);
+
+        const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        pulse.setAttribute('class', 'marker-pulse');
+        pulse.setAttribute('cx', proj.x.toString());
+        pulse.setAttribute('cy', proj.y.toString());
+        pulse.setAttribute('r', '8');
+
+        const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        point.setAttribute('class', 'marker-point');
+        point.setAttribute('cx', proj.x.toString());
+        point.setAttribute('cy', proj.y.toString());
+        point.setAttribute('r', '3.5');
+
+        group.appendChild(pulse);
+        group.appendChild(point);
+
+        const showTip = () => {
+          if (!els.mapTooltip || !els.mapViewContainer) return;
+          const svg = document.getElementById('world-map-svg');
+          if (!svg) return;
+          const rect = svg.getBoundingClientRect();
+          const scaleX = rect.width / 1000;
+          const scaleY = rect.height / 500;
+
+          els.mapTooltip.textContent = `${cityName} — ${count} ${count === 1 ? 'talk' : 'talks'}`;
+          els.mapTooltip.style.left = `${proj.x * scaleX}px`;
+          els.mapTooltip.style.top = `${proj.y * scaleY}px`;
+          els.mapTooltip.classList.add('visible');
+        };
+
+        const hideTip = () => {
+          if (els.mapTooltip) els.mapTooltip.classList.remove('visible');
+        };
+
+        group.addEventListener('mouseenter', showTip);
+        group.addEventListener('mouseleave', hideTip);
+        group.addEventListener('focus', showTip);
+        group.addEventListener('blur', hideTip);
+
+        group.addEventListener('click', () => {
+          setCity(cityName);
+          scrollToArchive();
+        });
+
+        group.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setCity(cityName);
+            scrollToArchive();
+          }
+        });
+
+        els.mapMarkers.appendChild(group);
       });
-      citiesRoster.appendChild(btn);
-    });
+    }
+
+    // 2. City Roster Buttons
+    if (els.cityRoster) {
+      els.cityRoster.innerHTML = entries.map(([city, count]) => `
+        <button type="button" class="city-pill-btn ${state.city === city ? 'active' : ''}" data-city="${escapeHtml(city)}">
+          ${escapeHtml(city)} · ${count}
+        </button>
+      `).join('');
+
+      const pills = els.cityRoster.querySelectorAll('.city-pill-btn');
+      pills.forEach((p) => {
+        const c = p.getAttribute('data-city');
+        p.onclick = () => {
+          setCity(state.city === c ? 'all' : c);
+          scrollToArchive();
+        };
+      });
+    }
   }
 
   function scrollToArchive() {
-    const archiveSec = document.getElementById('archive');
-    if (archiveSec) {
-      archiveSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const arch = document.getElementById('archive');
+    if (arch) arch.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function updateHeroMetrics() {
+    if (els.heroTalkCount) {
+      els.heroTalkCount.textContent = state.events.length;
+    }
+    const years = Array.from(new Set(state.events.map(yearOf))).sort();
+    if (els.heroYearRange && years.length > 0) {
+      els.heroYearRange.textContent = years.length > 1
+        ? `${years[0]} — ${years[years.length - 1]}`
+        : `${years[0]}`;
     }
   }
 
-  // ==========================================================================
-  // Interactive Triggers (Journey & Topics)
-  // ==========================================================================
-  function setupInteractiveTriggers() {
-    // Journey Nodes
-    const journeyNodes = document.querySelectorAll('.journey-node');
-    journeyNodes.forEach((node) => {
-      node.addEventListener('click', () => {
-        const yr = node.getAttribute('data-year');
-        if (yr) {
-          setYearFilter(yr);
-          scrollToArchive();
-        }
-      });
-    });
+  function updateFieldStatus() {
+    if (!els.fieldStatus) return;
+    const filtered = getFilteredEvents();
+    const parts = [`${filtered.length} ${filtered.length === 1 ? 'talk' : 'talks'}`];
 
-    // Topic Jump Buttons
-    const topicJumpBtns = document.querySelectorAll('.topic-jump-btn');
-    topicJumpBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const topic = btn.getAttribute('data-topic');
-        if (topic) {
-          searchQuery = topic;
-          if (archiveSearchInput) archiveSearchInput.value = topic;
-          if (searchClearBtn) searchClearBtn.classList.remove('hidden');
-          applyFilters();
-          scrollToArchive();
-        }
-      });
-    });
+    if (state.year !== 'all') parts.push(state.year);
+    if (state.topic !== 'all') parts.push(`#${state.topic}`);
+    if (state.city !== 'all') parts.push(state.city);
+    if (state.query) parts.push(`"${state.query}"`);
 
-    // Search Input
-    if (archiveSearchInput) {
-      let debounceTimer = null;
-      archiveSearchInput.addEventListener('input', (e) => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-          searchQuery = e.target.value;
-          if (searchClearBtn) {
-            searchClearBtn.classList.toggle('hidden', !searchQuery);
-          }
-          applyFilters();
-        }, 120);
-      });
-    }
-
-    if (searchClearBtn) {
-      searchClearBtn.addEventListener('click', () => {
-        searchQuery = '';
-        if (archiveSearchInput) archiveSearchInput.value = '';
-        searchClearBtn.classList.add('hidden');
-        applyFilters();
-        if (archiveSearchInput) archiveSearchInput.focus();
-      });
-    }
-
-    if (emptyResetBtn) {
-      emptyResetBtn.addEventListener('click', clearAllFilters);
-    }
-
-    if (clearCityBtn) {
-      clearCityBtn.addEventListener('click', () => {
-        setCityFilter('all');
-      });
-    }
+    els.fieldStatus.textContent = `${parts.join(' · ')} · select any node to inspect details`;
   }
 
   // ==========================================================================
-  // Event Detail Modal
+  // State Mutation & Coordinated Re-rendering
   // ==========================================================================
-  function openEventDetails(event) {
-    if (!eventModal || !event) return;
+  function rerender() {
+    renderYearControls();
+    renderTopicStrip();
+    renderYearReadouts();
+    renderArchiveLedger();
+    renderTechnicalThreads();
+    renderGeographicLayer();
+    updateFieldStatus();
+    drawConstellation();
+  }
 
-    previousFocusedElement = document.activeElement;
-    activeEvent = event;
-    activePhotoIndex = 0;
+  function setYear(year) {
+    state.year = year;
+    state.city = 'all';
+    rerender();
+  }
 
-    if (modalDate) {
-      modalDate.textContent = formatFullMonthYear(event.date);
+  function setTopic(topic) {
+    state.topic = topic;
+    rerender();
+  }
+
+  function setCity(city) {
+    state.city = city;
+    state.year = 'all';
+    rerender();
+  }
+
+  function clearAllFilters() {
+    state.year = 'all';
+    state.topic = 'all';
+    state.city = 'all';
+    state.query = '';
+    if (els.search) els.search.value = '';
+    if (els.clearSearch) els.clearSearch.classList.add('hidden');
+    rerender();
+  }
+
+  // ==========================================================================
+  // Event Detail Modal Dossier & Full Photo Support (Phase 10)
+  // ==========================================================================
+  function openEvent(id) {
+    const event = state.events.find((e) => e.id === id);
+    if (!event || !els.dialog) return;
+
+    state.selectedId = id;
+    state.activePhotoIndex = 0;
+
+    // Chronological index
+    const sorted = state.events.slice().sort((a, b) => b.date.localeCompare(a.date));
+    const idx = sorted.findIndex((e) => e.id === id) + 1;
+
+    if (els.dialogIndex) {
+      els.dialogIndex.textContent = `${String(idx).padStart(2, '0')} / ${state.events.length}`;
     }
-    if (modalLocation) {
-      modalLocation.textContent = event.city || 'ONLINE';
+    if (els.dialogDate) {
+      els.dialogDate.textContent = formatDateFull(event.date);
     }
-    if (modalTalk) {
-      modalTalk.textContent = event.talk || 'Technical Session';
+    if (els.dialogLocation) {
+      els.dialogLocation.textContent = event.city || 'Online';
     }
-    if (modalEventName) {
-      modalEventName.textContent = event.event || 'Speaking Event';
+    if (els.dialogEvent) {
+      els.dialogEvent.textContent = event.event || 'Speaking Engagement';
+    }
+    if (els.dialogTitle) {
+      els.dialogTitle.textContent = event.talk || 'Technical Session';
+    }
+    if (els.dialogDescription) {
+      els.dialogDescription.textContent = event.description || 'No detailed abstract recorded for this session.';
     }
 
-    if (modalDescription) {
-      if (event.description) {
-        modalDescription.textContent = event.description;
-        modalDescription.parentElement.classList.remove('hidden');
-      } else {
-        modalDescription.parentElement.classList.add('hidden');
-      }
+    // Topics list
+    if (els.dialogTopics) {
+      els.dialogTopics.innerHTML = (event.topics || []).map((t) => `
+        <span class="dialog-topic">#${escapeHtml(t)}</span>
+      `).join('');
     }
 
-    if (modalTopics && modalTopicsBlock) {
-      modalTopics.innerHTML = '';
-      if (Array.isArray(event.topics) && event.topics.length > 0) {
-        modalTopicsBlock.classList.remove('hidden');
-        event.topics.forEach((t) => {
-          const tag = document.createElement('span');
-          tag.className = 'modal-topic-tag';
-          tag.textContent = `#${t}`;
-          modalTopics.appendChild(tag);
-        });
-      } else {
-        modalTopicsBlock.classList.add('hidden');
-      }
-    }
-
-    // Resources
-    if (modalResources && modalResourcesBlock) {
-      modalResources.innerHTML = '';
+    // Resources list
+    if (els.dialogResources && els.dialogResourcesBlock) {
       const links = [];
       if (event.slidesUrl) links.push({ label: 'Slides Deck', url: event.slidesUrl });
       if (event.recordingUrl) links.push({ label: 'Video Recording', url: event.recordingUrl });
@@ -693,36 +1114,38 @@
       if (event.linkedinUrl) links.push({ label: 'LinkedIn Post', url: event.linkedinUrl });
 
       if (links.length > 0) {
-        modalResourcesBlock.classList.remove('hidden');
-        links.forEach((l) => {
-          const a = document.createElement('a');
-          a.className = 'modal-resource-link';
-          a.href = l.url;
-          a.target = '_blank';
-          a.rel = 'noopener noreferrer';
-          a.innerHTML = `<span>${escapeHtml(l.label)}</span><span aria-hidden="true">↗</span>`;
-          modalResources.appendChild(a);
-        });
+        els.dialogResourcesBlock.classList.remove('hidden');
+        els.dialogResources.innerHTML = links.map((l) => `
+          <a class="dialog-resource-link" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer">
+            <span>${escapeHtml(l.label)}</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        `).join('');
       } else {
-        modalResourcesBlock.classList.add('hidden');
+        els.dialogResourcesBlock.classList.add('hidden');
       }
     }
 
     renderModalGallery(event);
 
+    // Deep link hash update
     if (history.pushState) {
       history.pushState(null, '', `#${encodeURIComponent(event.id)}`);
     } else {
       window.location.hash = `#${encodeURIComponent(event.id)}`;
     }
 
-    if (!eventModal.open) {
-      eventModal.showModal();
+    if (typeof els.dialog.showModal === 'function') {
+      if (!els.dialog.open) els.dialog.showModal();
+    } else {
+      els.dialog.setAttribute('open', '');
     }
 
-    if (modalCloseBtn) {
-      modalCloseBtn.focus();
+    if (els.dialogClose) {
+      els.dialogClose.focus();
     }
+
+    drawConstellationOnly(state.positions);
   }
 
   function renderModalGallery(event) {
@@ -730,103 +1153,106 @@
     const total = photos.length;
 
     if (total <= 1) {
-      if (galleryNavRow) galleryNavRow.style.display = 'none';
-      if (galleryThumbnails) galleryThumbnails.style.display = 'none';
+      if (els.galleryNavRow) els.galleryNavRow.classList.add('hidden');
+      if (els.galleryThumbnails) els.galleryThumbnails.classList.add('hidden');
     } else {
-      if (galleryNavRow) galleryNavRow.style.display = 'flex';
-      if (galleryThumbnails) galleryThumbnails.style.display = 'flex';
+      if (els.galleryNavRow) els.galleryNavRow.classList.remove('hidden');
+      if (els.galleryThumbnails) els.galleryThumbnails.classList.remove('hidden');
     }
 
-    if (galleryThumbnails && total > 1) {
-      galleryThumbnails.innerHTML = '';
-      photos.forEach((url, idx) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `gallery-thumb-btn ${idx === activePhotoIndex ? 'active' : ''}`;
-        btn.setAttribute('aria-label', `Photo ${idx + 1}`);
+    if (els.galleryThumbnails && total > 1) {
+      els.galleryThumbnails.innerHTML = photos.map((url, i) => `
+        <button type="button" class="gallery-thumb-btn ${i === state.activePhotoIndex ? 'active' : ''}" data-index="${i}" aria-label="Photograph ${i + 1}">
+          <img class="gallery-thumb-img" src="${escapeHtml(url)}" alt="Thumbnail ${i + 1}" loading="lazy">
+        </button>
+      `).join('');
 
-        const img = document.createElement('img');
-        img.className = 'gallery-thumb-img';
-        img.src = url;
-        img.alt = `Thumbnail ${idx + 1}`;
-        img.loading = 'lazy';
-        img.addEventListener('error', () => {
-          btn.style.display = 'none';
-        });
-
-        btn.appendChild(img);
-        btn.addEventListener('click', () => {
-          setGalleryPhoto(idx);
-        });
-        galleryThumbnails.appendChild(btn);
+      const thumbBtns = els.galleryThumbnails.querySelectorAll('.gallery-thumb-btn');
+      thumbBtns.forEach((tb) => {
+        tb.onclick = () => {
+          setGalleryPhoto(parseInt(tb.dataset.index, 10));
+        };
       });
     }
 
-    updateGalleryStage();
+    updateGalleryStage(event);
   }
 
-  function updateGalleryStage() {
-    if (!galleryStage || !activeEvent) return;
-    const photos = Array.isArray(activeEvent.photos) ? activeEvent.photos : [];
+  function updateGalleryStage(event) {
+    if (!els.galleryStage) return;
+    const currentEvent = event || state.events.find((e) => e.id === state.selectedId);
+    if (!currentEvent) return;
+
+    const photos = Array.isArray(currentEvent.photos) ? currentEvent.photos : [];
     const total = photos.length;
 
-    galleryStage.innerHTML = '';
+    els.galleryStage.innerHTML = '';
 
     if (total === 0) {
-      const p = document.createElement('div');
-      p.className = 'gallery-pending';
-      p.textContent = 'Photographs pending archival filing.';
-      galleryStage.appendChild(p);
-      if (galleryCounter) galleryCounter.textContent = '0 / 0';
+      // Authentic Archival Dossier State (Phase 10 requirement)
+      if (els.galleryCounter) els.galleryCounter.textContent = '0 / 0';
+      els.galleryStage.innerHTML = `
+        <div class="gallery-archival-card">
+          <div class="archival-icon-badge" aria-hidden="true">🏛️</div>
+          <span class="archival-stamp-text">ARCHIVAL RECORD FILED</span>
+          <p class="archival-notice">
+            Photographic media pending verified upload. This talk record is indexed and preserved in the speaking archive.
+          </p>
+        </div>
+      `;
       return;
     }
 
-    const currentUrl = photos[activePhotoIndex];
+    if (els.galleryCounter) {
+      els.galleryCounter.textContent = `${state.activePhotoIndex + 1} / ${total}`;
+    }
+
+    const currentUrl = photos[state.activePhotoIndex];
     const img = document.createElement('img');
     img.className = 'gallery-img';
     img.src = currentUrl;
-    img.alt = `${activeEvent.event} — Photo ${activePhotoIndex + 1}`;
+    img.alt = `${currentEvent.talk} at ${currentEvent.event} — photograph ${state.activePhotoIndex + 1}`;
+    img.loading = 'lazy';
 
     img.addEventListener('error', () => {
-      galleryStage.innerHTML = `
-        <div class="gallery-pending">
-          ${escapeHtml(activeEvent.event)}
+      els.galleryStage.innerHTML = `
+        <div class="gallery-archival-card">
+          <span class="archival-stamp-text">PHOTOGRAPH ARCHIVED</span>
+          <p class="archival-notice">${escapeHtml(currentEvent.event)}</p>
         </div>
       `;
     });
 
-    galleryStage.appendChild(img);
+    els.galleryStage.appendChild(img);
 
-    if (galleryCounter) {
-      galleryCounter.textContent = `${activePhotoIndex + 1} / ${total}`;
-    }
+    if (els.galleryPrevBtn) els.galleryPrevBtn.disabled = state.activePhotoIndex === 0;
+    if (els.galleryNextBtn) els.galleryNextBtn.disabled = state.activePhotoIndex === total - 1;
 
-    if (galleryPrevBtn) galleryPrevBtn.disabled = activePhotoIndex === 0;
-    if (galleryNextBtn) galleryNextBtn.disabled = activePhotoIndex === total - 1;
-
-    if (galleryThumbnails) {
-      const btns = galleryThumbnails.querySelectorAll('.gallery-thumb-btn');
-      btns.forEach((b, i) => {
-        b.classList.toggle('active', i === activePhotoIndex);
+    if (els.galleryThumbnails) {
+      const thumbs = els.galleryThumbnails.querySelectorAll('.gallery-thumb-btn');
+      thumbs.forEach((t, i) => {
+        t.classList.toggle('active', i === state.activePhotoIndex);
       });
     }
   }
 
   function setGalleryPhoto(idx) {
-    if (!activeEvent) return;
-    const photos = Array.isArray(activeEvent.photos) ? activeEvent.photos : [];
+    const event = state.events.find((e) => e.id === state.selectedId);
+    if (!event) return;
+    const photos = Array.isArray(event.photos) ? event.photos : [];
     if (idx >= 0 && idx < photos.length) {
-      activePhotoIndex = idx;
-      updateGalleryStage();
+      state.activePhotoIndex = idx;
+      updateGalleryStage(event);
     }
   }
 
-  function closeEventModal() {
-    if (eventModal && eventModal.open) {
-      eventModal.close();
+  function closeEvent() {
+    if (els.dialog && els.dialog.open) {
+      els.dialog.close();
     }
-    activeEvent = null;
+    state.selectedId = null;
 
+    // Clean hash from URL
     if (window.location.hash) {
       if (history.pushState) {
         history.pushState('', document.title, window.location.pathname + window.location.search);
@@ -835,104 +1261,170 @@
       }
     }
 
-    if (previousFocusedElement && typeof previousFocusedElement.focus === 'function') {
-      previousFocusedElement.focus();
+    if (state.previousFocusedElement && typeof state.previousFocusedElement.focus === 'function') {
+      state.previousFocusedElement.focus();
+      state.previousFocusedElement = null;
     }
+
+    drawConstellationOnly(state.positions);
   }
 
-  function handleInitialRoute() {
+  function handleRouteFromHash() {
     const rawHash = window.location.hash.replace(/^#/, '').trim();
-    if (!rawHash) return;
+    if (!rawHash) {
+      if (els.dialog && els.dialog.open) {
+        closeEvent();
+      }
+      return;
+    }
 
     const eventId = decodeURIComponent(rawHash);
-    const target = allEvents.find((e) => e.id === eventId);
+    const target = state.events.find((e) => e.id === eventId);
     if (target) {
-      openEventDetails(target);
+      openEvent(target.id);
     }
   }
 
   // ==========================================================================
-  // Event Listeners Registration
+  // Initialization & Event Wiring
   // ==========================================================================
-  function setupEventListeners() {
-    if (modalCloseBtn) {
-      modalCloseBtn.addEventListener('click', closeEventModal);
-    }
-
-    if (galleryPrevBtn) {
-      galleryPrevBtn.addEventListener('click', () => {
-        setGalleryPhoto(activePhotoIndex - 1);
-      });
-    }
-
-    if (galleryNextBtn) {
-      galleryNextBtn.addEventListener('click', () => {
-        setGalleryPhoto(activePhotoIndex + 1);
-      });
-    }
-
-    window.addEventListener('keydown', (e) => {
-      if (!eventModal || !eventModal.open) return;
-
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        setGalleryPhoto(activePhotoIndex - 1);
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        setGalleryPhoto(activePhotoIndex + 1);
-      } else if (e.key === 'Escape') {
-        closeEventModal();
-      }
-    });
-
-    window.addEventListener('hashchange', () => {
-      const rawHash = window.location.hash.replace(/^#/, '').trim();
-      if (!rawHash) {
-        if (eventModal && eventModal.open) {
-          eventModal.close();
-          activeEvent = null;
-        }
-      } else {
-        const eventId = decodeURIComponent(rawHash);
-        if (!activeEvent || activeEvent.id !== eventId) {
-          const target = allEvents.find((e) => e.id === eventId);
-          if (target) {
-            openEventDetails(target);
+  function setupGlobalListeners() {
+    // Search input with debounce
+    if (els.search) {
+      let debounce = null;
+      els.search.addEventListener('input', (e) => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+          state.query = e.target.value.trim();
+          if (els.clearSearch) {
+            els.clearSearch.classList.toggle('hidden', !state.query);
           }
+          rerender();
+        }, 120);
+      });
+    }
+
+    if (els.clearSearch) {
+      els.clearSearch.addEventListener('click', () => {
+        state.query = '';
+        if (els.search) els.search.value = '';
+        els.clearSearch.classList.add('hidden');
+        rerender();
+        if (els.search) els.search.focus();
+      });
+    }
+
+    if (els.emptyResetBtn) {
+      els.emptyResetBtn.addEventListener('click', clearAllFilters);
+    }
+
+    // Modal dialog controls
+    if (els.dialogClose) {
+      els.dialogClose.addEventListener('click', closeEvent);
+    }
+
+    if (els.galleryPrevBtn) {
+      els.galleryPrevBtn.addEventListener('click', () => {
+        setGalleryPhoto(state.activePhotoIndex - 1);
+      });
+    }
+
+    if (els.galleryNextBtn) {
+      els.galleryNextBtn.addEventListener('click', () => {
+        setGalleryPhoto(state.activePhotoIndex + 1);
+      });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Shortcut '/' to focus search
+      if (e.key === '/' && document.activeElement !== els.search && (!els.dialog || !els.dialog.open)) {
+        e.preventDefault();
+        if (els.search) {
+          els.search.focus();
+          els.search.select();
+        }
+      }
+
+      // Dialog navigation
+      if (els.dialog && els.dialog.open) {
+        if (e.key === 'Escape') {
+          closeEvent();
+        } else if (e.key === 'ArrowLeft') {
+          setGalleryPhoto(state.activePhotoIndex - 1);
+        } else if (e.key === 'ArrowRight') {
+          setGalleryPhoto(state.activePhotoIndex + 1);
         }
       }
     });
 
-    if (eventModal) {
+    // Hash change for deep links & browser back/forward
+    window.addEventListener('hashchange', handleRouteFromHash);
+
+    // Responsive Canvas Resize
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        drawConstellation();
+      }, 100);
+    });
+
+    // Light-dismiss dialog fallback (for browsers without native closedby support)
+    if (els.dialog) {
       if (!('closedBy' in HTMLDialogElement.prototype)) {
-        eventModal.addEventListener('click', (event) => {
-          if (event.target !== eventModal) return;
-          const rect = eventModal.getBoundingClientRect();
-          const isDialogContent =
+        els.dialog.addEventListener('click', (event) => {
+          if (event.target !== els.dialog) return;
+          const rect = els.dialog.getBoundingClientRect();
+          const isDialogContent = (
             rect.top <= event.clientY &&
             event.clientY <= rect.top + rect.height &&
             rect.left <= event.clientX &&
-            event.clientX <= rect.left + rect.width;
+            event.clientX <= rect.left + rect.width
+          );
           if (isDialogContent) return;
-          closeEventModal();
+          closeEvent();
         });
       }
 
-      eventModal.addEventListener('close', () => {
-        if (window.location.hash) {
-          if (history.pushState) {
-            history.pushState('', document.title, window.location.pathname + window.location.search);
-          } else {
-            window.location.hash = '';
-          }
+      els.dialog.addEventListener('close', () => {
+        if (state.selectedId !== null) {
+          closeEvent();
         }
-        activeEvent = null;
       });
+    }
+  }
+
+  async function initApplication() {
+    try {
+      const response = await fetch(DATA_URL, { cache: 'no-cache' });
+      if (!response.ok) {
+        throw new Error(`Failed to load ${DATA_URL}: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Data in events.json is not an array');
+      }
+
+      state.events = data;
+
+      updateHeroMetrics();
+      rerender();
+      handleRouteFromHash();
+    } catch (err) {
+      console.error('Speaking Archive Initialization Error:', err);
+      if (els.archiveCount) {
+        els.archiveCount.textContent = 'Error loading archive';
+      }
+      if (els.emptyState) {
+        els.emptyState.classList.remove('hidden');
+      }
     }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    setupEventListeners();
+    setupGlobalListeners();
     initApplication();
   });
 })();
