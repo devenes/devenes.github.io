@@ -45,10 +45,10 @@ The website is architected around the **Technical Constellation** concept:
 
 - **Year Focus**: Select any year (`ALL YEARS`, `2026`, `2025`, `2024`, `2023`) to isolate talks delivered in that period.
 - **Topic Illuminations**: Select or hover over any topic chip (e.g. `Kubernetes`, `AI Agents`, `Google Cloud`, `AI Infrastructure`) to trace its technical thread across years.
-- **Node Context**: Hovering or focusing on any node in the constellation illuminates connected talks sharing common technical topics and reveals talk metadata in a non-clipping tooltip.
+- **Node Context**: Hovering, focusing, or tapping on any node in the constellation illuminates connected talks sharing common technical topics and reveals the talk title, conference name, and date directly at the node.
 - **Search**: Type in the search box (or press `/` from anywhere on the page) to filter talks across titles, events, cities, descriptions, and topics.
-- **Event Dossier Dialog**: Click or press `Enter`/`Space` on any talk (in the constellation or archive ledger) to open an accessible modal dialog. Deep-links (`#<event-id>`) are automatically shareable and support browser back/forward history.
-- **Geographic Layer**: The vector map projection and city roster highlight international speaking reach and filter the archive to talks delivered in that city.
+- **Event Dossier Dialog**: Click or press `Enter`/`Space` on any talk (in the constellation, city inspector, or archive ledger) to open an accessible modal dialog. Deep-links (`#<event-id>`) are automatically shareable and support browser back/forward history.
+- **Geographic Layer**: The vector map projection and city roster highlight international speaking reach. Selecting any city marker or location pill highlights the community with an active pulse beacon and opens an in-place talks inspector without jumping away from the map.
 
 ---
 

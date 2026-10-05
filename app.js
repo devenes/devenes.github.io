@@ -83,6 +83,7 @@
     mapTooltip: document.getElementById('map-tooltip'),
     mapViewContainer: document.getElementById('map-view-container'),
     cityRoster: document.getElementById('city-roster'),
+    cityInspector: document.getElementById('city-inspector'),
     // Modal Dialog
     dialog: document.getElementById('event-dialog'),
     dialogClose: document.getElementById('dialog-close'),
@@ -286,29 +287,28 @@
     if (posMap.size === 0) return;
 
     // Draw Subtle Year Grid Guidelines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
 
     const years = Array.from(new Set(state.events.map(yearOf))).sort();
-    years.forEach((yr, idx) => {
+    years.forEach((yr) => {
       const yrEvents = state.events.filter((e) => yearOf(e) === yr);
       if (yrEvents.length > 0 && posMap.has(yrEvents[0].id)) {
         const xPos = posMap.get(yrEvents[0].id).x;
         ctx.beginPath();
         ctx.setLineDash([4, 6]);
-        ctx.moveTo(xPos, 36);
-        ctx.lineTo(xPos, height - 36);
+        ctx.moveTo(xPos, 28);
+        ctx.lineTo(xPos, height - 32);
         ctx.stroke();
         ctx.setLineDash([]);
       }
     });
 
-    // Determine Topic to highlight (hovered topic or active topic)
+    // Topic Connections
     const activeHighlightTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
     const hoveredNode = state.hoveredNodeId ? state.events.find((e) => e.id === state.hoveredNodeId) : null;
     const hoveredNodeTopics = hoveredNode ? new Set(hoveredNode.topics || []) : null;
 
-    // Draw Topic Threads (Curved Bézier Paths)
     const topicGroups = new Map();
     state.events.forEach((ev) => {
       (ev.topics || []).forEach((top) => {
@@ -324,7 +324,6 @@
       const isTopicActive = activeHighlightTopic === topicName;
       const isTopicConnectedToHoveredNode = hoveredNodeTopics && hoveredNodeTopics.has(topicName);
 
-      // Only draw non-highlighted threads with low opacity, and active ones with vibrant glow
       const sortedInTopic = groupEvents.slice().sort((a, b) => a.date.localeCompare(b.date));
 
       for (let i = 1; i < sortedInTopic.length; i += 1) {
@@ -338,7 +337,6 @@
         const reverseKey = `${e2.id}__${e1.id}`;
 
         if (renderedConnections.has(connectionKey) || renderedConnections.has(reverseKey)) {
-          // If already drawn in dim, but now active, redraw in active
           if (!isTopicActive && !isTopicConnectedToHoveredNode) continue;
         }
 
@@ -350,25 +348,41 @@
         ctx.bezierCurveTo(midX, p1.y, midX, p2.y, p2.x, p2.y);
 
         if (isTopicActive) {
-          ctx.strokeStyle = 'rgba(136, 161, 255, 0.9)';
-          ctx.lineWidth = 2;
-          ctx.shadowColor = 'rgba(136, 161, 255, 0.6)';
-          ctx.shadowBlur = 8;
+          ctx.strokeStyle = 'rgba(136, 161, 255, 0.95)';
+          ctx.lineWidth = 2.4;
+          ctx.shadowColor = 'rgba(136, 161, 255, 0.8)';
+          ctx.shadowBlur = 10;
           ctx.stroke();
           ctx.shadowBlur = 0;
         } else if (isTopicConnectedToHoveredNode) {
-          ctx.strokeStyle = 'rgba(96, 165, 250, 0.75)';
-          ctx.lineWidth = 1.6;
-          ctx.shadowColor = 'rgba(96, 165, 250, 0.4)';
-          ctx.shadowBlur = 6;
+          ctx.strokeStyle = 'rgba(96, 165, 250, 0.85)';
+          ctx.lineWidth = 1.8;
+          ctx.shadowColor = 'rgba(96, 165, 250, 0.6)';
+          ctx.shadowBlur = 8;
           ctx.stroke();
           ctx.shadowBlur = 0;
         } else if (!activeHighlightTopic && !hoveredNode) {
-          // Ambient constellation connectivity
-          ctx.strokeStyle = 'rgba(68, 77, 94, 0.18)';
-          ctx.lineWidth = 0.8;
+          ctx.strokeStyle = 'rgba(90, 115, 155, 0.22)';
+          ctx.lineWidth = 1;
           ctx.stroke();
         }
+      }
+    });
+
+    // Draw Subtle Node Halos on Canvas for Luminous Depth
+    state.events.forEach((ev) => {
+      const p = posMap.get(ev.id);
+      if (!p) return;
+      const isMatch = matchesEvent(ev);
+      const isSelected = ev.id === state.selectedId;
+      const isHighlighted = (activeHighlightTopic && (ev.topics || []).includes(activeHighlightTopic)) ||
+                            (hoveredNodeTopics && (ev.topics || []).some((t) => hoveredNodeTopics.has(t)));
+
+      if (isMatch && (isHighlighted || isSelected)) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, isSelected ? 8 : 6, 0, Math.PI * 2);
+        ctx.fillStyle = isSelected ? 'rgba(59, 130, 246, 0.35)' : 'rgba(136, 161, 255, 0.25)';
+        ctx.fill();
       }
     });
 
@@ -416,11 +430,19 @@
       const leftPct = (pos.x / width) * 100;
       const topPct = (pos.y / height) * 100;
 
+      // Smart positioning classes to prevent labels from clipping at container edges
+      const flipUp = topPct > 68;
+      const shiftLeft = leftPct < 16;
+      const shiftRight = leftPct > 84;
+
       const classes = [
         'field-node-btn',
         isSelected ? 'selected' : '',
         !isMatch ? 'dim' : '',
-        isHighlighted ? 'highlighted' : ''
+        isHighlighted ? 'highlighted' : '',
+        flipUp ? 'flip-label-up' : '',
+        shiftLeft ? 'shift-label-left' : '',
+        shiftRight ? 'shift-label-right' : ''
       ].filter(Boolean).join(' ');
 
       nodesHtml += `
@@ -431,6 +453,10 @@
           aria-label="${escapeHtml(ev.talk)} — ${escapeHtml(ev.event)} (${escapeHtml(ev.date)})"
           tabindex="0">
           <span class="node-dot" aria-hidden="true"></span>
+          <span class="field-node-label" aria-hidden="true">
+            <span class="node-label-title">${escapeHtml(ev.talk)}</span>
+            <span class="node-label-sub">${escapeHtml(ev.event)} · ${escapeHtml(formatDateShort(ev.date))}</span>
+          </span>
         </button>
       `;
     });
@@ -446,16 +472,21 @@
       const pos = posMap.get(id);
       if (!pos) return;
 
+      const ev = pos.event;
+
       const onEnter = () => {
         state.hoveredNodeId = id;
-        showNodeTooltip(pos);
-        // Redraw canvas to illuminate connections
+        btn.classList.add('preview-active');
+        if (els.fieldStatus) {
+          els.fieldStatus.textContent = `${ev.talk} · ${ev.event} (${ev.city || 'Online'}) · click to inspect`;
+        }
         drawConstellationOnly(posMap);
       };
 
       const onLeave = () => {
         state.hoveredNodeId = null;
-        hideNodeTooltip();
+        btn.classList.remove('preview-active');
+        updateFieldStatus();
         drawConstellationOnly(posMap);
       };
 
@@ -464,7 +495,16 @@
       btn.addEventListener('focus', onEnter);
       btn.addEventListener('blur', onLeave);
 
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        if (isTouch && !btn.classList.contains('preview-active') && !btn.classList.contains('selected')) {
+          e.preventDefault();
+          buttons.forEach((b) => b.classList.remove('preview-active'));
+          btn.classList.add('preview-active');
+          onEnter();
+          return;
+        }
+
         state.previousFocusedElement = btn;
         openEvent(id);
       });
@@ -483,7 +523,7 @@
     ctx.clearRect(0, 0, width, height);
 
     // Subtle guidelines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
     const years = Array.from(new Set(state.events.map(yearOf))).sort();
     years.forEach((yr) => {
@@ -492,8 +532,8 @@
         const xPos = posMap.get(yrEvents[0].id).x;
         ctx.beginPath();
         ctx.setLineDash([4, 6]);
-        ctx.moveTo(xPos, 36);
-        ctx.lineTo(xPos, height - 36);
+        ctx.moveTo(xPos, 28);
+        ctx.lineTo(xPos, height - 32);
         ctx.stroke();
         ctx.setLineDash([]);
       }
@@ -541,24 +581,41 @@
         ctx.bezierCurveTo(midX, p1.y, midX, p2.y, p2.x, p2.y);
 
         if (isTopicActive) {
-          ctx.strokeStyle = 'rgba(136, 161, 255, 0.9)';
-          ctx.lineWidth = 2;
-          ctx.shadowColor = 'rgba(136, 161, 255, 0.6)';
-          ctx.shadowBlur = 8;
+          ctx.strokeStyle = 'rgba(136, 161, 255, 0.95)';
+          ctx.lineWidth = 2.4;
+          ctx.shadowColor = 'rgba(136, 161, 255, 0.8)';
+          ctx.shadowBlur = 10;
           ctx.stroke();
           ctx.shadowBlur = 0;
         } else if (isTopicConnectedToHoveredNode) {
-          ctx.strokeStyle = 'rgba(96, 165, 250, 0.8)';
+          ctx.strokeStyle = 'rgba(96, 165, 250, 0.85)';
           ctx.lineWidth = 1.8;
-          ctx.shadowColor = 'rgba(96, 165, 250, 0.5)';
-          ctx.shadowBlur = 6;
+          ctx.shadowColor = 'rgba(96, 165, 250, 0.6)';
+          ctx.shadowBlur = 8;
           ctx.stroke();
           ctx.shadowBlur = 0;
         } else if (!activeHighlightTopic && !hoveredNode) {
-          ctx.strokeStyle = 'rgba(68, 77, 94, 0.18)';
-          ctx.lineWidth = 0.8;
+          ctx.strokeStyle = 'rgba(90, 115, 155, 0.22)';
+          ctx.lineWidth = 1;
           ctx.stroke();
         }
+      }
+    });
+
+    // Halos
+    state.events.forEach((ev) => {
+      const p = posMap.get(ev.id);
+      if (!p) return;
+      const isMatch = matchesEvent(ev);
+      const isSelected = ev.id === state.selectedId;
+      const isHighlighted = (activeHighlightTopic && (ev.topics || []).includes(activeHighlightTopic)) ||
+                            (hoveredNodeTopics && (ev.topics || []).some((t) => hoveredNodeTopics.has(t)));
+
+      if (isMatch && (isHighlighted || isSelected)) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, isSelected ? 8 : 6, 0, Math.PI * 2);
+        ctx.fillStyle = isSelected ? 'rgba(59, 130, 246, 0.35)' : 'rgba(136, 161, 255, 0.25)';
+        ctx.fill();
       }
     });
 
@@ -584,44 +641,6 @@
       btn.classList.toggle('dim', !isMatch);
       btn.classList.toggle('highlighted', isHighlighted);
     });
-  }
-
-  function showNodeTooltip(pos) {
-    if (!els.nodeTooltip || !els.fieldWrap) return;
-    const event = pos.event;
-    const wrapWidth = els.fieldWrap.clientWidth;
-
-    els.nodeTooltip.innerHTML = `
-      <div class="tooltip-date">${escapeHtml(formatDateShort(event.date))} · ${escapeHtml(event.city || 'Online')}</div>
-      <div class="tooltip-title">${escapeHtml(event.talk)}</div>
-      <div class="tooltip-event">${escapeHtml(event.event)}</div>
-    `;
-
-    // Position tooltip above node, clamped within horizontal bounds
-    const tooltipWidth = 260;
-    let leftPos = pos.x;
-    if (leftPos - tooltipWidth / 2 < 12) {
-      leftPos = 12 + tooltipWidth / 2;
-    } else if (leftPos + tooltipWidth / 2 > wrapWidth - 12) {
-      leftPos = wrapWidth - 12 - tooltipWidth / 2;
-    }
-
-    let topPos = pos.y - 18;
-    if (topPos < 70) {
-      // If near top, flip below
-      topPos = pos.y + 45;
-    }
-
-    els.nodeTooltip.style.left = `${leftPos}px`;
-    els.nodeTooltip.style.top = `${topPos}px`;
-    els.nodeTooltip.style.transform = 'translate(-50%, -100%)';
-    els.nodeTooltip.classList.add('visible');
-  }
-
-  function hideNodeTooltip() {
-    if (els.nodeTooltip) {
-      els.nodeTooltip.classList.remove('visible');
-    }
   }
 
   // ==========================================================================
@@ -914,38 +933,50 @@
         if (!coords) return;
 
         const proj = projectCoordinates(coords.lat, coords.lon);
+        const isSelected = state.city === cityName;
+        const isDim = state.city !== 'all' && !isSelected;
+
         const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        group.setAttribute('class', 'map-marker-item');
+        const groupClasses = ['map-marker-item', isSelected ? 'selected' : '', isDim ? 'dim' : ''].filter(Boolean).join(' ');
+        group.setAttribute('class', groupClasses);
         group.setAttribute('tabindex', '0');
         group.setAttribute('role', 'button');
         group.setAttribute('aria-label', `${cityName}: ${count} ${count === 1 ? 'talk' : 'talks'}`);
+        group.setAttribute('data-city', cityName);
+
+        // Invisible large hit circle for easy touch/mouse targets
+        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        hit.setAttribute('class', 'marker-hit');
+        hit.setAttribute('cx', proj.x.toString());
+        hit.setAttribute('cy', proj.y.toString());
+        hit.setAttribute('r', '14');
 
         const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         pulse.setAttribute('class', 'marker-pulse');
         pulse.setAttribute('cx', proj.x.toString());
         pulse.setAttribute('cy', proj.y.toString());
-        pulse.setAttribute('r', '8');
+        pulse.setAttribute('r', isSelected ? '14' : '7');
 
         const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         point.setAttribute('class', 'marker-point');
         point.setAttribute('cx', proj.x.toString());
         point.setAttribute('cy', proj.y.toString());
-        point.setAttribute('r', '3.5');
+        point.setAttribute('r', isSelected ? '5.5' : '3.5');
 
+        group.appendChild(hit);
         group.appendChild(pulse);
         group.appendChild(point);
 
         const showTip = () => {
           if (!els.mapTooltip || !els.mapViewContainer) return;
-          const svg = document.getElementById('world-map-svg');
-          if (!svg) return;
-          const rect = svg.getBoundingClientRect();
-          const scaleX = rect.width / 1000;
-          const scaleY = rect.height / 500;
+          const groupRect = group.getBoundingClientRect();
+          const containerRect = els.mapViewContainer.getBoundingClientRect();
+          const tipX = groupRect.left - containerRect.left + groupRect.width / 2;
+          const tipY = groupRect.top - containerRect.top - 8;
 
           els.mapTooltip.textContent = `${cityName} — ${count} ${count === 1 ? 'talk' : 'talks'}`;
-          els.mapTooltip.style.left = `${proj.x * scaleX}px`;
-          els.mapTooltip.style.top = `${proj.y * scaleY}px`;
+          els.mapTooltip.style.left = `${tipX}px`;
+          els.mapTooltip.style.top = `${tipY}px`;
           els.mapTooltip.classList.add('visible');
         };
 
@@ -958,16 +989,18 @@
         group.addEventListener('focus', showTip);
         group.addEventListener('blur', hideTip);
 
-        group.addEventListener('click', () => {
-          setCity(cityName);
-          scrollToArchive();
-        });
+        const toggleCity = () => {
+          setCity(state.city === cityName ? 'all' : cityName);
+          if (els.cityInspector && state.city !== 'all') {
+            els.cityInspector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        };
 
+        group.addEventListener('click', toggleCity);
         group.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            setCity(cityName);
-            scrollToArchive();
+            toggleCity();
           }
         });
 
@@ -988,10 +1021,91 @@
         const c = p.getAttribute('data-city');
         p.onclick = () => {
           setCity(state.city === c ? 'all' : c);
-          scrollToArchive();
+          if (els.cityInspector && state.city !== 'all') {
+            els.cityInspector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
         };
       });
     }
+
+    renderCityInspector();
+  }
+
+  function renderCityInspector() {
+    if (!els.cityInspector) return;
+
+    if (state.city === 'all') {
+      els.cityInspector.className = 'city-inspector empty';
+      els.cityInspector.innerHTML = `
+        <p class="city-inspector-hint">
+          Select any city marker on the map above or click a location tag to inspect talks delivered in that community.
+        </p>
+      `;
+      return;
+    }
+
+    const cityName = state.city;
+    const cityTalks = state.events
+      .filter((e) => (e.city || 'Online') === cityName)
+      .slice()
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    els.cityInspector.className = 'city-inspector';
+    els.cityInspector.innerHTML = `
+      <div class="city-inspector-header">
+        <div>
+          <span class="city-badge">LOCATION ARCHIVE</span>
+          <h3 class="city-name">${escapeHtml(cityName)}</h3>
+          <span class="city-count">${cityTalks.length} ${cityTalks.length === 1 ? 'speaking engagement' : 'speaking engagements'} recorded</span>
+        </div>
+        <div class="city-inspector-actions">
+          <a href="#archive" class="city-action-link" id="city-jump-archive">View in Archive Ledger ↓</a>
+          <button type="button" class="city-reset-btn" id="city-reset-btn">Reset City Filter ✕</button>
+        </div>
+      </div>
+      <div class="city-talks-grid">
+        ${cityTalks.map((talk) => `
+          <article class="city-talk-card">
+            <div class="city-talk-top">
+              <span class="city-talk-date">${escapeHtml(formatDateShort(talk.date))}</span>
+              <span class="city-talk-event">${escapeHtml(talk.event)}</span>
+            </div>
+            <h4 class="city-talk-title">${escapeHtml(talk.talk)}</h4>
+            <p class="city-talk-desc">${escapeHtml(talk.description || 'Verified conference session.')}</p>
+            <div class="city-talk-bottom">
+              <div class="city-talk-topics">
+                ${(talk.topics || []).slice(0, 3).map((t) => `<span class="city-topic-tag">#${escapeHtml(t)}</span>`).join('')}
+              </div>
+              <button type="button" class="city-talk-open-btn" data-id="${escapeHtml(talk.id)}" aria-label="Open dossier for ${escapeHtml(talk.talk)}">
+                Open Talk Dossier ↗
+              </button>
+            </div>
+          </article>
+        `).join('')}
+      </div>
+    `;
+
+    const resetBtn = els.cityInspector.querySelector('#city-reset-btn');
+    if (resetBtn) {
+      resetBtn.onclick = () => setCity('all');
+    }
+
+    const jumpLink = els.cityInspector.querySelector('#city-jump-archive');
+    if (jumpLink) {
+      jumpLink.onclick = (e) => {
+        e.preventDefault();
+        scrollToArchive();
+      };
+    }
+
+    const openBtns = els.cityInspector.querySelectorAll('.city-talk-open-btn');
+    openBtns.forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-id');
+        state.previousFocusedElement = btn;
+        openEvent(id);
+      };
+    });
   }
 
   function scrollToArchive() {
@@ -1361,14 +1475,23 @@
     // Hash change for deep links & browser back/forward
     window.addEventListener('hashchange', handleRouteFromHash);
 
-    // Responsive Canvas Resize
+    // Responsive Canvas Resize with ResizeObserver
     let resizeTimer = null;
-    window.addEventListener('resize', () => {
+    const handleResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
         drawConstellation();
-      }, 100);
-    });
+      }, 80);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    if (window.ResizeObserver && els.fieldWrap) {
+      const ro = new ResizeObserver(() => {
+        handleResize();
+      });
+      ro.observe(els.fieldWrap);
+    }
 
     // Light-dismiss dialog fallback (for browsers without native closedby support)
     if (els.dialog) {
