@@ -31,6 +31,7 @@
 
       <nav class="nav-links" aria-label="Primary navigation">
         <a href="#river" class="nav-link">River</a>
+        <a href="#journey" class="nav-link">Journey</a>
         <a href="#archive" class="nav-link">Archive</a>
         <a href="#threads" class="nav-link">Threads</a>
         <a href="#reach" class="nav-link">Reach</a>
@@ -171,7 +172,123 @@
       </div>
     </section>
 
-    <!-- 02 FULL ACCESSIBLE ARCHIVE LEDGER -->
+    <!-- 02 SPEAKING JOURNEY (GLOBAL SPEAKING SIGNAL) -->
+    <section class="journey-section section-dark" id="journey" aria-labelledby="journey-title">
+      <div class="section-container">
+        <div class="section-header dark">
+          <div class="section-title-col">
+            <p class="section-eyebrow">GLOBAL SPEAKING SIGNAL</p>
+            <h2 id="journey-title" class="section-title">
+              The speaking journey, <em class="accent-text">unfolding.</em>
+            </h2>
+          </div>
+          <p class="section-description">
+            A cinematic timeline of speaking locations in chronological sequence. Watch conversations travel across Eurasia, the Mediterranean, Middle East, and Central Asia from 2023 to 2026.
+          </p>
+        </div>
+
+        <!-- Journey Stage Container -->
+        <div class="journey-stage-wrap" id="journey-stage-wrap" role="region" aria-label="Speaking Journey Cinematic World Visualization">
+          
+          <!-- Top Journey Meta & Playback Controls Bar -->
+          <div class="journey-topbar">
+            <div class="journey-status-indicator">
+              <span class="journey-pulse-dot" aria-hidden="true"></span>
+              <span class="journey-status-text" id="journey-status-text">CHRONOLOGICAL PLAYBACK</span>
+              <span class="journey-counter" id="journey-counter">STOP 01 / 43</span>
+            </div>
+
+            <div class="journey-controls" role="toolbar" aria-label="Timeline playback controls">
+              <button type="button" class="journey-ctrl-btn" id="journey-prev-btn" aria-label="Previous speaking stop">
+                <span aria-hidden="true">←</span> PREV
+              </button>
+              <button type="button" class="journey-ctrl-btn" id="journey-play-btn" aria-label="Pause or play timeline playback">
+                <span class="journey-play-icon" id="journey-play-icon" aria-hidden="true">⏸</span>
+                <span class="journey-play-label" id="journey-play-label">PAUSE</span>
+              </button>
+              <button type="button" class="journey-ctrl-btn" id="journey-next-btn" aria-label="Next speaking stop">
+                NEXT <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Visual Viewport: Dark Globe & Editorial Card Stage -->
+          <div class="journey-viewport" id="journey-viewport">
+            <svg id="journey-svg" class="journey-svg" viewBox="0 0 1100 580" role="img" aria-label="Interactive dark globe showing chronological speaking journey">
+              <defs id="journey-defs">
+                <!-- Gradients and clip paths rendered dynamically -->
+              </defs>
+              <g id="journey-globe-group" class="journey-globe-group">
+                <circle id="journey-space-bg" class="journey-space-bg" cx="660" cy="290" r="230"></circle>
+                <path id="journey-sphere" class="journey-sphere"></path>
+                <path id="journey-graticule" class="journey-graticule"></path>
+                <path id="journey-land" class="journey-land"></path>
+                <g id="journey-routes-group" class="journey-routes-group"></g>
+                <path id="journey-active-arc" class="journey-active-arc"></path>
+                <g id="journey-markers-group" class="journey-markers-group"></g>
+                <g id="journey-active-marker-group" class="journey-active-marker-group"></g>
+                <circle id="journey-atmosphere" class="journey-atmosphere" cx="660" cy="290" r="230"></circle>
+                <g id="journey-broadcast-group" class="journey-broadcast-group hidden"></g>
+              </g>
+            </svg>
+
+            <!-- Online Interlude Overlay -->
+            <div class="journey-online-overlay hidden" id="journey-online-overlay" aria-hidden="true">
+              <div class="online-badge-signal">
+                <span class="online-signal-ring"></span>
+                <span class="online-signal-dot"></span>
+                <span>GLOBAL DIGITAL BROADCAST · ONLINE</span>
+              </div>
+            </div>
+
+            <!-- Editorial Active Stop Card (Docked on Left) -->
+            <div class="journey-active-card" id="journey-active-card" aria-live="polite">
+              <div class="journey-card-top">
+                <span class="journey-card-date" id="journey-card-date">2023 · 14 JUN</span>
+                <span class="journey-card-coords" id="journey-card-coords">41.01° N · 28.98° E</span>
+              </div>
+
+              <div class="journey-card-location" id="journey-card-location">ISTANBUL, TÜRKİYE</div>
+
+              <h3 class="journey-card-title" id="journey-card-title">
+                Unraveling the Mystery Behind Kubernetes Scheduling
+              </h3>
+
+              <div class="journey-card-event" id="journey-card-event">
+                Cloud Native Community Istanbul
+              </div>
+
+              <p class="journey-card-desc" id="journey-card-desc">
+                Deep dive into kube-scheduler internals, scoring algorithms, and custom priority plugins.
+              </p>
+
+              <div class="journey-card-footer">
+                <div class="journey-card-topics" id="journey-card-topics">
+                  <!-- Dynamic topic pills -->
+                </div>
+                <button type="button" class="journey-dossier-btn" id="journey-dossier-btn" aria-label="View talk abstract and photographs">
+                  <span>EXPLORE DOSSIER</span>
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Chronological Timeline Bar & Scrubber -->
+          <div class="journey-timeline-bar" id="journey-timeline-bar">
+            <div class="journey-timeline-info">
+              <span class="journey-hop-distance" id="journey-hop-distance">+0 km from origin</span>
+              <span class="journey-timeline-hint">Hover to pause · Select any stop to inspect</span>
+            </div>
+            <div class="journey-scrubber" id="journey-scrubber" role="tablist" aria-label="Chronological speaking stops">
+              <!-- Dynamically populated 43 stop notches -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 FULL ACCESSIBLE ARCHIVE LEDGER -->
     <section class="archive-section section-light" id="archive" aria-labelledby="archive-title">
       <div class="section-container">
         <div class="section-header light">
@@ -417,6 +534,7 @@
     </div>
   </dialog>
 
+  <script src="assets/vendor/d3.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

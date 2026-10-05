@@ -1047,7 +1047,532 @@ button {
 }
 
 /* ==========================================================================
-   02 Full Accessible Archive Ledger
+   02 Speaking Journey (Global Speaking Signal)
+   ========================================================================== */
+.journey-section {
+  position: relative;
+  padding: 80px 0 90px;
+  border-bottom: 1px solid var(--dark-border);
+  overflow: hidden;
+}
+
+.journey-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 75% 45%, rgba(37, 99, 235, 0.08), transparent 45%),
+    radial-gradient(circle at 25% 75%, rgba(14, 165, 233, 0.05), transparent 40%);
+  pointer-events: none;
+}
+
+.journey-stage-wrap {
+  position: relative;
+  background: #080a0f;
+  border: 1px solid var(--dark-border);
+  border-radius: 4px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.journey-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  background: rgba(13, 16, 23, 0.88);
+  border-bottom: 1px solid var(--dark-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.journey-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.journey-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b82f6;
+  box-shadow: 0 0 8px #3b82f6;
+  animation: journey-pulse 2s infinite ease-in-out;
+}
+
+@keyframes journey-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.75); }
+}
+
+.journey-status-text {
+  color: var(--dark-text);
+  font-weight: 700;
+}
+
+.journey-counter {
+  color: var(--dark-muted);
+  padding-left: 8px;
+  border-left: 1px solid var(--dark-border);
+}
+
+.journey-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.journey-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.journey-ctrl-btn:hover, .journey-ctrl-btn:focus-visible {
+  border-color: var(--accent);
+  background: rgba(37, 99, 235, 0.15);
+  color: #ffffff;
+}
+
+.journey-play-icon {
+  font-size: 10px;
+}
+
+/* Viewport & SVG Elements */
+.journey-viewport {
+  position: relative;
+  width: 100%;
+  min-height: 580px;
+  display: flex;
+  align-items: center;
+  background: radial-gradient(ellipse at 65% 50%, #0d121c 0%, #080a0f 70%);
+  touch-action: pan-y;
+}
+
+.journey-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.journey-space-bg {
+  fill: #0c1017;
+  stroke: rgba(59, 130, 246, 0.15);
+  stroke-width: 1;
+}
+
+.journey-sphere {
+  fill: #0c1017;
+  stroke: #1e2638;
+  stroke-width: 1.5;
+}
+
+.journey-graticule {
+  fill: none;
+  stroke: #151b27;
+  stroke-width: 0.6;
+  stroke-dasharray: 2, 4;
+}
+
+.journey-land {
+  fill: #19202c;
+  stroke: #252f42;
+  stroke-width: 0.75;
+  transition: opacity 0.5s ease;
+}
+
+.journey-route-trail {
+  fill: none;
+  stroke: #2b3952;
+  stroke-width: 1.2;
+  stroke-dasharray: 3, 4;
+  opacity: 0.65;
+}
+
+.journey-active-arc {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.65));
+}
+
+.journey-hist-dot {
+  fill: #475569;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.journey-hist-dot:hover {
+  fill: #93c5fd;
+  opacity: 1;
+}
+
+.journey-marker-pulse {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 1.5;
+  animation: marker-pulse-once 1.2s ease-out forwards;
+}
+
+@keyframes marker-pulse-once {
+  0% { r: 5; opacity: 1; stroke-width: 2.5; }
+  100% { r: 26; opacity: 0; stroke-width: 0.5; }
+}
+
+.journey-marker-dot {
+  fill: #3b82f6;
+  stroke: #ffffff;
+  stroke-width: 2;
+  cursor: pointer;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.9));
+}
+
+.journey-leader-line {
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 2, 2;
+}
+
+.journey-marker-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  fill: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.journey-marker-coords {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: #94a3b8;
+}
+
+.journey-atmosphere {
+  fill: url(#globe-shading);
+  stroke: rgba(59, 130, 246, 0.24);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+.journey-orbit-ring {
+  fill: none;
+  stroke: #10b981;
+  opacity: 0.4;
+  animation: orbit-expand 2.5s infinite ease-out;
+}
+
+@keyframes orbit-expand {
+  0% { r: 230; opacity: 0.6; stroke-width: 2; }
+  100% { r: 275; opacity: 0; stroke-width: 0.5; }
+}
+
+/* Editorial Active Stop Card */
+.journey-active-card {
+  position: absolute;
+  left: 36px;
+  top: 36px;
+  bottom: 36px;
+  width: min(390px, calc(100% - 72px));
+  background: rgba(10, 13, 20, 0.9);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6);
+  z-index: 5;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.journey-active-card.fading {
+  opacity: 0.35;
+  transform: translateY(4px);
+}
+
+.journey-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dark-muted);
+  margin-bottom: 12px;
+}
+
+.journey-card-date {
+  color: #93c5fd;
+  font-weight: 800;
+}
+
+.journey-card-coords {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.journey-card-location {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.journey-card-location::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3b82f6;
+  box-shadow: 0 0 6px #3b82f6;
+  flex-shrink: 0;
+}
+
+.journey-card-location.online-loc::before {
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.journey-card-title {
+  font-family: var(--font-sans);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 10px;
+  text-wrap: balance;
+}
+
+.journey-card-event {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 12px;
+}
+
+.journey-card-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #94a3b8;
+  margin: 0 0 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.journey-card-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.journey-card-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.journey-card-topic-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.journey-dossier-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.journey-dossier-btn:hover, .journey-dossier-btn:focus-visible {
+  background: #2563eb;
+  border-color: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(37, 99, 235, 0.45);
+}
+
+/* Online Interlude Overlay */
+.journey-online-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.online-badge-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: #a7f3d0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  border-radius: 20px;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.online-signal-ring {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.online-signal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* Bottom Timeline Bar & Scrubber */
+.journey-timeline-bar {
+  background: rgba(13, 16, 23, 0.92);
+  border-top: 1px solid var(--dark-border);
+  padding: 12px 24px 16px;
+  z-index: 10;
+  position: relative;
+}
+
+.journey-timeline-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dark-muted);
+  margin-bottom: 10px;
+  letter-spacing: 0.06em;
+}
+
+.journey-hop-distance {
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+.journey-timeline-hint {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.journey-scrubber {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  height: 22px;
+}
+
+.journey-scrub-tick {
+  flex: 1;
+  min-width: 4px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 0;
+  padding: 0;
+  border-radius: 1px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.journey-scrub-tick:hover, .journey-scrub-tick:focus-visible {
+  background: #60a5fa;
+  height: 16px;
+}
+
+.journey-scrub-tick.active {
+  background: #3b82f6;
+  height: 18px;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
+}
+
+.journey-scrub-tick.visited {
+  background: rgba(59, 130, 246, 0.45);
+}
+
+.journey-scrub-tick.online {
+  background: rgba(16, 185, 129, 0.35);
+}
+
+.journey-scrub-tick.online.active {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
+
+/* ==========================================================================
+   03 Full Accessible Archive Ledger
    ========================================================================== */
 .archive-meta-bar {
   display: flex;
@@ -2374,6 +2899,23 @@ button {
   .dialog-talk-title {
     font-size: 28px;
   }
+
+  .journey-viewport {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .journey-active-card {
+    position: static;
+    width: 100%;
+    margin: 16px;
+    max-width: calc(100% - 32px);
+  }
+
+  .journey-timeline-info {
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -2405,6 +2947,18 @@ button {
   .regional-distribution-bar {
     height: 16px;
   }
+
+  .journey-topbar {
+    padding: 10px 14px;
+  }
+
+  .journey-card-title {
+    font-size: 17px;
+  }
+
+  .journey-timeline-bar {
+    padding: 10px 14px 14px;
+  }
 }
 
 /* ==========================================================================
@@ -2427,6 +2981,22 @@ button {
   }
 
   .river-signal-halo {
+    animation: none !important;
+  }
+
+  .journey-pulse-dot {
+    animation: none !important;
+  }
+
+  .journey-marker-pulse {
+    animation: none !important;
+  }
+
+  .journey-orbit-ring {
+    animation: none !important;
+  }
+
+  .online-signal-ring {
     animation: none !important;
   }
 }

@@ -1,6 +1,9 @@
-# Enes Turan — Technical Speaker Archive & Technical River
+# Enes Turan — Technical Speaker Archive & Data Visualizations
 
-An interactive, data-driven technical speaking archive and animated **Technical River** data visualization for **Enes Turan (@devenes)**, Google Developer Expert and Platform Engineer.
+An interactive, data-driven technical speaking archive featuring two complementary visualizations for **Enes Turan (@devenes)**, Google Developer Expert and Platform Engineer:
+
+1. **The Technical River**: Topic evolution and distribution across cloud, Kubernetes, and AI themes over time.
+2. **The Speaking Journey (Global Speaking Signal)**: A cinematic timeline visualization tracing real speaking voyages chronologically across Eurasia, the Mediterranean, Middle East, and Central Asia.
 
 Live site: [https://devenes.github.io](https://devenes.github.io)
 
@@ -8,15 +11,16 @@ Live site: [https://devenes.github.io](https://devenes.github.io)
 
 ## Architecture & Concept
 
-The website is architected around the **Technical River** data visualization:
+The website couples two specialized data art visualizations sharing a single authoritative data source:
 
 1. **The Technical River**: Visualizes the evolution and distribution of speaking topics over time. Time flows horizontally from 2023 to 2026. Each flowing channel represents a core technical theme (Cloud & Infrastructure, Kubernetes & Platforms, AI/ML & MLOps, GenAI & Autonomous Agents), expanding and converging based on real speaking volume across years.
-2. **Discrete Event Signals**: Individual talks are situated along their respective theme channels as discrete interactive nodes (`●`). Hovering or focusing displays talk metadata, while clicking opens the full speaking dossier dialog.
-3. **"Play History" Mode**: Chronologically animates through 2023 → 2024 → 2025 → 2026 accompanied by contextual editorial commentary explaining the architectural shifts.
-4. **Data-Driven Geographic Reach**: Rather than cartography, a lightweight regional distribution ribbon and cards break down speaking impact across 24 cities and 5 major regions (Türkiye, Central Asia, MENA, Balkans & Caucasus, and Online/Global), with an in-place talks inspector.
-5. **Accessible Chronological Ledger**: Beneath the river sits a semantic, accessible chronological ledger allowing visitors to read, filter, search, and scan talks in detail.
-6. **Data-Driven Architecture**: The entire site is rendered dynamically from [`data/events.json`](data/events.json). Adding an event automatically updates the total talk count, year timeline, river channels, event signals, topic strip, regional distribution, and archive rows without manual markup updates.
-7. **Zero-Dependency Lightweight Core**: Built entirely with pure static HTML, CSS, Vanilla JavaScript, and JSON. No frameworks, build steps, or external dependencies. Deploys cleanly via GitHub Pages and GitHub Actions.
+2. **The Speaking Journey (Global Speaking Signal)**: A cinematic timeline visualization—data visualization, not cartography. Rather than an interactive map dashboard, the camera automatically travels through real speaking locations in chronological order. Utilizes an orthographic globe projection in D3, calculating great-circle spherical geodesics, distance-adaptive camera timing and zoom, calm arrival holds, seamless repeated-city handling, and global online interludes.
+3. **Discrete Event Signals**: Individual talks are situated along their respective theme channels as discrete interactive nodes (`●`). Hovering or focusing displays talk metadata, while clicking opens the full speaking dossier dialog.
+4. **"Play History" Mode**: Chronologically animates through 2023 → 2024 → 2025 → 2026 accompanied by contextual editorial commentary explaining the architectural shifts.
+5. **Data-Driven Geographic Reach**: A lightweight regional distribution ribbon and cards break down speaking impact across 24 cities and 5 major regions (Türkiye, Central Asia, MENA, Balkans & Caucasus, and Online/Global), with an in-place talks inspector.
+6. **Accessible Chronological Ledger**: Beneath the visualizations sits a semantic, accessible chronological ledger allowing visitors to read, filter, search, and scan talks in detail.
+7. **Unified Application State**: All views (River, Journey, Reach, Ledger, Dossier) synchronize from [`data/events.json`](data/events.json). Inspecting a talk from any visualization automatically updates the shared event dossier.
+8. **Zero-Dependency Lightweight Core**: Fully self-contained with local land geometry ([`data/land.json`](data/land.json)) and vendored D3 ([`assets/vendor/d3.min.js`](assets/vendor/d3.min.js)). No third-party API tokens, Mapbox dependencies, or external runtime build steps. Deploys cleanly via GitHub Pages.
 
 ---
 
@@ -25,14 +29,17 @@ The website is architected around the **Technical River** data visualization:
 ```text
 /
 ├── index.html                  # Accessible semantic markup & landmarks
-├── styles.css                  # Editorial & Technical River design system
-├── app.js                      # Technical River SVG engine, filtering & dialog system
+├── styles.css                  # Editorial, Technical River & Speaking Journey design system
+├── app.js                      # River SVG engine, D3 Globe Journey engine & dialog system
 ├── README.md                   # Site documentation & maintenance guide
 │
 ├── data/
-│   └── events.json             # Central authoritative speaking event database (43 talks)
+│   ├── events.json             # Central authoritative speaking event database (43 talks)
+│   └── land.json               # Lightweight self-contained world land geometry (Natural Earth)
 │
 ├── assets/
+│   ├── vendor/
+│   │   └── d3.min.js           # Self-contained D3 library for spherical orthographic projections
 │   ├── profile/                # Headshot & speaker profile assets
 │   ├── events/                 # Event photograph folders (<event-id>/01.jpg, 02.jpg...)
 │   └── icons/                  # SVG icons (links, badges, indicators)

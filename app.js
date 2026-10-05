@@ -93,6 +93,45 @@
   ];
 
   // ==========================================================================
+  // Geographic Coordinates Dictionary (The Speaking Journey)
+  // All 23 physical speaking locations mapped with precision
+  // ==========================================================================
+  const CITY_COORDINATES = {
+    'Dubai, UAE': { lat: 25.2048, lon: 55.2708, label: 'Dubai', country: 'UAE' },
+    'Cairo, Egypt': { lat: 30.0444, lon: 31.2357, label: 'Cairo', country: 'Egypt' },
+    '6th of October City, Egypt': { lat: 29.9870, lon: 30.9416, label: '6th of October City', country: 'Egypt' },
+    'Pristina, Kosovo': { lat: 42.6629, lon: 21.1655, label: 'Pristina', country: 'Kosovo' },
+    'Istanbul, Türkiye': { lat: 41.0082, lon: 28.9784, label: 'Istanbul', country: 'Türkiye' },
+    'Bursa, Türkiye': { lat: 40.1885, lon: 29.0610, label: 'Bursa', country: 'Türkiye' },
+    'Denizli, Türkiye': { lat: 37.7765, lon: 29.0864, label: 'Denizli', country: 'Türkiye' },
+    'Kastamonu, Türkiye': { lat: 41.3887, lon: 33.7827, label: 'Kastamonu', country: 'Türkiye' },
+    'Konya, Türkiye': { lat: 37.8746, lon: 32.4932, label: 'Konya', country: 'Türkiye' },
+    'Düzce, Türkiye': { lat: 40.8438, lon: 31.1565, label: 'Düzce', country: 'Türkiye' },
+    'İzmit, Türkiye': { lat: 40.7654, lon: 29.9408, label: 'İzmit', country: 'Türkiye' },
+    'Almaty, Kazakhstan': { lat: 43.2220, lon: 76.8512, label: 'Almaty', country: 'Kazakhstan' },
+    'Astana, Kazakhstan': { lat: 51.1694, lon: 71.4491, label: 'Astana', country: 'Kazakhstan' },
+    'Pavlodar, Kazakhstan': { lat: 52.2872, lon: 76.9674, label: 'Pavlodar', country: 'Kazakhstan' },
+    'Taldykorgan, Kazakhstan': { lat: 45.0156, lon: 78.3739, label: 'Taldykorgan', country: 'Kazakhstan' },
+    'Tashkent, Uzbekistan': { lat: 41.2995, lon: 69.2401, label: 'Tashkent', country: 'Uzbekistan' },
+    'Kashkadarya, Uzbekistan': { lat: 38.8606, lon: 65.7891, label: 'Kashkadarya', country: 'Uzbekistan' },
+    'Bishkek, Kyrgyzstan': { lat: 42.8746, lon: 74.5698, label: 'Bishkek', country: 'Kyrgyzstan' },
+    'Sousse, Tunisia': { lat: 35.8256, lon: 10.6084, label: 'Sousse', country: 'Tunisia' },
+    'Sarajevo, Bosnia and Herzegovina': { lat: 43.8563, lon: 18.4131, label: 'Sarajevo', country: 'Bosnia and Herzegovina' },
+    'Agadir, Morocco': { lat: 30.4278, lon: -9.5981, label: 'Agadir', country: 'Morocco' },
+    'Baku, Azerbaijan': { lat: 40.4093, lon: 49.8671, label: 'Baku', country: 'Azerbaijan' },
+    'Ulaanbaatar, Mongolia': { lat: 47.8864, lon: 106.9057, label: 'Ulaanbaatar', country: 'Mongolia' }
+  };
+
+  function getCityCoord(city) {
+    if (!city || city === 'Online') return null;
+    if (CITY_COORDINATES[city]) return CITY_COORDINATES[city];
+    for (const [key, val] of Object.entries(CITY_COORDINATES)) {
+      if (city.includes(val.label) || key.includes(city)) return val;
+    }
+    return null;
+  }
+
+  // ==========================================================================
   // Contextual Era Narratives (For Timeline & Play History Mode)
   // ==========================================================================
   const ERA_NARRATIVES = {
@@ -179,6 +218,38 @@
     regionalCardsGrid: document.getElementById('regional-cards-grid'),
     cityRoster: document.getElementById('city-roster'),
     cityInspector: document.getElementById('city-inspector'),
+    // Speaking Journey Elements
+    journeyStageWrap: document.getElementById('journey-stage-wrap'),
+    journeyStatusText: document.getElementById('journey-status-text'),
+    journeyCounter: document.getElementById('journey-counter'),
+    journeyPrevBtn: document.getElementById('journey-prev-btn'),
+    journeyPlayBtn: document.getElementById('journey-play-btn'),
+    journeyPlayIcon: document.getElementById('journey-play-icon'),
+    journeyPlayLabel: document.getElementById('journey-play-label'),
+    journeyNextBtn: document.getElementById('journey-next-btn'),
+    journeySvg: document.getElementById('journey-svg'),
+    journeyDefs: document.getElementById('journey-defs'),
+    journeySphere: document.getElementById('journey-sphere'),
+    journeyGraticule: document.getElementById('journey-graticule'),
+    journeyLand: document.getElementById('journey-land'),
+    journeyRoutesGroup: document.getElementById('journey-routes-group'),
+    journeyActiveArc: document.getElementById('journey-active-arc'),
+    journeyMarkersGroup: document.getElementById('journey-markers-group'),
+    journeyActiveMarkerGroup: document.getElementById('journey-active-marker-group'),
+    journeyAtmosphere: document.getElementById('journey-atmosphere'),
+    journeyBroadcastGroup: document.getElementById('journey-broadcast-group'),
+    journeyOnlineOverlay: document.getElementById('journey-online-overlay'),
+    journeyActiveCard: document.getElementById('journey-active-card'),
+    journeyCardDate: document.getElementById('journey-card-date'),
+    journeyCardCoords: document.getElementById('journey-card-coords'),
+    journeyCardLocation: document.getElementById('journey-card-location'),
+    journeyCardTitle: document.getElementById('journey-card-title'),
+    journeyCardEvent: document.getElementById('journey-card-event'),
+    journeyCardDesc: document.getElementById('journey-card-desc'),
+    journeyCardTopics: document.getElementById('journey-card-topics'),
+    journeyDossierBtn: document.getElementById('journey-dossier-btn'),
+    journeyHopDistance: document.getElementById('journey-hop-distance'),
+    journeyScrubber: document.getElementById('journey-scrubber'),
     // Modal Dialog
     dialog: document.getElementById('event-dialog'),
     dialogClose: document.getElementById('dialog-close'),
@@ -1435,11 +1506,593 @@
   }
 
   // ==========================================================================
+  // 02 The Speaking Journey (Global Speaking Signal) — Cinematic Timeline Engine
+  // ==========================================================================
+  const journeyState = {
+    initialized: false,
+    stops: [],
+    currentIndex: 0,
+    isPlaying: true,
+    isManuallyPaused: false,
+    isHoverPaused: false,
+    isModalOpen: false,
+    isTraveling: false,
+    currentCoords: [28.9784, 41.0082], // Starts centered on Istanbul
+    currentScale: 230,
+    baseScale: 230,
+    globeCenter: [660, 290],
+    visitedCoords: [],
+    historicalArcs: [],
+    holdTimer: null,
+    resumeTimer: null,
+    animId: null,
+    landData: null,
+    projection: null,
+    pathGen: null
+  };
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function calcDistanceKm(p1, p2) {
+    if (!p1 || !p2 || typeof d3 === 'undefined') return 0;
+    const rad = d3.geoDistance(p1, p2);
+    return Math.round(rad * 6371);
+  }
+
+  function initJourneyDefs() {
+    if (!els.journeyDefs) return;
+    els.journeyDefs.innerHTML = `
+      <radialGradient id="globe-shading" cx="62%" cy="38%" r="68%">
+        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.08" />
+        <stop offset="55%" stop-color="#0c1017" stop-opacity="0.0" />
+        <stop offset="100%" stop-color="#05070a" stop-opacity="0.78" />
+      </radialGradient>
+      <radialGradient id="globe-glow" cx="50%" cy="50%" r="50%">
+        <stop offset="85%" stop-color="#3b82f6" stop-opacity="0.0" />
+        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.25" />
+      </radialGradient>
+      <filter id="arc-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
+    `;
+  }
+
+  function renderGlobeStatic() {
+    if (!journeyState.pathGen) return;
+
+    if (els.journeySphere) {
+      els.journeySphere.setAttribute('d', journeyState.pathGen({ type: 'Sphere' }) || '');
+    }
+
+    if (els.journeyGraticule) {
+      const graticule = d3.geoGraticule().step([30, 30])();
+      els.journeyGraticule.setAttribute('d', journeyState.pathGen(graticule) || '');
+    }
+
+    if (els.journeyLand && journeyState.landData) {
+      els.journeyLand.setAttribute('d', journeyState.pathGen(journeyState.landData) || '');
+    }
+  }
+
+  function renderHistoricalTrails() {
+    if (!els.journeyRoutesGroup || !journeyState.pathGen) return;
+    const pathsHtml = journeyState.historicalArcs.map((arc) => {
+      const d = journeyState.pathGen(arc);
+      return d ? `<path class="journey-route-trail" d="${d}"></path>` : '';
+    }).join('');
+    els.journeyRoutesGroup.innerHTML = pathsHtml;
+  }
+
+  function renderHistoricalMarkers() {
+    if (!els.journeyMarkersGroup || !journeyState.projection) return;
+    const centerLon = -journeyState.projection.rotate()[0];
+    const centerLat = -journeyState.projection.rotate()[1];
+    const center = [centerLon, centerLat];
+
+    const dotsHtml = journeyState.visitedCoords.map((coord) => {
+      if (d3.geoDistance(center, coord) > Math.PI / 2) return '';
+      const pt = journeyState.projection(coord);
+      if (!pt) return '';
+      return `<circle class="journey-hist-dot" cx="${Math.round(pt[0])}" cy="${Math.round(pt[1])}" r="3"></circle>`;
+    }).join('');
+    els.journeyMarkersGroup.innerHTML = dotsHtml;
+  }
+
+  function renderActiveMarker(coord, cityLabel, coordsText, pulse = false) {
+    if (!els.journeyActiveMarkerGroup || !journeyState.projection) return;
+    if (!coord) {
+      els.journeyActiveMarkerGroup.innerHTML = '';
+      return;
+    }
+
+    const centerLon = -journeyState.projection.rotate()[0];
+    const centerLat = -journeyState.projection.rotate()[1];
+    const center = [centerLon, centerLat];
+
+    // Only render if visible on the front hemisphere
+    if (d3.geoDistance(center, coord) > Math.PI / 2) {
+      els.journeyActiveMarkerGroup.innerHTML = '';
+      return;
+    }
+
+    const pt = journeyState.projection(coord);
+    if (!pt) {
+      els.journeyActiveMarkerGroup.innerHTML = '';
+      return;
+    }
+
+    const x = Math.round(pt[0]);
+    const y = Math.round(pt[1]);
+
+    const isRightHalf = x >= journeyState.globeCenter[0];
+    const dx = isRightHalf ? 38 : -38;
+    const dy = -26;
+    const textAnchor = isRightHalf ? 'start' : 'end';
+    const textX = x + dx + (isRightHalf ? 8 : -8);
+    const textY = y + dy - 2;
+
+    let markerHtml = '';
+    if (pulse) {
+      markerHtml += `<circle class="journey-marker-pulse" cx="${x}" cy="${y}" r="6"></circle>`;
+    }
+    markerHtml += `
+      <g class="journey-active-marker-pin" role="button" tabindex="0" aria-label="Active stop: ${escapeHtml(cityLabel)}">
+        <polyline class="journey-leader-line" points="${x},${y} ${x + dx},${y + dy} ${textX},${y + dy}"></polyline>
+        <circle class="journey-marker-dot" cx="${x}" cy="${y}" r="4.5"></circle>
+        <text class="journey-marker-label" x="${textX}" y="${textY}" text-anchor="${textAnchor}">${escapeHtml(cityLabel.toUpperCase())}</text>
+        <text class="journey-marker-coords" x="${textX}" y="${textY + 12}" text-anchor="${textAnchor}">${escapeHtml(coordsText)}</text>
+      </g>
+    `;
+    els.journeyActiveMarkerGroup.innerHTML = markerHtml;
+
+    const pin = els.journeyActiveMarkerGroup.querySelector('.journey-active-marker-pin');
+    if (pin) {
+      pin.onclick = () => {
+        const ev = journeyState.stops[journeyState.currentIndex];
+        if (ev) openEvent(ev.id);
+      };
+      pin.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const ev = journeyState.stops[journeyState.currentIndex];
+          if (ev) openEvent(ev.id);
+        }
+      };
+    }
+  }
+
+  function renderJourneyScrubber() {
+    if (!els.journeyScrubber) return;
+    els.journeyScrubber.innerHTML = journeyState.stops.map((stop, idx) => {
+      const isOnline = stop.city === 'Online';
+      const coord = getCityCoord(stop.city);
+      const label = isOnline ? 'Online' : (coord ? coord.label : stop.city);
+      const title = `${formatDateShort(stop.date)} · ${label} — ${stop.talk}`;
+      return `
+        <button type="button" class="journey-scrub-tick ${isOnline ? 'online' : ''} ${idx === 0 ? 'active' : ''}"
+          data-index="${idx}"
+          title="${escapeHtml(title)}"
+          aria-label="Stop ${idx + 1} of ${journeyState.stops.length}: ${escapeHtml(title)}">
+        </button>
+      `;
+    }).join('');
+
+    const ticks = els.journeyScrubber.querySelectorAll('.journey-scrub-tick');
+    ticks.forEach((tick) => {
+      tick.addEventListener('click', () => {
+        const idx = parseInt(tick.dataset.index, 10);
+        if (!isNaN(idx)) {
+          travelToJourneyStop(idx, false);
+        }
+      });
+    });
+  }
+
+  function updateJourneyCard(event, prevEvent = null, distanceKm = 0, isSameCity = false) {
+    if (!els.journeyActiveCard || !event) return;
+
+    const isOnline = event.city === 'Online';
+    const coord = getCityCoord(event.city);
+
+    if (els.journeyCardDate) {
+      els.journeyCardDate.textContent = formatDateShort(event.date);
+    }
+
+    if (els.journeyCounter) {
+      els.journeyCounter.textContent = `STOP ${String(journeyState.currentIndex + 1).padStart(2, '0')} / ${journeyState.stops.length}`;
+    }
+
+    if (isOnline) {
+      if (els.journeyCardCoords) els.journeyCardCoords.textContent = 'WORLDWIDE BROADCAST';
+      if (els.journeyCardLocation) {
+        els.journeyCardLocation.textContent = 'ONLINE · GLOBAL';
+        els.journeyCardLocation.classList.add('online-loc');
+      }
+      if (els.journeyHopDistance) els.journeyHopDistance.textContent = 'Global virtual interlude · Online broadcast';
+    } else if (coord) {
+      const latStr = `${Math.abs(coord.lat).toFixed(2)}° ${coord.lat >= 0 ? 'N' : 'S'}`;
+      const lonStr = `${Math.abs(coord.lon).toFixed(2)}° ${coord.lon >= 0 ? 'E' : 'W'}`;
+      if (els.journeyCardCoords) els.journeyCardCoords.textContent = `${latStr} · ${lonStr}`;
+      if (els.journeyCardLocation) {
+        els.journeyCardLocation.textContent = `${coord.label.toUpperCase()}, ${coord.country.toUpperCase()}`;
+        els.journeyCardLocation.classList.remove('online-loc');
+      }
+
+      if (els.journeyHopDistance) {
+        if (journeyState.currentIndex === 0) {
+          els.journeyHopDistance.textContent = 'Voyage Origin · Istanbul, Türkiye';
+        } else if (isSameCity) {
+          els.journeyHopDistance.textContent = `Consecutive session in ${coord.label}`;
+        } else if (prevEvent) {
+          const prevC = getCityCoord(prevEvent.city);
+          const prevLabel = prevC ? prevC.label : prevEvent.city;
+          els.journeyHopDistance.textContent = `+${distanceKm.toLocaleString()} km from ${prevLabel}`;
+        }
+      }
+    }
+
+    if (els.journeyCardTitle) {
+      els.journeyCardTitle.textContent = event.talk || 'Technical Keynote';
+    }
+
+    if (els.journeyCardEvent) {
+      els.journeyCardEvent.textContent = event.event || 'Technical Conference';
+    }
+
+    if (els.journeyCardDesc) {
+      els.journeyCardDesc.textContent = event.description || 'Verified session preserved in technical speaking archive.';
+    }
+
+    if (els.journeyCardTopics) {
+      els.journeyCardTopics.innerHTML = (event.topics || []).slice(0, 4).map((t) => `
+        <span class="journey-card-topic-pill">#${escapeHtml(t)}</span>
+      `).join('');
+    }
+
+    // Update scrubber ticks
+    if (els.journeyScrubber) {
+      const ticks = els.journeyScrubber.querySelectorAll('.journey-scrub-tick');
+      ticks.forEach((tick, idx) => {
+        tick.classList.toggle('active', idx === journeyState.currentIndex);
+        tick.classList.toggle('visited', idx < journeyState.currentIndex);
+      });
+    }
+
+    // Dossier button hook
+    if (els.journeyDossierBtn) {
+      els.journeyDossierBtn.onclick = () => {
+        openEvent(event.id);
+      };
+    }
+  }
+
+  function scheduleNextJourneyHold(holdMs) {
+    clearTimeout(journeyState.holdTimer);
+    journeyState.holdTimer = setTimeout(() => {
+      if (journeyState.isPlaying && !journeyState.isManuallyPaused && !journeyState.isHoverPaused && !journeyState.isModalOpen) {
+        const nextIndex = (journeyState.currentIndex + 1) % journeyState.stops.length;
+        if (nextIndex === 0) {
+          journeyState.visitedCoords = [];
+          journeyState.historicalArcs = [];
+        }
+        travelToJourneyStop(nextIndex, false);
+      }
+    }, holdMs);
+  }
+
+  function travelToJourneyStop(targetIndex, instant = false) {
+    if (!journeyState.stops.length) return;
+
+    clearTimeout(journeyState.holdTimer);
+    if (journeyState.animId) {
+      cancelAnimationFrame(journeyState.animId);
+      journeyState.animId = null;
+    }
+
+    const total = journeyState.stops.length;
+    const nextIdx = (targetIndex + total) % total;
+    const prevIdx = journeyState.currentIndex;
+    journeyState.currentIndex = nextIdx;
+
+    const currentEvent = journeyState.stops[nextIdx];
+    const prevEvent = journeyState.stops[prevIdx];
+    const isOnline = currentEvent.city === 'Online';
+    const nextCoordObj = getCityCoord(currentEvent.city);
+    const prevCoordObj = getCityCoord(prevEvent.city) || (journeyState.currentCoords ? { lon: journeyState.currentCoords[0], lat: journeyState.currentCoords[1], label: 'Prior Location' } : null);
+
+    const isSameCity = !isOnline && prevCoordObj && nextCoordObj &&
+      Math.abs(prevCoordObj.lat - nextCoordObj.lat) < 0.001 &&
+      Math.abs(prevCoordObj.lon - nextCoordObj.lon) < 0.001;
+
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const shouldInstant = instant || prefersReducedMotion;
+
+    // 1. Handle Online Interlude
+    if (isOnline) {
+      journeyState.isTraveling = false;
+      if (els.journeyBroadcastGroup) {
+        els.journeyBroadcastGroup.classList.remove('hidden');
+        els.journeyBroadcastGroup.innerHTML = `
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="230" style="animation-delay: 0s;"></circle>
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="230" style="animation-delay: 0.8s;"></circle>
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="230" style="animation-delay: 1.6s;"></circle>
+        `;
+      }
+      if (els.journeyLand) els.journeyLand.style.opacity = '0.35';
+      if (els.journeyOnlineOverlay) els.journeyOnlineOverlay.classList.remove('hidden');
+      if (els.journeyActiveMarkerGroup) els.journeyActiveMarkerGroup.innerHTML = '';
+      if (els.journeyActiveArc) {
+        els.journeyActiveArc.setAttribute('d', '');
+        els.journeyActiveArc.style.display = 'none';
+      }
+
+      updateJourneyCard(currentEvent, prevEvent, 0, false);
+      if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+
+      scheduleNextJourneyHold(2400);
+      return;
+    }
+
+    // Restore normal visual styles if physical stop
+    if (els.journeyBroadcastGroup) {
+      els.journeyBroadcastGroup.classList.add('hidden');
+      els.journeyBroadcastGroup.innerHTML = '';
+    }
+    if (els.journeyLand) els.journeyLand.style.opacity = '1';
+    if (els.journeyOnlineOverlay) els.journeyOnlineOverlay.classList.add('hidden');
+
+    if (!nextCoordObj) {
+      scheduleNextJourneyHold(2400);
+      return;
+    }
+
+    const targetLonLat = [nextCoordObj.lon, nextCoordObj.lat];
+    const prevLonLat = prevCoordObj ? [prevCoordObj.lon, prevCoordObj.lat] : journeyState.currentCoords;
+
+    const latStr = `${Math.abs(nextCoordObj.lat).toFixed(1)}°${nextCoordObj.lat >= 0 ? 'N' : 'S'}`;
+    const lonStr = `${Math.abs(nextCoordObj.lon).toFixed(1)}°${nextCoordObj.lon >= 0 ? 'E' : 'W'}`;
+    const coordStr = `${latStr} · ${lonStr}`;
+
+    // 2. Handle Repeated City (Consecutive stop)
+    if (isSameCity && !shouldInstant) {
+      journeyState.isTraveling = false;
+      journeyState.currentCoords = targetLonLat;
+      updateJourneyCard(currentEvent, prevEvent, 0, true);
+      renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, true);
+      if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+      scheduleNextJourneyHold(2800);
+      return;
+    }
+
+    // 3. Handle Instant Travel (Reduced motion or initial mount)
+    if (shouldInstant) {
+      journeyState.isTraveling = false;
+      journeyState.currentCoords = targetLonLat;
+      journeyState.currentScale = journeyState.baseScale;
+      journeyState.projection
+        .scale(journeyState.baseScale)
+        .rotate([-targetLonLat[0], -targetLonLat[1]]);
+
+      if (prevLonLat && (prevLonLat[0] !== targetLonLat[0] || prevLonLat[1] !== targetLonLat[1])) {
+        journeyState.visitedCoords.push(prevLonLat);
+        journeyState.historicalArcs.push({
+          type: 'LineString',
+          coordinates: [prevLonLat, targetLonLat]
+        });
+      }
+
+      renderGlobeStatic();
+      renderHistoricalTrails();
+      renderHistoricalMarkers();
+      renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, true);
+      updateJourneyCard(currentEvent, prevEvent, calcDistanceKm(prevLonLat, targetLonLat), false);
+      if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+
+      scheduleNextJourneyHold(3000);
+      return;
+    }
+
+    // 4. Smooth Cinematic Great-Circle Camera Transition
+    journeyState.isTraveling = true;
+    if (els.journeyActiveCard) els.journeyActiveCard.classList.add('fading');
+
+    const distRad = d3.geoDistance(prevLonLat, targetLonLat);
+    const distKm = Math.round(distRad * 6371);
+
+    let duration = 2000;
+    let scaleDip = 32;
+    if (distRad < 0.08) {
+      duration = 1400;
+      scaleDip = 8;
+    } else if (distRad < 0.35) {
+      duration = 2100;
+      scaleDip = 32;
+    } else {
+      duration = 2900;
+      scaleDip = 54;
+    }
+
+    const interp = d3.geoInterpolate(prevLonLat, targetLonLat);
+    const startTime = performance.now();
+
+    function stepAnimation(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const ease = easeInOutCubic(progress);
+
+      const currentInterp = interp(ease);
+      const currentScale = journeyState.baseScale - scaleDip * Math.sin(Math.PI * ease);
+
+      journeyState.projection
+        .scale(currentScale)
+        .rotate([-currentInterp[0], -currentInterp[1]]);
+
+      renderGlobeStatic();
+      renderHistoricalTrails();
+      renderHistoricalMarkers();
+
+      // Traveling glowing active arc
+      if (els.journeyActiveArc) {
+        const arcGeo = {
+          type: 'LineString',
+          coordinates: [prevLonLat, currentInterp]
+        };
+        const d = journeyState.pathGen(arcGeo);
+        els.journeyActiveArc.setAttribute('d', d || '');
+        els.journeyActiveArc.style.display = d ? 'block' : 'none';
+      }
+
+      if (progress < 1) {
+        journeyState.animId = requestAnimationFrame(stepAnimation);
+      } else {
+        journeyState.isTraveling = false;
+        journeyState.currentCoords = targetLonLat;
+        journeyState.currentScale = journeyState.baseScale;
+        journeyState.projection
+          .scale(journeyState.baseScale)
+          .rotate([-targetLonLat[0], -targetLonLat[1]]);
+
+        journeyState.visitedCoords.push(prevLonLat);
+        journeyState.historicalArcs.push({
+          type: 'LineString',
+          coordinates: [prevLonLat, targetLonLat]
+        });
+
+        if (els.journeyActiveArc) {
+          els.journeyActiveArc.setAttribute('d', '');
+          els.journeyActiveArc.style.display = 'none';
+        }
+
+        renderGlobeStatic();
+        renderHistoricalTrails();
+        renderHistoricalMarkers();
+
+        renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, true);
+
+        updateJourneyCard(currentEvent, prevEvent, distKm, false);
+        if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+
+        scheduleNextJourneyHold(2800);
+      }
+    }
+
+    journeyState.animId = requestAnimationFrame(stepAnimation);
+  }
+
+  function setupJourneyListeners() {
+    if (els.journeyPlayBtn) {
+      els.journeyPlayBtn.addEventListener('click', () => {
+        if (journeyState.isPlaying && !journeyState.isManuallyPaused) {
+          journeyState.isManuallyPaused = true;
+          clearTimeout(journeyState.holdTimer);
+          if (els.journeyPlayIcon) els.journeyPlayIcon.textContent = '▶';
+          if (els.journeyPlayLabel) els.journeyPlayLabel.textContent = 'PLAY';
+          if (els.journeyStatusText) els.journeyStatusText.textContent = 'PAUSED';
+        } else {
+          journeyState.isManuallyPaused = false;
+          journeyState.isPlaying = true;
+          if (els.journeyPlayIcon) els.journeyPlayIcon.textContent = '⏸';
+          if (els.journeyPlayLabel) els.journeyPlayLabel.textContent = 'PAUSE';
+          if (els.journeyStatusText) els.journeyStatusText.textContent = 'CHRONOLOGICAL PLAYBACK';
+          scheduleNextJourneyHold(1000);
+        }
+      });
+    }
+
+    if (els.journeyPrevBtn) {
+      els.journeyPrevBtn.addEventListener('click', () => {
+        const prevIdx = (journeyState.currentIndex - 1 + journeyState.stops.length) % journeyState.stops.length;
+        travelToJourneyStop(prevIdx, false);
+      });
+    }
+
+    if (els.journeyNextBtn) {
+      els.journeyNextBtn.addEventListener('click', () => {
+        const nextIdx = (journeyState.currentIndex + 1) % journeyState.stops.length;
+        travelToJourneyStop(nextIdx, false);
+      });
+    }
+
+    // Hover pause and resume with 800ms buffer
+    if (els.journeyStageWrap) {
+      els.journeyStageWrap.addEventListener('mouseenter', () => {
+        clearTimeout(journeyState.resumeTimer);
+        if (journeyState.isPlaying && !journeyState.isManuallyPaused && !journeyState.isModalOpen) {
+          journeyState.isHoverPaused = true;
+          clearTimeout(journeyState.holdTimer);
+          if (els.journeyStatusText) els.journeyStatusText.textContent = 'PAUSED (HOVER)';
+        }
+      });
+
+      els.journeyStageWrap.addEventListener('mouseleave', () => {
+        clearTimeout(journeyState.resumeTimer);
+        if (journeyState.isPlaying && !journeyState.isManuallyPaused && !journeyState.isModalOpen) {
+          journeyState.resumeTimer = setTimeout(() => {
+            journeyState.isHoverPaused = false;
+            if (els.journeyStatusText) els.journeyStatusText.textContent = 'CHRONOLOGICAL PLAYBACK';
+            scheduleNextJourneyHold(1000);
+          }, 800);
+        }
+      });
+    }
+  }
+
+  function initSpeakingJourney(landData) {
+    if (!els.journeySvg || !state.events.length) return;
+    if (typeof d3 === 'undefined') {
+      console.warn('D3 is not available; Speaking Journey could not initialize.');
+      return;
+    }
+
+    journeyState.landData = landData;
+    journeyState.stops = state.events.slice().sort((a, b) => a.date.localeCompare(b.date));
+    if (!journeyState.stops.length) return;
+
+    const firstPhysical = journeyState.stops.find((s) => s.city !== 'Online');
+    const firstCoord = firstPhysical ? getCityCoord(firstPhysical.city) : CITY_COORDINATES['Istanbul, Türkiye'];
+    if (firstCoord) {
+      journeyState.currentCoords = [firstCoord.lon, firstCoord.lat];
+    }
+
+    journeyState.projection = d3.geoOrthographic()
+      .scale(journeyState.baseScale)
+      .translate(journeyState.globeCenter)
+      .rotate([-journeyState.currentCoords[0], -journeyState.currentCoords[1]])
+      .clipAngle(90);
+
+    journeyState.pathGen = d3.geoPath(journeyState.projection);
+
+    initJourneyDefs();
+    renderGlobeStatic();
+    renderJourneyScrubber();
+    setupJourneyListeners();
+
+    journeyState.currentIndex = 0;
+    journeyState.initialized = true;
+
+    travelToJourneyStop(0, true);
+  }
+
+  // ==========================================================================
   // Event Detail Modal Dossier & Full Photo Support
   // ==========================================================================
   function openEvent(id) {
     const event = state.events.find((e) => e.id === id);
     if (!event || !els.dialog) return;
+
+    // Pause journey playback during dossier examination
+    journeyState.isModalOpen = true;
+    clearTimeout(journeyState.holdTimer);
+
+    if (journeyState.initialized) {
+      const stopIdx = journeyState.stops.findIndex((s) => s.id === id);
+      if (stopIdx !== -1 && stopIdx !== journeyState.currentIndex) {
+        travelToJourneyStop(stopIdx, true);
+      }
+    }
 
     state.selectedId = id;
     state.activePhotoIndex = 0;
@@ -1635,6 +2288,12 @@
     }
 
     updateRiverVisualClasses();
+
+    // Resume Speaking Journey playback
+    journeyState.isModalOpen = false;
+    if (journeyState.initialized && journeyState.isPlaying && !journeyState.isManuallyPaused && !journeyState.isHoverPaused) {
+      scheduleNextJourneyHold(1500);
+    }
   }
 
   function handleRouteFromHash() {
@@ -1643,6 +2302,13 @@
       if (els.dialog && els.dialog.open) {
         closeEvent();
       }
+      return;
+    }
+
+    const sectionIds = ['river', 'journey', 'archive', 'threads', 'reach', 'about', 'top'];
+    if (sectionIds.includes(rawHash)) {
+      const elem = document.getElementById(rawHash);
+      if (elem) elem.scrollIntoView({ behavior: 'auto' });
       return;
     }
 
@@ -1770,20 +2436,34 @@
 
   async function initApplication() {
     try {
-      const response = await fetch(DATA_URL, { cache: 'no-cache' });
-      if (!response.ok) {
-        throw new Error(`Failed to load ${DATA_URL}: ${response.status}`);
+      const [eventsRes, landRes] = await Promise.all([
+        fetch(DATA_URL, { cache: 'no-cache' }),
+        fetch('data/land.json', { cache: 'no-cache' })
+      ]);
+
+      if (!eventsRes.ok) {
+        throw new Error(`Failed to load ${DATA_URL}: ${eventsRes.status}`);
       }
 
-      const data = await response.json();
+      const data = await eventsRes.json();
       if (!Array.isArray(data)) {
         throw new Error('Data in events.json is not an array');
       }
 
       state.events = data;
 
+      let landData = null;
+      if (landRes && landRes.ok) {
+        try {
+          landData = await landRes.json();
+        } catch (landErr) {
+          console.warn('Could not parse land.json:', landErr);
+        }
+      }
+
       updateHeroMetrics();
       rerender();
+      initSpeakingJourney(landData);
       handleRouteFromHash();
     } catch (err) {
       console.error('Speaking Archive Initialization Error:', err);
