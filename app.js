@@ -1,6 +1,6 @@
 /**
- * Enes Turan — Technical Speaker Constellation
- * Pure Vanilla JavaScript Data Architecture & Interactive Canvas System
+ * Enes Turan — Technical Speaker Archive & Data Visualizations
+ * Pure Vanilla JavaScript Architecture: The Technical River & Regional Reach
  */
 
 (function () {
@@ -8,55 +8,141 @@
 
   const DATA_URL = 'data/events.json';
 
-  // Geographic Coordinates for Vector Map Projection (1000x500 Equirectangular)
-  const CITY_COORDINATES = {
-    'Dubai, UAE': { lat: 25.2048, lon: 55.2708, label: 'Dubai' },
-    'Cairo, Egypt': { lat: 30.0444, lon: 31.2357, label: 'Cairo' },
-    '6th of October City, Egypt': { lat: 29.9870, lon: 30.9416, label: '6th of October City' },
-    'Pristina, Kosovo': { lat: 42.6629, lon: 21.1655, label: 'Pristina' },
-    'Istanbul, Türkiye': { lat: 41.0082, lon: 28.9784, label: 'Istanbul' },
-    'Bursa, Türkiye': { lat: 40.1885, lon: 29.0610, label: 'Bursa' },
-    'Denizli, Türkiye': { lat: 37.7765, lon: 29.0864, label: 'Denizli' },
-    'Kastamonu, Türkiye': { lat: 41.3887, lon: 33.7827, label: 'Kastamonu' },
-    'Konya, Türkiye': { lat: 37.8746, lon: 32.4932, label: 'Konya' },
-    'Düzce, Türkiye': { lat: 40.8438, lon: 31.1565, label: 'Düzce' },
-    'İzmit, Türkiye': { lat: 40.7654, lon: 29.9408, label: 'İzmit' },
-    'Almaty, Kazakhstan': { lat: 43.2220, lon: 76.8512, label: 'Almaty' },
-    'Astana, Kazakhstan': { lat: 51.1694, lon: 71.4491, label: 'Astana' },
-    'Pavlodar, Kazakhstan': { lat: 52.2872, lon: 76.9674, label: 'Pavlodar' },
-    'Taldykorgan, Kazakhstan': { lat: 45.0156, lon: 78.3739, label: 'Taldykorgan' },
-    'Tashkent, Uzbekistan': { lat: 41.2995, lon: 69.2401, label: 'Tashkent' },
-    'Kashkadarya, Uzbekistan': { lat: 38.8606, lon: 65.7891, label: 'Kashkadarya' },
-    'Bishkek, Kyrgyzstan': { lat: 42.8746, lon: 74.5698, label: 'Bishkek' },
-    'Sousse, Tunisia': { lat: 35.8256, lon: 10.6084, label: 'Sousse' },
-    'Sarajevo, Bosnia and Herzegovina': { lat: 43.8563, lon: 18.4131, label: 'Sarajevo' },
-    'Agadir, Morocco': { lat: 30.4278, lon: -9.5981, label: 'Agadir' },
-    'Baku, Azerbaijan': { lat: 40.4093, lon: 49.8671, label: 'Baku' },
-    'Ulaanbaatar, Mongolia': { lat: 47.8864, lon: 106.9057, label: 'Ulaanbaatar' }
-  };
-
   const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const FULL_MONTH_NAMES = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
+  // ==========================================================================
+  // Core Technical Streams Definition (The Technical River)
+  // ==========================================================================
+  const STREAMS = [
+    {
+      id: 'cloud',
+      label: 'Cloud & Infrastructure',
+      color: '#3b82f6',
+      stroke: '#60a5fa',
+      fill: 'rgba(59, 130, 246, 0.28)',
+      highlightFill: 'rgba(59, 130, 246, 0.55)',
+      keywords: ['google cloud', 'cloud architecture', 'serverless', 'cloud run', 'cloud computing', 'infrastructure', 'architecture']
+    },
+    {
+      id: 'kubernetes',
+      label: 'Kubernetes & Platforms',
+      color: '#0ea5e9',
+      stroke: '#38bdf8',
+      fill: 'rgba(14, 165, 233, 0.28)',
+      highlightFill: 'rgba(14, 165, 233, 0.55)',
+      keywords: ['kubernetes', 'gke', 'gke enterprise', 'platform engineering', 'devops', 'sre', 'reliability', 'developer experience', 'scheduling']
+    },
+    {
+      id: 'aiml',
+      label: 'AI/ML & MLOps',
+      color: '#8b5cf6',
+      stroke: '#a78bfa',
+      fill: 'rgba(139, 92, 246, 0.28)',
+      highlightFill: 'rgba(139, 92, 246, 0.55)',
+      keywords: ['ai/ml', 'mlops', 'vertex ai', 'machine learning', 'ai infrastructure', 'build with ai']
+    },
+    {
+      id: 'agents',
+      label: 'GenAI & AI Agents',
+      color: '#ec4899',
+      stroke: '#f472b6',
+      fill: 'rgba(236, 72, 153, 0.28)',
+      highlightFill: 'rgba(236, 72, 153, 0.55)',
+      keywords: ['ai agents', 'generative ai', 'langgraph', 'adk', 'agent', 'genai', 'ai']
+    }
+  ];
+
+  // ==========================================================================
+  // Regional Groupings Definition (Geographic Secondary Signal)
+  // ==========================================================================
+  const REGION_DEFINITIONS = [
+    {
+      id: 'turkiye',
+      name: 'Türkiye',
+      color: '#3b82f6',
+      matches: (city) => city.includes('Türkiye')
+    },
+    {
+      id: 'central-asia',
+      name: 'Central Asia',
+      color: '#0ea5e9',
+      matches: (city) => city.includes('Kazakhstan') || city.includes('Uzbekistan') || city.includes('Kyrgyzstan') || city.includes('Mongolia')
+    },
+    {
+      id: 'mena',
+      name: 'Middle East & North Africa',
+      color: '#a855f7',
+      matches: (city) => city.includes('UAE') || city.includes('Egypt') || city.includes('Tunisia') || city.includes('Morocco')
+    },
+    {
+      id: 'balkans-caucasus',
+      name: 'Balkans & Caucasus',
+      color: '#f59e0b',
+      matches: (city) => city.includes('Kosovo') || city.includes('Bosnia and Herzegovina') || city.includes('Azerbaijan')
+    },
+    {
+      id: 'online',
+      name: 'Online & Global',
+      color: '#10b981',
+      matches: (city) => city === 'Online'
+    }
+  ];
+
+  // ==========================================================================
+  // Contextual Era Narratives (For Timeline & Play History Mode)
+  // ==========================================================================
+  const ERA_NARRATIVES = {
+    all: {
+      badge: 'OVERVIEW · 2023–2026',
+      text: 'Tracing 43 speaking engagements across 4 years: from enterprise Kubernetes and cloud architectures to autonomous AI agents and global reliability engineering.'
+    },
+    '2023': {
+      badge: 'FOUNDATIONS · 2023',
+      text: '2023 — Cloud & Kubernetes Foundations: Deep dives into GKE Enterprise, scheduler internals, and serverless architectures across Türkiye, Central Asia, and the Balkans.'
+    },
+    '2024': {
+      badge: 'CONVERGENCE · 2024',
+      text: '2024 — Containers Meet AI/ML: Container orchestration converges with high-scale AI/ML workloads, introducing MLOps pipelines and multi-cloud GKE architectures.'
+    },
+    '2025': {
+      badge: 'EXPANSION · 2025',
+      text: '2025 — The Autonomous Agent Wave: Rapid transition into Generative AI and autonomous AI Agents, building with LangGraph, ADK, and Vertex AI across international stages.'
+    },
+    '2026': {
+      badge: 'MODERN ARCHITECTURE · 2026',
+      text: '2026 — AI Infrastructure & Global Reliability: High-scale AI infrastructure, Kubernetes for AI workloads, developer experience, and SRE at Google scale.'
+    }
+  };
+
+  // ==========================================================================
   // Application State
+  // ==========================================================================
   const state = {
     events: [],
     year: 'all',
     topic: 'all',
+    stream: 'all',
     city: 'all',
+    region: 'all',
     query: '',
     selectedId: null,
     hoveredTopic: null,
-    hoveredNodeId: null,
+    hoveredStreamId: null,
+    hoveredEventId: null,
     activePhotoIndex: 0,
-    positions: new Map(),
+    isPlaying: false,
+    playTimer: null,
+    playStep: 0,
     previousFocusedElement: null
   };
 
+  // ==========================================================================
   // DOM Elements Cache
+  // ==========================================================================
   const els = {
     heroTalkCount: document.getElementById('hero-talk-count'),
     heroYearRange: document.getElementById('hero-year-range'),
@@ -64,11 +150,20 @@
     topicStrip: document.getElementById('topic-strip'),
     search: document.getElementById('archive-search'),
     clearSearch: document.getElementById('clear-search'),
-    fieldWrap: document.getElementById('field-wrap'),
-    canvas: document.getElementById('constellation-canvas'),
-    fieldYears: document.getElementById('field-years'),
-    fieldNodes: document.getElementById('field-nodes'),
-    nodeTooltip: document.getElementById('node-tooltip'),
+    playHistoryBtn: document.getElementById('play-history-btn'),
+    riverEraCard: document.getElementById('river-era-card'),
+    eraBadge: document.getElementById('era-badge'),
+    eraText: document.getElementById('era-text'),
+    eraProgressBar: document.getElementById('era-progress-bar'),
+    eraProgressFill: document.getElementById('era-progress-fill'),
+    riverFieldWrap: document.getElementById('river-field-wrap'),
+    riverSvg: document.getElementById('river-svg'),
+    riverDefs: document.getElementById('river-defs'),
+    riverBackgroundGrid: document.getElementById('river-background-grid'),
+    riverStreamsLayer: document.getElementById('river-streams-layer'),
+    riverEventsLayer: document.getElementById('river-events-layer'),
+    riverNodesOverlay: document.getElementById('river-nodes-overlay'),
+    riverTooltip: document.getElementById('river-tooltip'),
     fieldStatus: document.getElementById('field-status'),
     yearReadouts: document.getElementById('year-readouts'),
     archiveList: document.getElementById('archive-list'),
@@ -78,10 +173,10 @@
     emptyResetBtn: document.getElementById('empty-reset-btn'),
     threadGrid: document.getElementById('thread-grid'),
     reachCount: document.getElementById('reach-count'),
+    countriesCount: document.getElementById('countries-count'),
     onlineCount: document.getElementById('online-count'),
-    mapMarkers: document.getElementById('map-markers'),
-    mapTooltip: document.getElementById('map-tooltip'),
-    mapViewContainer: document.getElementById('map-view-container'),
+    regionalBar: document.getElementById('regional-bar'),
+    regionalCardsGrid: document.getElementById('regional-cards-grid'),
     cityRoster: document.getElementById('city-roster'),
     cityInspector: document.getElementById('city-inspector'),
     // Modal Dialog
@@ -154,35 +249,68 @@
   }
 
   function stableHash(str) {
-    let hash = 2166136261;
+    let hash = 0;
     for (let i = 0; i < str.length; i += 1) {
-      hash = Math.imul(hash ^ str.charCodeAt(i), 16777619);
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
     }
-    return (hash >>> 0) / 4294967295;
+    return Math.abs(hash % 1000) / 1000;
   }
 
-  function projectCoordinates(lat, lon) {
-    const x = (lon + 180.0) * (1000.0 / 360.0);
-    const y = (90.0 - lat) * (500.0 / 180.0);
-    return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+  // Assign Event to Primary Technical Stream
+  function assignStream(event) {
+    const topics = (event.topics || []).map((t) => t.toLowerCase());
+
+    // Priority: Specific cutting-edge topics first
+    if (topics.some((t) => t.includes('agent') || t.includes('generative ai') || t.includes('langgraph') || t.includes('adk'))) {
+      return 'agents';
+    }
+    if (topics.some((t) => t.includes('ai/ml') || t.includes('mlops') || t.includes('vertex ai') || t.includes('build with ai'))) {
+      return 'aiml';
+    }
+    if (topics.some((t) => t.includes('kubernetes') || t.includes('gke') || t.includes('platform') || t.includes('sre') || t.includes('scheduling'))) {
+      return 'kubernetes';
+    }
+    if (topics.some((t) => t === 'ai')) {
+      return 'agents';
+    }
+    return 'cloud';
+  }
+
+  // Assign Event to Geographic Region
+  function getRegion(event) {
+    const city = event.city || 'Online';
+    for (const def of REGION_DEFINITIONS) {
+      if (def.matches(city)) return def;
+    }
+    return { id: 'international', name: 'International', color: '#64748b' };
   }
 
   // ==========================================================================
-  // Filtering Logic
+  // Filtering & Search
   // ==========================================================================
   function matchesEvent(event) {
     if (state.year !== 'all' && yearOf(event) !== state.year) return false;
     if (state.topic !== 'all' && !(event.topics || []).includes(state.topic)) return false;
+    if (state.stream !== 'all' && assignStream(event) !== state.stream) return false;
     if (state.city !== 'all' && (event.city || 'Online') !== state.city) return false;
+    if (state.region !== 'all') {
+      const reg = getRegion(event);
+      if (reg.id !== state.region) return false;
+    }
 
     if (state.query) {
       const q = state.query.toLowerCase();
-      const inTalk = (event.talk || '').toLowerCase().includes(q);
-      const inEvent = (event.event || '').toLowerCase().includes(q);
-      const inCity = (event.city || '').toLowerCase().includes(q);
-      const inDesc = (event.description || '').toLowerCase().includes(q);
-      const inTopics = Array.isArray(event.topics) && event.topics.some((t) => t.toLowerCase().includes(q));
-      if (!inTalk && !inEvent && !inCity && !inDesc && !inTopics) return false;
+      const searchable = [
+        event.talk || '',
+        event.event || '',
+        event.city || '',
+        event.date || '',
+        event.description || '',
+        (event.topics || []).join(' ')
+      ].join(' ').toLowerCase();
+
+      if (!searchable.includes(q)) return false;
     }
 
     return true;
@@ -203,26 +331,229 @@
   }
 
   // ==========================================================================
-  // Constellation Calculations
+  // 01 The Technical River Visualization Engine
   // ==========================================================================
-  function computeNodeLayout(events) {
-    const width = els.fieldWrap ? els.fieldWrap.clientWidth || 1000 : 1000;
-    const height = els.fieldWrap ? els.fieldWrap.clientHeight || 580 : 580;
+  function renderTechnicalRiver() {
+    if (!els.riverSvg || !state.events.length) return;
 
-    // Sort chronologically ascending for left-to-right flow
-    const sorted = events.slice().sort((a, b) => a.date.localeCompare(b.date));
-    if (sorted.length === 0) return new Map();
+    const svgWidth = 1100;
+    const svgHeight = 520;
+    const paddingX = 90;
+    const usableWidth = svgWidth - paddingX * 2;
 
-    const firstTime = new Date(`${sorted[0].date}T12:00:00`).getTime();
-    const lastTime = new Date(`${sorted[sorted.length - 1].date}T12:00:00`).getTime();
+    // Distinct unique years sorted ascending
+    const years = Array.from(new Set(state.events.map(yearOf))).sort();
+    if (!years.length) return;
 
-    // 35 days buffer before and after so nodes never touch boundary walls
-    const buffer = 35 * 24 * 60 * 60 * 1000;
-    const minTime = firstTime - buffer;
-    const maxTime = lastTime + buffer;
-    const timeSpan = Math.max(1, maxTime - minTime);
+    // Horizontal X positions for each year column
+    const yearPositions = new Map();
+    years.forEach((yr, idx) => {
+      const x = paddingX + (idx / Math.max(1, years.length - 1)) * usableWidth;
+      yearPositions.set(yr, Math.round(x));
+    });
 
-    // Group siblings by identical date to distribute into vertical lanes
+    // 1. Calculate Stream Volumes per Year
+    // Count talks per stream in each year
+    const yearlyCounts = new Map();
+    years.forEach((yr) => {
+      const map = new Map();
+      STREAMS.forEach((s) => map.set(s.id, 0));
+      yearlyCounts.set(yr, map);
+    });
+
+    state.events.forEach((ev) => {
+      const yr = yearOf(ev);
+      const sId = assignStream(ev);
+      if (yearlyCounts.has(yr)) {
+        const streamMap = yearlyCounts.get(yr);
+        streamMap.set(sId, (streamMap.get(sId) || 0) + 1);
+      }
+    });
+
+    // Compute vertical geometry: stream thickness & ribbon boundaries at each year
+    // Center the whole river vertically around Y = 250
+    const centerY = 250;
+    const streamGeometry = new Map(); // streamId -> array of { year, x, yTop, yBot, yCenter }
+    STREAMS.forEach((s) => streamGeometry.set(s.id, []));
+
+    years.forEach((yr) => {
+      const x = yearPositions.get(yr);
+      const streamMap = yearlyCounts.get(yr);
+      const yearEvents = state.events.filter((e) => yearOf(e) === yr);
+      const totalInYear = Math.max(1, yearEvents.length);
+
+      // Total ribbon height per stream based on share of talks in that year
+      const streamHeights = STREAMS.map((s) => {
+        const count = streamMap.get(s.id) || 0;
+        const baseThickness = 14;
+        const dynamicThickness = Math.round((count / totalInYear) * 160);
+        return {
+          id: s.id,
+          height: baseThickness + dynamicThickness
+        };
+      });
+
+      const gap = 12;
+      const totalStackHeight = streamHeights.reduce((sum, item) => sum + item.height, 0) + (STREAMS.length - 1) * gap;
+      let currentY = centerY - totalStackHeight / 2;
+
+      streamHeights.forEach((item) => {
+        const yTop = currentY;
+        const yBot = currentY + item.height;
+        const yCenter = (yTop + yBot) / 2;
+
+        streamGeometry.get(item.id).push({
+          year: yr,
+          x: x,
+          yTop: yTop,
+          yBot: yBot,
+          yCenter: yCenter
+        });
+
+        currentY = yBot + gap;
+      });
+    });
+
+    // 2. Render SVG Definitions (Gradients & Filters)
+    let defsHtml = '';
+    STREAMS.forEach((s) => {
+      defsHtml += `
+        <linearGradient id="grad-${s.id}" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="${s.color}" stop-opacity="0.32" />
+          <stop offset="50%" stop-color="${s.color}" stop-opacity="0.45" />
+          <stop offset="100%" stop-color="${s.stroke}" stop-opacity="0.35" />
+        </linearGradient>
+      `;
+    });
+    els.riverDefs.innerHTML = defsHtml;
+
+    // 3. Render Background Grid Lines & Year Marks
+    let gridHtml = '';
+    years.forEach((yr) => {
+      const x = yearPositions.get(yr);
+      const isYearActive = state.year === yr || state.year === 'all';
+      gridHtml += `
+        <line class="river-year-line" x1="${x}" y1="36" x2="${x}" y2="${svgHeight - 40}"></line>
+        <text class="river-year-label ${state.year === yr ? 'active' : ''}" x="${x}" y="24">${yr}</text>
+      `;
+    });
+    els.riverBackgroundGrid.innerHTML = gridHtml;
+
+    // 4. Render Fluid Stream Ribbons
+    let streamsHtml = '';
+    const activeStreamId = state.hoveredStreamId || (state.stream !== 'all' ? state.stream : null);
+    const activeTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
+
+    STREAMS.forEach((s) => {
+      const points = streamGeometry.get(s.id);
+      if (!points || points.length < 2) return;
+
+      // Construct Cubic Bézier Upper Boundary
+      let pathD = `M ${points[0].x - 40} ${points[0].yTop}`;
+      pathD += ` L ${points[0].x} ${points[0].yTop}`;
+
+      for (let i = 0; i < points.length - 1; i += 1) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const dx = p1.x - p0.x;
+        const cp1x = p0.x + dx * 0.45;
+        const cp2x = p1.x - dx * 0.45;
+        pathD += ` C ${cp1x} ${p0.yTop}, ${cp2x} ${p1.yTop}, ${p1.x} ${p1.yTop}`;
+      }
+
+      // Extension past the last year
+      const last = points[points.length - 1];
+      pathD += ` L ${last.x + 40} ${last.yTop}`;
+      pathD += ` L ${last.x + 40} ${last.yBot}`;
+      pathD += ` L ${last.x} ${last.yBot}`;
+
+      // Construct Cubic Bézier Lower Boundary (Reversed)
+      for (let i = points.length - 1; i > 0; i -= 1) {
+        const p0 = points[i];
+        const p1 = points[i - 1];
+        const dx = p0.x - p1.x;
+        const cp1x = p0.x - dx * 0.45;
+        const cp2x = p1.x + dx * 0.45;
+        pathD += ` C ${cp1x} ${p0.yBot}, ${cp2x} ${p1.yBot}, ${p1.x} ${p1.yBot}`;
+      }
+
+      pathD += ` L ${points[0].x - 40} ${points[0].yBot} Z`;
+
+      // Construct Centerline Stream
+      let centerD = `M ${points[0].x - 30} ${points[0].yCenter} L ${points[0].x} ${points[0].yCenter}`;
+      for (let i = 0; i < points.length - 1; i += 1) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const dx = p1.x - p0.x;
+        const cp1x = p0.x + dx * 0.45;
+        const cp2x = p1.x - dx * 0.45;
+        centerD += ` C ${cp1x} ${p0.yCenter}, ${cp2x} ${p1.yCenter}, ${p1.x} ${p1.yCenter}`;
+      }
+      centerD += ` L ${last.x + 30} ${last.yCenter}`;
+
+      let isDim = false;
+      let isHighlighted = false;
+
+      if (activeStreamId) {
+        if (activeStreamId === s.id) isHighlighted = true;
+        else isDim = true;
+      } else if (activeTopic) {
+        const topicStream = STREAMS.find((st) => st.keywords.some((kw) => activeTopic.toLowerCase().includes(kw)));
+        if (topicStream && topicStream.id === s.id) isHighlighted = true;
+        else isDim = true;
+      }
+
+      const ribbonClasses = [
+        'river-stream-ribbon',
+        isHighlighted ? 'highlighted' : '',
+        isDim ? 'dim' : ''
+      ].filter(Boolean).join(' ');
+
+      streamsHtml += `
+        <g class="river-stream-channel" data-stream="${s.id}">
+          <path class="${ribbonClasses}"
+            d="${pathD}"
+            fill="url(#grad-${s.id})"
+            stroke="${s.stroke}"
+            stroke-width="${isHighlighted ? '2' : '1'}"
+            role="button"
+            tabindex="0"
+            aria-label="${s.label} stream">
+          </path>
+          <path class="river-stream-centerline"
+            d="${centerD}"
+            fill="none"
+            stroke="${s.stroke}"
+            stroke-width="1.5">
+          </path>
+        </g>
+      `;
+    });
+    els.riverStreamsLayer.innerHTML = streamsHtml;
+
+    // Attach stream click listeners
+    const streamChannels = els.riverStreamsLayer.querySelectorAll('.river-stream-channel');
+    streamChannels.forEach((ch) => {
+      const sId = ch.getAttribute('data-stream');
+      ch.onclick = () => {
+        setStream(state.stream === sId ? 'all' : sId);
+      };
+      ch.onmouseenter = () => {
+        state.hoveredStreamId = sId;
+        updateRiverVisualClasses();
+      };
+      ch.onmouseleave = () => {
+        state.hoveredStreamId = null;
+        updateRiverVisualClasses();
+      };
+    });
+
+    // 5. Render Event Signals along the River
+    // Place each talk at its exact chronological position along its topic stream
+    let eventsHtml = '';
+    const sorted = state.events.slice().sort((a, b) => a.date.localeCompare(b.date));
+
+    // Group talks by date to calculate lane offsets for simultaneous talks
     const byDate = new Map();
     sorted.forEach((e) => {
       const arr = byDate.get(e.date) || [];
@@ -230,421 +561,290 @@
       byDate.set(e.date, arr);
     });
 
-    const positions = new Map();
-    const paddingX = 64;
-    const availableWidth = Math.max(1, width - paddingX * 2);
+    sorted.forEach((ev) => {
+      const yr = yearOf(ev);
+      const yrIdx = years.indexOf(yr);
+      if (yrIdx === -1) return;
 
-    sorted.forEach((e) => {
-      const t = new Date(`${e.date}T12:00:00`).getTime();
-      const x = paddingX + ((t - minTime) / timeSpan) * availableWidth;
+      const sId = assignStream(ev);
+      const streamPoints = streamGeometry.get(sId);
+      if (!streamPoints) return;
 
-      const siblings = byDate.get(e.date) || [e];
-      const sibIdx = siblings.indexOf(e);
-      const laneOffset = (sibIdx - (siblings.length - 1) / 2) * 28;
+      const curPoint = streamPoints[yrIdx];
+      const nextPoint = streamPoints[yrIdx + 1] || curPoint;
 
-      // Deterministic vertical placement based on topics hash
-      const topicStr = (e.topics || []).slice(0, 3).join('|');
-      const seed = stableHash(e.id + topicStr);
-
-      // Clamp y comfortably inside field
-      const minY = 72;
-      const maxY = height - 76;
-      let y = minY + seed * (maxY - minY) + laneOffset;
-      if (y < minY) y = minY + 10;
-      if (y > maxY) y = maxY - 10;
-
-      positions.set(e.id, {
-        x: Math.round(x * 10) / 10,
-        y: Math.round(y * 10) / 10,
-        event: e,
-        year: yearOf(e)
-      });
-    });
-
-    return positions;
-  }
-
-  // Draw Glowing Network Threads & Canvas Guidelines
-  function drawConstellation() {
-    if (!els.canvas || !els.fieldWrap) return;
-
-    const wrapRect = els.fieldWrap.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const width = wrapRect.width;
-    const height = wrapRect.height;
-
-    els.canvas.width = Math.round(width * dpr);
-    els.canvas.height = Math.round(height * dpr);
-    els.canvas.style.width = `${width}px`;
-    els.canvas.style.height = `${height}px`;
-
-    const ctx = els.canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-
-    state.positions = computeNodeLayout(state.events);
-    const posMap = state.positions;
-    if (posMap.size === 0) return;
-
-    // Draw Subtle Year Grid Guidelines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.lineWidth = 1;
-
-    const years = Array.from(new Set(state.events.map(yearOf))).sort();
-    years.forEach((yr) => {
-      const yrEvents = state.events.filter((e) => yearOf(e) === yr);
-      if (yrEvents.length > 0 && posMap.has(yrEvents[0].id)) {
-        const xPos = posMap.get(yrEvents[0].id).x;
-        ctx.beginPath();
-        ctx.setLineDash([4, 6]);
-        ctx.moveTo(xPos, 28);
-        ctx.lineTo(xPos, height - 32);
-        ctx.stroke();
-        ctx.setLineDash([]);
+      // Fraction of the year (0.0 to 1.0)
+      let dayFraction = 0.5;
+      try {
+        const parts = ev.date.split('-');
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        dayFraction = (month * 30 + day) / 365;
+      } catch {
+        // fallback
       }
-    });
 
-    // Topic Connections
-    const activeHighlightTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
-    const hoveredNode = state.hoveredNodeId ? state.events.find((e) => e.id === state.hoveredNodeId) : null;
-    const hoveredNodeTopics = hoveredNode ? new Set(hoveredNode.topics || []) : null;
+      // Calculate smooth X & Y on stream
+      const xSpan = nextPoint.x - curPoint.x;
+      const xPos = Math.round(curPoint.x + (dayFraction - 0.5) * (xSpan * 0.72));
 
-    const topicGroups = new Map();
-    state.events.forEach((ev) => {
-      (ev.topics || []).forEach((top) => {
-        const arr = topicGroups.get(top) || [];
-        arr.push(ev);
-        topicGroups.set(top, arr);
-      });
-    });
+      // Calculate Y interpolated on center line with small siblings lane offset
+      const siblings = byDate.get(ev.date) || [ev];
+      const sibIdx = siblings.indexOf(ev);
+      const sibOffset = (sibIdx - (siblings.length - 1) / 2) * 14;
 
-    const renderedConnections = new Set();
+      const yBase = curPoint.yCenter + (nextPoint.yCenter - curPoint.yCenter) * dayFraction;
+      const yMin = curPoint.yTop + 6;
+      const yMax = curPoint.yBot - 6;
+      let yPos = Math.round(yBase + sibOffset);
+      if (yPos < yMin) yPos = yMin;
+      if (yPos > yMax) yPos = yMax;
 
-    topicGroups.forEach((groupEvents, topicName) => {
-      const isTopicActive = activeHighlightTopic === topicName;
-      const isTopicConnectedToHoveredNode = hoveredNodeTopics && hoveredNodeTopics.has(topicName);
-
-      const sortedInTopic = groupEvents.slice().sort((a, b) => a.date.localeCompare(b.date));
-
-      for (let i = 1; i < sortedInTopic.length; i += 1) {
-        const e1 = sortedInTopic[i - 1];
-        const e2 = sortedInTopic[i];
-        const p1 = posMap.get(e1.id);
-        const p2 = posMap.get(e2.id);
-        if (!p1 || !p2) continue;
-
-        const connectionKey = `${e1.id}__${e2.id}`;
-        const reverseKey = `${e2.id}__${e1.id}`;
-
-        if (renderedConnections.has(connectionKey) || renderedConnections.has(reverseKey)) {
-          if (!isTopicActive && !isTopicConnectedToHoveredNode) continue;
-        }
-
-        renderedConnections.add(connectionKey);
-
-        const midX = (p1.x + p2.x) / 2;
-        ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.bezierCurveTo(midX, p1.y, midX, p2.y, p2.x, p2.y);
-
-        if (isTopicActive) {
-          ctx.strokeStyle = 'rgba(136, 161, 255, 0.95)';
-          ctx.lineWidth = 2.4;
-          ctx.shadowColor = 'rgba(136, 161, 255, 0.8)';
-          ctx.shadowBlur = 10;
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-        } else if (isTopicConnectedToHoveredNode) {
-          ctx.strokeStyle = 'rgba(96, 165, 250, 0.85)';
-          ctx.lineWidth = 1.8;
-          ctx.shadowColor = 'rgba(96, 165, 250, 0.6)';
-          ctx.shadowBlur = 8;
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-        } else if (!activeHighlightTopic && !hoveredNode) {
-          ctx.strokeStyle = 'rgba(90, 115, 155, 0.22)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-      }
-    });
-
-    // Draw Subtle Node Halos on Canvas for Luminous Depth
-    state.events.forEach((ev) => {
-      const p = posMap.get(ev.id);
-      if (!p) return;
-      const isMatch = matchesEvent(ev);
-      const isSelected = ev.id === state.selectedId;
-      const isHighlighted = (activeHighlightTopic && (ev.topics || []).includes(activeHighlightTopic)) ||
-                            (hoveredNodeTopics && (ev.topics || []).some((t) => hoveredNodeTopics.has(t)));
-
-      if (isMatch && (isHighlighted || isSelected)) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, isSelected ? 8 : 6, 0, Math.PI * 2);
-        ctx.fillStyle = isSelected ? 'rgba(59, 130, 246, 0.35)' : 'rgba(136, 161, 255, 0.25)';
-        ctx.fill();
-      }
-    });
-
-    renderFieldDOMOverlays(posMap);
-  }
-
-  // Render DOM Buttons and Year Markings in Constellation
-  function renderFieldDOMOverlays(posMap) {
-    if (!els.fieldWrap || !els.fieldYears || !els.fieldNodes) return;
-
-    const width = els.fieldWrap.clientWidth || 1000;
-    const height = els.fieldWrap.clientHeight || 580;
-
-    // 1. Year Markers
-    const years = Array.from(new Set(state.events.map(yearOf))).sort();
-    els.fieldYears.innerHTML = years.map((yr) => {
-      const yrEvents = state.events.filter((e) => yearOf(e) === yr);
-      if (!yrEvents.length || !posMap.has(yrEvents[0].id)) return '';
-      const x = posMap.get(yrEvents[0].id).x;
-      const leftPct = (x / width) * 100;
-      return `<div class="field-year-mark" style="left:${leftPct.toFixed(2)}%">${yr}</div>`;
-    }).join('');
-
-    // 2. Node Buttons
-    const activeHighlightTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
-    const hoveredNode = state.hoveredNodeId ? state.events.find((e) => e.id === state.hoveredNodeId) : null;
-    const hoveredNodeTopics = hoveredNode ? new Set(hoveredNode.topics || []) : null;
-
-    let nodesHtml = '';
-    state.events.forEach((ev) => {
-      const pos = posMap.get(ev.id);
-      if (!pos) return;
-
+      const streamObj = STREAMS.find((s) => s.id === sId) || STREAMS[0];
       const isMatch = matchesEvent(ev);
       const isSelected = ev.id === state.selectedId;
 
       let isHighlighted = false;
-      if (activeHighlightTopic && (ev.topics || []).includes(activeHighlightTopic)) {
-        isHighlighted = true;
-      }
-      if (hoveredNodeTopics && (ev.topics || []).some((t) => hoveredNodeTopics.has(t))) {
-        isHighlighted = true;
-      }
+      if (activeStreamId && activeStreamId === sId) isHighlighted = true;
+      if (activeTopic && (ev.topics || []).includes(activeTopic)) isHighlighted = true;
 
-      const leftPct = (pos.x / width) * 100;
-      const topPct = (pos.y / height) * 100;
-
-      // Smart positioning classes to prevent labels from clipping at container edges
-      const flipUp = topPct > 68;
-      const shiftLeft = leftPct < 16;
-      const shiftRight = leftPct > 84;
-
-      const classes = [
-        'field-node-btn',
+      const groupClasses = [
+        'river-signal-group',
         isSelected ? 'selected' : '',
         !isMatch ? 'dim' : '',
-        isHighlighted ? 'highlighted' : '',
-        flipUp ? 'flip-label-up' : '',
-        shiftLeft ? 'shift-label-left' : '',
-        shiftRight ? 'shift-label-right' : ''
+        isHighlighted ? 'highlighted' : ''
       ].filter(Boolean).join(' ');
 
-      nodesHtml += `
-        <button type="button"
-          class="${classes}"
-          style="left:${leftPct.toFixed(2)}%;top:${topPct.toFixed(2)}%"
+      eventsHtml += `
+        <g class="${groupClasses}"
           data-id="${escapeHtml(ev.id)}"
-          aria-label="${escapeHtml(ev.talk)} — ${escapeHtml(ev.event)} (${escapeHtml(ev.date)})"
-          tabindex="0">
-          <span class="node-dot" aria-hidden="true"></span>
-          <span class="field-node-label" aria-hidden="true">
-            <span class="node-label-title">${escapeHtml(ev.talk)}</span>
-            <span class="node-label-sub">${escapeHtml(ev.event)} · ${escapeHtml(formatDateShort(ev.date))}</span>
-          </span>
-        </button>
+          data-x="${xPos}"
+          data-y="${yPos}"
+          tabindex="0"
+          role="button"
+          aria-label="${escapeHtml(ev.talk)} (${escapeHtml(formatDateShort(ev.date))}, ${escapeHtml(ev.city || 'Online')})">
+          <circle class="river-signal-halo" cx="${xPos}" cy="${yPos}" r="11"></circle>
+          <circle class="river-signal-point" cx="${xPos}" cy="${yPos}" r="4.5" fill="#ffffff" stroke="${streamObj.color}" stroke-width="2.5"></circle>
+          <circle class="river-signal-hit" cx="${xPos}" cy="${yPos}" r="16"></circle>
+        </g>
       `;
     });
+    els.riverEventsLayer.innerHTML = eventsHtml;
 
-    els.fieldNodes.innerHTML = nodesHtml;
-    attachNodeEventListeners(posMap);
-  }
-
-  function attachNodeEventListeners(posMap) {
-    const buttons = els.fieldNodes.querySelectorAll('.field-node-btn');
-    buttons.forEach((btn) => {
-      const id = btn.getAttribute('data-id');
-      const pos = posMap.get(id);
-      if (!pos) return;
-
-      const ev = pos.event;
-
-      const onEnter = () => {
-        state.hoveredNodeId = id;
-        btn.classList.add('preview-active');
-        if (els.fieldStatus) {
-          els.fieldStatus.textContent = `${ev.talk} · ${ev.event} (${ev.city || 'Online'}) · click to inspect`;
-        }
-        drawConstellationOnly(posMap);
-      };
-
-      const onLeave = () => {
-        state.hoveredNodeId = null;
-        btn.classList.remove('preview-active');
-        updateFieldStatus();
-        drawConstellationOnly(posMap);
-      };
-
-      btn.addEventListener('mouseenter', onEnter);
-      btn.addEventListener('mouseleave', onLeave);
-      btn.addEventListener('focus', onEnter);
-      btn.addEventListener('blur', onLeave);
-
-      btn.addEventListener('click', (e) => {
-        const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        if (isTouch && !btn.classList.contains('preview-active') && !btn.classList.contains('selected')) {
-          e.preventDefault();
-          buttons.forEach((b) => b.classList.remove('preview-active'));
-          btn.classList.add('preview-active');
-          onEnter();
-          return;
-        }
-
-        state.previousFocusedElement = btn;
-        openEvent(id);
-      });
-    });
-  }
-
-  function drawConstellationOnly(posMap) {
-    if (!els.canvas || !els.fieldWrap) return;
-    const wrapRect = els.fieldWrap.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const width = wrapRect.width;
-    const height = wrapRect.height;
-
-    const ctx = els.canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-
-    // Subtle guidelines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.lineWidth = 1;
-    const years = Array.from(new Set(state.events.map(yearOf))).sort();
-    years.forEach((yr) => {
-      const yrEvents = state.events.filter((e) => yearOf(e) === yr);
-      if (yrEvents.length > 0 && posMap.has(yrEvents[0].id)) {
-        const xPos = posMap.get(yrEvents[0].id).x;
-        ctx.beginPath();
-        ctx.setLineDash([4, 6]);
-        ctx.moveTo(xPos, 28);
-        ctx.lineTo(xPos, height - 32);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-    });
-
-    const activeHighlightTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
-    const hoveredNode = state.hoveredNodeId ? state.events.find((e) => e.id === state.hoveredNodeId) : null;
-    const hoveredNodeTopics = hoveredNode ? new Set(hoveredNode.topics || []) : null;
-
-    const topicGroups = new Map();
-    state.events.forEach((ev) => {
-      (ev.topics || []).forEach((top) => {
-        const arr = topicGroups.get(top) || [];
-        arr.push(ev);
-        topicGroups.set(top, arr);
-      });
-    });
-
-    const renderedConnections = new Set();
-
-    topicGroups.forEach((groupEvents, topicName) => {
-      const isTopicActive = activeHighlightTopic === topicName;
-      const isTopicConnectedToHoveredNode = hoveredNodeTopics && hoveredNodeTopics.has(topicName);
-
-      const sortedInTopic = groupEvents.slice().sort((a, b) => a.date.localeCompare(b.date));
-      for (let i = 1; i < sortedInTopic.length; i += 1) {
-        const e1 = sortedInTopic[i - 1];
-        const e2 = sortedInTopic[i];
-        const p1 = posMap.get(e1.id);
-        const p2 = posMap.get(e2.id);
-        if (!p1 || !p2) continue;
-
-        const connectionKey = `${e1.id}__${e2.id}`;
-        const reverseKey = `${e2.id}__${e1.id}`;
-
-        if (renderedConnections.has(connectionKey) || renderedConnections.has(reverseKey)) {
-          if (!isTopicActive && !isTopicConnectedToHoveredNode) continue;
-        }
-
-        renderedConnections.add(connectionKey);
-
-        const midX = (p1.x + p2.x) / 2;
-        ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.bezierCurveTo(midX, p1.y, midX, p2.y, p2.x, p2.y);
-
-        if (isTopicActive) {
-          ctx.strokeStyle = 'rgba(136, 161, 255, 0.95)';
-          ctx.lineWidth = 2.4;
-          ctx.shadowColor = 'rgba(136, 161, 255, 0.8)';
-          ctx.shadowBlur = 10;
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-        } else if (isTopicConnectedToHoveredNode) {
-          ctx.strokeStyle = 'rgba(96, 165, 250, 0.85)';
-          ctx.lineWidth = 1.8;
-          ctx.shadowColor = 'rgba(96, 165, 250, 0.6)';
-          ctx.shadowBlur = 8;
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-        } else if (!activeHighlightTopic && !hoveredNode) {
-          ctx.strokeStyle = 'rgba(90, 115, 155, 0.22)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-      }
-    });
-
-    // Halos
-    state.events.forEach((ev) => {
-      const p = posMap.get(ev.id);
-      if (!p) return;
-      const isMatch = matchesEvent(ev);
-      const isSelected = ev.id === state.selectedId;
-      const isHighlighted = (activeHighlightTopic && (ev.topics || []).includes(activeHighlightTopic)) ||
-                            (hoveredNodeTopics && (ev.topics || []).some((t) => hoveredNodeTopics.has(t)));
-
-      if (isMatch && (isHighlighted || isSelected)) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, isSelected ? 8 : 6, 0, Math.PI * 2);
-        ctx.fillStyle = isSelected ? 'rgba(59, 130, 246, 0.35)' : 'rgba(136, 161, 255, 0.25)';
-        ctx.fill();
-      }
-    });
-
-    // Update node button highlighted / selected classes without re-creating DOM
-    const buttons = els.fieldNodes.querySelectorAll('.field-node-btn');
-    buttons.forEach((btn) => {
-      const id = btn.getAttribute('data-id');
+    // Attach Signal Interactive Listeners (Hover, Focus, Click to open dossier)
+    const signalGroups = els.riverEventsLayer.querySelectorAll('.river-signal-group');
+    signalGroups.forEach((grp) => {
+      const id = grp.getAttribute('data-id');
       const ev = state.events.find((e) => e.id === id);
       if (!ev) return;
 
+      const onEnter = () => {
+        state.hoveredEventId = id;
+        showRiverTooltip(ev, grp);
+      };
+
+      const onLeave = () => {
+        if (state.hoveredEventId === id) {
+          state.hoveredEventId = null;
+          hideRiverTooltip();
+        }
+      };
+
+      grp.addEventListener('mouseenter', onEnter);
+      grp.addEventListener('mouseleave', onLeave);
+      grp.addEventListener('focus', onEnter);
+      grp.addEventListener('blur', onLeave);
+
+      grp.addEventListener('click', () => {
+        state.previousFocusedElement = grp;
+        openEvent(id);
+      });
+
+      grp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          state.previousFocusedElement = grp;
+          openEvent(id);
+        }
+      });
+    });
+
+    updateEraReadout();
+  }
+
+  function updateRiverVisualClasses() {
+    if (!els.riverSvg) return;
+
+    const activeStreamId = state.hoveredStreamId || (state.stream !== 'all' ? state.stream : null);
+    const activeTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
+
+    // Update Ribbons
+    const ribbons = els.riverSvg.querySelectorAll('.river-stream-ribbon');
+    ribbons.forEach((ribbon) => {
+      const channel = ribbon.closest('.river-stream-channel');
+      const sId = channel ? channel.getAttribute('data-stream') : null;
+
+      let isDim = false;
+      let isHighlighted = false;
+
+      if (activeStreamId) {
+        if (activeStreamId === sId) isHighlighted = true;
+        else isDim = true;
+      } else if (activeTopic) {
+        const topicStream = STREAMS.find((st) => st.keywords.some((kw) => activeTopic.toLowerCase().includes(kw)));
+        if (topicStream && topicStream.id === sId) isHighlighted = true;
+        else isDim = true;
+      }
+
+      ribbon.classList.toggle('highlighted', isHighlighted);
+      ribbon.classList.toggle('dim', isDim);
+      ribbon.setAttribute('stroke-width', isHighlighted ? '2' : '1');
+    });
+
+    // Update Event Signals
+    const signalGroups = els.riverSvg.querySelectorAll('.river-signal-group');
+    signalGroups.forEach((grp) => {
+      const id = grp.getAttribute('data-id');
+      const ev = state.events.find((e) => e.id === id);
+      if (!ev) return;
+
+      const sId = assignStream(ev);
       const isMatch = matchesEvent(ev);
       const isSelected = ev.id === state.selectedId;
 
       let isHighlighted = false;
-      if (activeHighlightTopic && (ev.topics || []).includes(activeHighlightTopic)) {
-        isHighlighted = true;
-      }
-      if (hoveredNodeTopics && (ev.topics || []).some((t) => hoveredNodeTopics.has(t))) {
-        isHighlighted = true;
-      }
+      if (activeStreamId && activeStreamId === sId) isHighlighted = true;
+      if (activeTopic && (ev.topics || []).includes(activeTopic)) isHighlighted = true;
 
-      btn.classList.toggle('selected', isSelected);
-      btn.classList.toggle('dim', !isMatch);
-      btn.classList.toggle('highlighted', isHighlighted);
+      grp.classList.toggle('selected', isSelected);
+      grp.classList.toggle('dim', !isMatch);
+      grp.classList.toggle('highlighted', isHighlighted);
     });
   }
 
+  function showRiverTooltip(event, signalGroup) {
+    if (!els.riverTooltip || !els.riverFieldWrap) return;
+
+    const rect = signalGroup.getBoundingClientRect();
+    const wrapRect = els.riverFieldWrap.getBoundingClientRect();
+
+    const tipX = rect.left - wrapRect.left + rect.width / 2;
+    const tipY = rect.top - wrapRect.top;
+
+    els.riverTooltip.innerHTML = `
+      <div class="tooltip-date-row">
+        <span>${escapeHtml(formatDateShort(event.date))}</span>
+        <span>${escapeHtml(event.city || 'Online')}</span>
+      </div>
+      <div class="tooltip-title">${escapeHtml(event.talk)}</div>
+      <div class="tooltip-event">${escapeHtml(event.event)}</div>
+      <div class="tooltip-topics">
+        ${(event.topics || []).slice(0, 3).map((t) => `<span class="tooltip-topic-tag">#${escapeHtml(t)}</span>`).join('')}
+      </div>
+      <div class="tooltip-inspect-hint">
+        <span>CLICK TO OPEN DOSSIER</span>
+        <span aria-hidden="true">↗</span>
+      </div>
+    `;
+
+    els.riverTooltip.style.left = `${tipX}px`;
+    els.riverTooltip.style.top = `${tipY}px`;
+    els.riverTooltip.classList.add('visible');
+  }
+
+  function hideRiverTooltip() {
+    if (els.riverTooltip) {
+      els.riverTooltip.classList.remove('visible');
+    }
+  }
+
+  // Update Era Commentary Card
+  function updateEraReadout() {
+    if (!els.riverEraCard || !els.eraBadge || !els.eraText) return;
+
+    const narrative = ERA_NARRATIVES[state.year] || ERA_NARRATIVES.all;
+    els.eraBadge.textContent = narrative.badge;
+    els.eraText.textContent = narrative.text;
+  }
+
   // ==========================================================================
-  // Render Components
+  // Timeline & "Play History" Mode
+  // ==========================================================================
+  function togglePlayHistory() {
+    if (state.isPlaying) {
+      stopPlayHistory();
+    } else {
+      startPlayHistory();
+    }
+  }
+
+  function startPlayHistory() {
+    state.isPlaying = true;
+    state.playStep = 0;
+
+    if (els.playHistoryBtn) {
+      els.playHistoryBtn.classList.add('playing');
+      const label = els.playHistoryBtn.querySelector('.play-label');
+      if (label) label.textContent = 'PAUSE';
+      const icon = els.playHistoryBtn.querySelector('.play-icon');
+      if (icon) icon.textContent = '⏸';
+    }
+
+    if (els.eraProgressBar) {
+      els.eraProgressBar.classList.remove('hidden');
+    }
+
+    const sequence = ['2023', '2024', '2025', '2026'];
+
+    const stepForward = () => {
+      if (!state.isPlaying) return;
+
+      const yr = sequence[state.playStep];
+      setYear(yr);
+
+      const pct = Math.round(((state.playStep + 1) / sequence.length) * 100);
+      if (els.eraProgressFill) {
+        els.eraProgressFill.style.width = `${pct}%`;
+      }
+
+      state.playStep += 1;
+      if (state.playStep >= sequence.length) {
+        // Conclude playback and settle on all or 2026
+        state.playTimer = setTimeout(() => {
+          stopPlayHistory();
+          setYear('all');
+        }, 4000);
+      } else {
+        state.playTimer = setTimeout(stepForward, 3600);
+      }
+    };
+
+    stepForward();
+  }
+
+  function stopPlayHistory() {
+    state.isPlaying = false;
+    clearTimeout(state.playTimer);
+    state.playTimer = null;
+
+    if (els.playHistoryBtn) {
+      els.playHistoryBtn.classList.remove('playing');
+      const label = els.playHistoryBtn.querySelector('.play-label');
+      if (label) label.textContent = 'PLAY HISTORY';
+      const icon = els.playHistoryBtn.querySelector('.play-icon');
+      if (icon) icon.textContent = '▶';
+    }
+
+    if (els.eraProgressBar) {
+      els.eraProgressBar.classList.add('hidden');
+    }
+    if (els.eraProgressFill) {
+      els.eraProgressFill.style.width = '0%';
+    }
+  }
+
+  // ==========================================================================
+  // Controls & Topic Selectors
   // ==========================================================================
   function renderYearControls() {
     if (!els.yearButtons) return;
@@ -665,6 +865,7 @@
     const btns = document.querySelectorAll('.year-switch .tool-btn[data-year]');
     btns.forEach((b) => {
       b.onclick = () => {
+        if (state.isPlaying) stopPlayHistory();
         setYear(b.dataset.year);
       };
     });
@@ -675,7 +876,7 @@
     const topics = getTopicCounts(state.events);
 
     const allBtn = `
-      <button type="button" class="topic-chip ${state.topic === 'all' ? 'active' : ''}" data-topic="all">
+      <button type="button" class="topic-chip ${state.topic === 'all' && state.stream === 'all' ? 'active' : ''}" data-topic="all">
         ALL TOPICS
       </button>
     `;
@@ -697,22 +898,22 @@
       c.onmouseenter = () => {
         if (top !== 'all') {
           state.hoveredTopic = top;
-          drawConstellationOnly(state.positions);
+          updateRiverVisualClasses();
         }
       };
       c.onmouseleave = () => {
         state.hoveredTopic = null;
-        drawConstellationOnly(state.positions);
+        updateRiverVisualClasses();
       };
       c.onfocus = () => {
         if (top !== 'all') {
           state.hoveredTopic = top;
-          drawConstellationOnly(state.positions);
+          updateRiverVisualClasses();
         }
       };
       c.onblur = () => {
         state.hoveredTopic = null;
-        drawConstellationOnly(state.positions);
+        updateRiverVisualClasses();
       };
     });
   }
@@ -735,11 +936,221 @@
     const cards = els.yearReadouts.querySelectorAll('.year-readout-card');
     cards.forEach((card) => {
       card.onclick = () => {
+        if (state.isPlaying) stopPlayHistory();
         setYear(card.dataset.year === state.year ? 'all' : card.dataset.year);
       };
     });
   }
 
+  // ==========================================================================
+  // 04 Geographic Reach (Data-Driven Regional Distribution)
+  // ==========================================================================
+  function renderGeographicReach() {
+    const totalEvents = state.events.length;
+    if (!totalEvents) return;
+
+    // 1. Regional Statistics
+    const regionStats = REGION_DEFINITIONS.map((def) => {
+      const talks = state.events.filter((e) => def.matches(e.city || 'Online'));
+      const cities = Array.from(new Set(talks.map((e) => e.city || 'Online'))).filter((c) => c !== 'Online');
+      const pct = ((talks.length / totalEvents) * 100).toFixed(1);
+      return {
+        ...def,
+        count: talks.length,
+        pct: pct,
+        cities: cities
+      };
+    });
+
+    const uniqueCities = Array.from(new Set(state.events.map((e) => e.city || 'Online'))).filter((c) => c !== 'Online');
+    const onlineTalks = state.events.filter((e) => (e.city || 'Online') === 'Online');
+
+    // Extract unique countries
+    const countries = new Set();
+    uniqueCities.forEach((c) => {
+      const parts = c.split(',');
+      if (parts.length > 1) countries.add(parts[parts.length - 1].trim());
+    });
+
+    if (els.reachCount) els.reachCount.textContent = uniqueCities.length;
+    if (els.countriesCount) els.countriesCount.textContent = countries.size;
+    if (els.onlineCount) els.onlineCount.textContent = onlineTalks.length;
+
+    // 2. Proportion Stacked Ribbon Bar
+    if (els.regionalBar) {
+      els.regionalBar.innerHTML = regionStats.map((r) => `
+        <div class="regional-segment ${state.region === r.id ? 'active' : ''}"
+          style="width: ${r.pct}%; background: ${r.color};"
+          data-region="${r.id}"
+          title="${r.name}: ${r.count} talks (${r.pct}%)"
+          role="button"
+          tabindex="0"
+          aria-label="${r.name}: ${r.count} talks">
+        </div>
+      `).join('');
+
+      const segments = els.regionalBar.querySelectorAll('.regional-segment');
+      segments.forEach((seg) => {
+        const rId = seg.getAttribute('data-region');
+        seg.onclick = () => {
+          setRegion(state.region === rId ? 'all' : rId);
+        };
+      });
+    }
+
+    // 3. Regional Breakdown Cards
+    if (els.regionalCardsGrid) {
+      els.regionalCardsGrid.innerHTML = regionStats.map((r) => {
+        const cityList = r.id === 'online'
+          ? 'Global virtual summits & live-streams'
+          : r.cities.map((c) => c.split(',')[0]).join(', ');
+
+        return `
+          <button type="button" class="regional-card ${state.region === r.id ? 'active' : ''}" data-region="${r.id}">
+            <div class="regional-card-header">
+              <h3 class="regional-card-title">${escapeHtml(r.name)}</h3>
+              <span class="regional-card-pct">${r.pct}%</span>
+            </div>
+            <div class="regional-card-count" style="color: ${r.color};">${r.count} talks</div>
+            <p class="regional-card-cities">${escapeHtml(cityList)}</p>
+          </button>
+        `;
+      }).join('');
+
+      const cards = els.regionalCardsGrid.querySelectorAll('.regional-card');
+      cards.forEach((card) => {
+        const rId = card.getAttribute('data-region');
+        card.onclick = () => {
+          setRegion(state.region === rId ? 'all' : rId);
+        };
+      });
+    }
+
+    // 4. Host Community Roster Pills
+    if (els.cityRoster) {
+      const cityCounts = new Map();
+      state.events.forEach((e) => {
+        const c = e.city || 'Online';
+        cityCounts.set(c, (cityCounts.get(c) || 0) + 1);
+      });
+
+      const entries = Array.from(cityCounts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+      els.cityRoster.innerHTML = entries.map(([city, count]) => `
+        <button type="button" class="city-pill-btn ${state.city === city ? 'active' : ''}" data-city="${escapeHtml(city)}">
+          ${escapeHtml(city)} · ${count}
+        </button>
+      `).join('');
+
+      const pills = els.cityRoster.querySelectorAll('.city-pill-btn');
+      pills.forEach((p) => {
+        const c = p.getAttribute('data-city');
+        p.onclick = () => {
+          setCity(state.city === c ? 'all' : c);
+          if (els.cityInspector && state.city !== 'all') {
+            els.cityInspector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        };
+      });
+    }
+
+    renderCityInspector();
+  }
+
+  function renderCityInspector() {
+    if (!els.cityInspector) return;
+
+    if (state.city === 'all' && state.region === 'all') {
+      els.cityInspector.className = 'city-inspector empty';
+      els.cityInspector.innerHTML = `
+        <p class="city-inspector-hint">
+          Select any region segment above or click a host community tag to inspect talks delivered in that location.
+        </p>
+      `;
+      return;
+    }
+
+    let matchingTalks = [];
+    let inspectorTitle = '';
+    let inspectorBadge = 'LOCATION ARCHIVE';
+
+    if (state.city !== 'all') {
+      inspectorTitle = state.city;
+      matchingTalks = state.events.filter((e) => (e.city || 'Online') === state.city);
+    } else if (state.region !== 'all') {
+      const regDef = REGION_DEFINITIONS.find((r) => r.id === state.region);
+      inspectorTitle = regDef ? regDef.name : 'Selected Region';
+      inspectorBadge = 'REGIONAL ARCHIVE';
+      matchingTalks = state.events.filter((e) => regDef && regDef.matches(e.city || 'Online'));
+    }
+
+    matchingTalks.sort((a, b) => b.date.localeCompare(a.date));
+
+    els.cityInspector.className = 'city-inspector';
+    els.cityInspector.innerHTML = `
+      <div class="city-inspector-header">
+        <div>
+          <span class="city-badge">${escapeHtml(inspectorBadge)}</span>
+          <h3 class="city-name">${escapeHtml(inspectorTitle)}</h3>
+          <span class="city-count">${matchingTalks.length} ${matchingTalks.length === 1 ? 'speaking engagement' : 'speaking engagements'} recorded</span>
+        </div>
+        <div class="city-inspector-actions">
+          <a href="#archive" class="city-action-link" id="city-jump-archive">View in Archive Ledger ↓</a>
+          <button type="button" class="city-reset-btn" id="city-reset-btn">Reset Location Filter ✕</button>
+        </div>
+      </div>
+      <div class="city-talks-grid">
+        ${matchingTalks.map((talk) => `
+          <article class="city-talk-card">
+            <div class="city-talk-top">
+              <span class="city-talk-date">${escapeHtml(formatDateShort(talk.date))}</span>
+              <span class="city-talk-event">${escapeHtml(talk.event)}</span>
+            </div>
+            <h4 class="city-talk-title">${escapeHtml(talk.talk)}</h4>
+            <p class="city-talk-desc">${escapeHtml(talk.description || 'Verified conference session.')}</p>
+            <div class="city-talk-bottom">
+              <div class="city-talk-topics">
+                ${(talk.topics || []).slice(0, 3).map((t) => `<span class="city-topic-tag">#${escapeHtml(t)}</span>`).join('')}
+              </div>
+              <button type="button" class="city-talk-open-btn" data-id="${escapeHtml(talk.id)}" aria-label="Open dossier for ${escapeHtml(talk.talk)}">
+                Open Talk Dossier ↗
+              </button>
+            </div>
+          </article>
+        `).join('')}
+      </div>
+    `;
+
+    const resetBtn = els.cityInspector.querySelector('#city-reset-btn');
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        state.city = 'all';
+        state.region = 'all';
+        rerender();
+      };
+    }
+
+    const jumpLink = els.cityInspector.querySelector('#city-jump-archive');
+    if (jumpLink) {
+      jumpLink.onclick = (e) => {
+        e.preventDefault();
+        scrollToArchive();
+      };
+    }
+
+    const openBtns = els.cityInspector.querySelectorAll('.city-talk-open-btn');
+    openBtns.forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-id');
+        state.previousFocusedElement = btn;
+        openEvent(id);
+      };
+    });
+  }
+
+  // ==========================================================================
+  // 02 Chronological Archive Ledger
+  // ==========================================================================
   function renderArchiveLedger() {
     if (!els.archiveList) return;
     const filtered = getFilteredEvents().sort((a, b) => b.date.localeCompare(a.date));
@@ -753,51 +1164,54 @@
 
     if (els.emptyState) els.emptyState.classList.add('hidden');
 
-    // Group by year descending
-    const grouped = new Map();
-    filtered.forEach((ev) => {
-      const yr = yearOf(ev);
-      const arr = grouped.get(yr) || [];
-      arr.push(ev);
-      grouped.set(yr, arr);
+    // Group talks by year
+    const byYear = new Map();
+    filtered.forEach((e) => {
+      const yr = yearOf(e);
+      const arr = byYear.get(yr) || [];
+      arr.push(e);
+      byYear.set(yr, arr);
     });
 
     let html = '';
-    grouped.forEach((yearEvents, yr) => {
+    byYear.forEach((eventsInYear, yr) => {
       html += `
         <div class="archive-year-group">
-          <h3 class="archive-year-header">
-            <span>${yr}</span>
-            <span class="archive-year-count">${yearEvents.length} ${yearEvents.length === 1 ? 'talk' : 'talks'}</span>
-          </h3>
-          <div class="archive-year-list">
+          <div class="archive-year-header">
+            <h3 class="archive-year-title">${yr}</h3>
+            <span class="archive-year-sub">${eventsInYear.length} ${eventsInYear.length === 1 ? 'talk' : 'talks'}</span>
+          </div>
+          <div class="archive-rows">
       `;
 
-      yearEvents.forEach((ev) => {
+      eventsInYear.forEach((ev) => {
         const photos = Array.isArray(ev.photos) ? ev.photos : [];
         const hasPhotos = photos.length > 0;
-        const formattedDate = formatDateShort(ev.date);
+        const stream = assignStream(ev);
+        const streamObj = STREAMS.find((s) => s.id === stream) || STREAMS[0];
 
         html += `
-          <article class="archive-row" tabindex="0" role="button" aria-haspopup="dialog" data-id="${escapeHtml(ev.id)}" aria-label="View details for ${escapeHtml(ev.talk)} at ${escapeHtml(ev.event)}">
-            <div class="archive-row-meta">
-              <time class="archive-date">${escapeHtml(formattedDate)}</time>
+          <article class="archive-row ${ev.id === state.selectedId ? 'active' : ''}"
+            data-id="${escapeHtml(ev.id)}"
+            role="button"
+            tabindex="0"
+            aria-label="${escapeHtml(ev.talk)} at ${escapeHtml(ev.event)}, ${escapeHtml(formatDateShort(ev.date))}">
+            <div class="archive-row-date">
+              <span class="archive-date-main">${escapeHtml(formatDateShort(ev.date))}</span>
               <span class="archive-location">${escapeHtml(ev.city || 'Online')}</span>
             </div>
 
-            <div class="archive-row-content">
-              <div class="archive-talk-btn">
-                <h4 class="archive-talk-title">${escapeHtml(ev.talk)}</h4>
-              </div>
+            <div class="archive-row-main">
               <div class="archive-event-name">${escapeHtml(ev.event)}</div>
-              ${ev.description ? `<p class="archive-abstract-snippet">${escapeHtml(ev.description)}</p>` : ''}
-              ${
-                Array.isArray(ev.topics) && ev.topics.length > 0
-                  ? `<div class="archive-topics-list">
-                      ${ev.topics.slice(0, 4).map((t) => `<span class="archive-topic-tag">#${escapeHtml(t)}</span>`).join('')}
-                    </div>`
-                  : ''
-              }
+              <h4 class="archive-talk-title">${escapeHtml(ev.talk)}</h4>
+              <p class="archive-talk-desc">${escapeHtml(ev.description || 'Verified conference session.')}</p>
+
+              <div class="archive-topics">
+                <span class="archive-stream-badge" style="color: ${streamObj.color}; border-color: ${streamObj.stroke};">
+                  ${streamObj.label}
+                </span>
+                ${(ev.topics || []).map((t) => `<span class="archive-topic-tag">#${escapeHtml(t)}</span>`).join('')}
+              </div>
             </div>
 
             <div class="archive-row-action">
@@ -856,13 +1270,24 @@
       const parts = [];
       if (state.year !== 'all') parts.push(state.year);
       if (state.topic !== 'all') parts.push(`#${state.topic}`);
+      if (state.stream !== 'all') {
+        const st = STREAMS.find((s) => s.id === state.stream);
+        if (st) parts.push(st.label);
+      }
       if (state.city !== 'all') parts.push(state.city);
+      if (state.region !== 'all') {
+        const reg = REGION_DEFINITIONS.find((r) => r.id === state.region);
+        if (reg) parts.push(reg.name);
+      }
       if (state.query) parts.push(`"${state.query}"`);
 
       els.archiveFilterNote.textContent = parts.length > 0 ? parts.join(' · ') : 'All speaking events';
     }
   }
 
+  // ==========================================================================
+  // 03 Technical Threads Grid
+  // ==========================================================================
   function renderTechnicalThreads() {
     if (!els.threadGrid) return;
     const topTopics = getTopicCounts(state.events).slice(0, 9);
@@ -897,213 +1322,16 @@
       const top = c.getAttribute('data-topic');
       c.onclick = () => {
         setTopic(top === state.topic ? 'all' : top);
-        const constSec = document.getElementById('constellation');
-        if (constSec) constSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const riverSec = document.getElementById('river');
+        if (riverSec) riverSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
       c.onmouseenter = () => {
         state.hoveredTopic = top;
-        drawConstellationOnly(state.positions);
+        updateRiverVisualClasses();
       };
       c.onmouseleave = () => {
         state.hoveredTopic = null;
-        drawConstellationOnly(state.positions);
-      };
-    });
-  }
-
-  function renderGeographicLayer() {
-    const cityCounts = new Map();
-    state.events.forEach((e) => {
-      const c = e.city || 'Online';
-      cityCounts.set(c, (cityCounts.get(c) || 0) + 1);
-    });
-
-    const entries = Array.from(cityCounts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-    const nonOnline = entries.filter(([c]) => c !== 'Online');
-    const onlineTalks = state.events.filter((e) => e.city === 'Online');
-
-    if (els.reachCount) els.reachCount.textContent = nonOnline.length;
-    if (els.onlineCount) els.onlineCount.textContent = onlineTalks.length;
-
-    // 1. Vector World Map Markers
-    if (els.mapMarkers) {
-      els.mapMarkers.innerHTML = '';
-      nonOnline.forEach(([cityName, count]) => {
-        const coords = CITY_COORDINATES[cityName];
-        if (!coords) return;
-
-        const proj = projectCoordinates(coords.lat, coords.lon);
-        const isSelected = state.city === cityName;
-        const isDim = state.city !== 'all' && !isSelected;
-
-        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        const groupClasses = ['map-marker-item', isSelected ? 'selected' : '', isDim ? 'dim' : ''].filter(Boolean).join(' ');
-        group.setAttribute('class', groupClasses);
-        group.setAttribute('tabindex', '0');
-        group.setAttribute('role', 'button');
-        group.setAttribute('aria-label', `${cityName}: ${count} ${count === 1 ? 'talk' : 'talks'}`);
-        group.setAttribute('data-city', cityName);
-
-        // Invisible large hit circle for easy touch/mouse targets
-        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        hit.setAttribute('class', 'marker-hit');
-        hit.setAttribute('cx', proj.x.toString());
-        hit.setAttribute('cy', proj.y.toString());
-        hit.setAttribute('r', '14');
-
-        const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        pulse.setAttribute('class', 'marker-pulse');
-        pulse.setAttribute('cx', proj.x.toString());
-        pulse.setAttribute('cy', proj.y.toString());
-        pulse.setAttribute('r', isSelected ? '14' : '7');
-
-        const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        point.setAttribute('class', 'marker-point');
-        point.setAttribute('cx', proj.x.toString());
-        point.setAttribute('cy', proj.y.toString());
-        point.setAttribute('r', isSelected ? '5.5' : '3.5');
-
-        group.appendChild(hit);
-        group.appendChild(pulse);
-        group.appendChild(point);
-
-        const showTip = () => {
-          if (!els.mapTooltip || !els.mapViewContainer) return;
-          const groupRect = group.getBoundingClientRect();
-          const containerRect = els.mapViewContainer.getBoundingClientRect();
-          const tipX = groupRect.left - containerRect.left + groupRect.width / 2;
-          const tipY = groupRect.top - containerRect.top - 8;
-
-          els.mapTooltip.textContent = `${cityName} — ${count} ${count === 1 ? 'talk' : 'talks'}`;
-          els.mapTooltip.style.left = `${tipX}px`;
-          els.mapTooltip.style.top = `${tipY}px`;
-          els.mapTooltip.classList.add('visible');
-        };
-
-        const hideTip = () => {
-          if (els.mapTooltip) els.mapTooltip.classList.remove('visible');
-        };
-
-        group.addEventListener('mouseenter', showTip);
-        group.addEventListener('mouseleave', hideTip);
-        group.addEventListener('focus', showTip);
-        group.addEventListener('blur', hideTip);
-
-        const toggleCity = () => {
-          setCity(state.city === cityName ? 'all' : cityName);
-          if (els.cityInspector && state.city !== 'all') {
-            els.cityInspector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        };
-
-        group.addEventListener('click', toggleCity);
-        group.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleCity();
-          }
-        });
-
-        els.mapMarkers.appendChild(group);
-      });
-    }
-
-    // 2. City Roster Buttons
-    if (els.cityRoster) {
-      els.cityRoster.innerHTML = entries.map(([city, count]) => `
-        <button type="button" class="city-pill-btn ${state.city === city ? 'active' : ''}" data-city="${escapeHtml(city)}">
-          ${escapeHtml(city)} · ${count}
-        </button>
-      `).join('');
-
-      const pills = els.cityRoster.querySelectorAll('.city-pill-btn');
-      pills.forEach((p) => {
-        const c = p.getAttribute('data-city');
-        p.onclick = () => {
-          setCity(state.city === c ? 'all' : c);
-          if (els.cityInspector && state.city !== 'all') {
-            els.cityInspector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        };
-      });
-    }
-
-    renderCityInspector();
-  }
-
-  function renderCityInspector() {
-    if (!els.cityInspector) return;
-
-    if (state.city === 'all') {
-      els.cityInspector.className = 'city-inspector empty';
-      els.cityInspector.innerHTML = `
-        <p class="city-inspector-hint">
-          Select any city marker on the map above or click a location tag to inspect talks delivered in that community.
-        </p>
-      `;
-      return;
-    }
-
-    const cityName = state.city;
-    const cityTalks = state.events
-      .filter((e) => (e.city || 'Online') === cityName)
-      .slice()
-      .sort((a, b) => b.date.localeCompare(a.date));
-
-    els.cityInspector.className = 'city-inspector';
-    els.cityInspector.innerHTML = `
-      <div class="city-inspector-header">
-        <div>
-          <span class="city-badge">LOCATION ARCHIVE</span>
-          <h3 class="city-name">${escapeHtml(cityName)}</h3>
-          <span class="city-count">${cityTalks.length} ${cityTalks.length === 1 ? 'speaking engagement' : 'speaking engagements'} recorded</span>
-        </div>
-        <div class="city-inspector-actions">
-          <a href="#archive" class="city-action-link" id="city-jump-archive">View in Archive Ledger ↓</a>
-          <button type="button" class="city-reset-btn" id="city-reset-btn">Reset City Filter ✕</button>
-        </div>
-      </div>
-      <div class="city-talks-grid">
-        ${cityTalks.map((talk) => `
-          <article class="city-talk-card">
-            <div class="city-talk-top">
-              <span class="city-talk-date">${escapeHtml(formatDateShort(talk.date))}</span>
-              <span class="city-talk-event">${escapeHtml(talk.event)}</span>
-            </div>
-            <h4 class="city-talk-title">${escapeHtml(talk.talk)}</h4>
-            <p class="city-talk-desc">${escapeHtml(talk.description || 'Verified conference session.')}</p>
-            <div class="city-talk-bottom">
-              <div class="city-talk-topics">
-                ${(talk.topics || []).slice(0, 3).map((t) => `<span class="city-topic-tag">#${escapeHtml(t)}</span>`).join('')}
-              </div>
-              <button type="button" class="city-talk-open-btn" data-id="${escapeHtml(talk.id)}" aria-label="Open dossier for ${escapeHtml(talk.talk)}">
-                Open Talk Dossier ↗
-              </button>
-            </div>
-          </article>
-        `).join('')}
-      </div>
-    `;
-
-    const resetBtn = els.cityInspector.querySelector('#city-reset-btn');
-    if (resetBtn) {
-      resetBtn.onclick = () => setCity('all');
-    }
-
-    const jumpLink = els.cityInspector.querySelector('#city-jump-archive');
-    if (jumpLink) {
-      jumpLink.onclick = (e) => {
-        e.preventDefault();
-        scrollToArchive();
-      };
-    }
-
-    const openBtns = els.cityInspector.querySelectorAll('.city-talk-open-btn');
-    openBtns.forEach((btn) => {
-      btn.onclick = () => {
-        const id = btn.getAttribute('data-id');
-        state.previousFocusedElement = btn;
-        openEvent(id);
+        updateRiverVisualClasses();
       };
     });
   }
@@ -1132,10 +1360,18 @@
 
     if (state.year !== 'all') parts.push(state.year);
     if (state.topic !== 'all') parts.push(`#${state.topic}`);
+    if (state.stream !== 'all') {
+      const st = STREAMS.find((s) => s.id === state.stream);
+      if (st) parts.push(st.label);
+    }
     if (state.city !== 'all') parts.push(state.city);
+    if (state.region !== 'all') {
+      const reg = REGION_DEFINITIONS.find((r) => r.id === state.region);
+      if (reg) parts.push(reg.name);
+    }
     if (state.query) parts.push(`"${state.query}"`);
 
-    els.fieldStatus.textContent = `${parts.join(' · ')} · select any node to inspect details`;
+    els.fieldStatus.textContent = `${parts.join(' · ')} · select any signal to inspect details`;
   }
 
   // ==========================================================================
@@ -1147,32 +1383,51 @@
     renderYearReadouts();
     renderArchiveLedger();
     renderTechnicalThreads();
-    renderGeographicLayer();
+    renderGeographicReach();
     updateFieldStatus();
-    drawConstellation();
+    renderTechnicalRiver();
   }
 
   function setYear(year) {
     state.year = year;
     state.city = 'all';
+    state.region = 'all';
     rerender();
   }
 
   function setTopic(topic) {
     state.topic = topic;
+    state.stream = 'all';
+    rerender();
+  }
+
+  function setStream(streamId) {
+    state.stream = streamId;
+    state.topic = 'all';
     rerender();
   }
 
   function setCity(city) {
     state.city = city;
+    state.region = 'all';
+    state.year = 'all';
+    rerender();
+  }
+
+  function setRegion(regionId) {
+    state.region = regionId;
+    state.city = 'all';
     state.year = 'all';
     rerender();
   }
 
   function clearAllFilters() {
+    if (state.isPlaying) stopPlayHistory();
     state.year = 'all';
     state.topic = 'all';
+    state.stream = 'all';
     state.city = 'all';
+    state.region = 'all';
     state.query = '';
     if (els.search) els.search.value = '';
     if (els.clearSearch) els.clearSearch.classList.add('hidden');
@@ -1180,7 +1435,7 @@
   }
 
   // ==========================================================================
-  // Event Detail Modal Dossier & Full Photo Support (Phase 10)
+  // Event Detail Modal Dossier & Full Photo Support
   // ==========================================================================
   function openEvent(id) {
     const event = state.events.find((e) => e.id === id);
@@ -1259,7 +1514,7 @@
       els.dialogClose.focus();
     }
 
-    drawConstellationOnly(state.positions);
+    updateRiverVisualClasses();
   }
 
   function renderModalGallery(event) {
@@ -1303,7 +1558,6 @@
     els.galleryStage.innerHTML = '';
 
     if (total === 0) {
-      // Authentic Archival Dossier State (Phase 10 requirement)
       if (els.galleryCounter) els.galleryCounter.textContent = '0 / 0';
       els.galleryStage.innerHTML = `
         <div class="gallery-archival-card">
@@ -1380,7 +1634,7 @@
       state.previousFocusedElement = null;
     }
 
-    drawConstellationOnly(state.positions);
+    updateRiverVisualClasses();
   }
 
   function handleRouteFromHash() {
@@ -1432,6 +1686,11 @@
       els.emptyResetBtn.addEventListener('click', clearAllFilters);
     }
 
+    // Play History Button
+    if (els.playHistoryBtn) {
+      els.playHistoryBtn.addEventListener('click', togglePlayHistory);
+    }
+
     // Modal dialog controls
     if (els.dialogClose) {
       els.dialogClose.addEventListener('click', closeEvent);
@@ -1475,25 +1734,16 @@
     // Hash change for deep links & browser back/forward
     window.addEventListener('hashchange', handleRouteFromHash);
 
-    // Responsive Canvas Resize with ResizeObserver
+    // Responsive window resize
     let resizeTimer = null;
-    const handleResize = () => {
+    window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        drawConstellation();
-      }, 80);
-    };
+        renderTechnicalRiver();
+      }, 100);
+    });
 
-    window.addEventListener('resize', handleResize);
-
-    if (window.ResizeObserver && els.fieldWrap) {
-      const ro = new ResizeObserver(() => {
-        handleResize();
-      });
-      ro.observe(els.fieldWrap);
-    }
-
-    // Light-dismiss dialog fallback (for browsers without native closedby support)
+    // Light-dismiss dialog fallback
     if (els.dialog) {
       if (!('closedBy' in HTMLDialogElement.prototype)) {
         els.dialog.addEventListener('click', (event) => {

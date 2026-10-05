@@ -1,6 +1,6 @@
-# Enes Turan — Technical Speaker Archive & Constellation
+# Enes Turan — Technical Speaker Archive & Technical River
 
-An interactive, data-driven technical speaking archive and visual constellation for **Enes Turan (@devenes)**, Google Developer Expert and Platform Engineer.
+An interactive, data-driven technical speaking archive and animated **Technical River** data visualization for **Enes Turan (@devenes)**, Google Developer Expert and Platform Engineer.
 
 Live site: [https://devenes.github.io](https://devenes.github.io)
 
@@ -8,12 +8,15 @@ Live site: [https://devenes.github.io](https://devenes.github.io)
 
 ## Architecture & Concept
 
-The website is architected around the **Technical Constellation** concept:
+The website is architected around the **Technical River** data visualization:
 
-1. **Spatial Constellation Discovery**: The verified speaking history is mapped as an interactive constellation. Time flows along the horizontal axis (from 2023 to 2026), and shared technical topics form visible, data-driven threads across conferences.
-2. **Accessible Chronological Ledger**: Beneath the constellation sits a semantic, accessible chronological ledger allowing visitors to read, filter, search, and scan talks in detail.
-3. **Data-Driven Architecture**: The entire site is rendered dynamically from [`data/events.json`](data/events.json). Adding an event automatically updates the total talk count, year timeline, constellation nodes, topic strip, technical threads, geographic reach, and archive rows without manual markup updates.
-4. **Zero-Dependency Lightweight Core**: Built entirely with pure static HTML, CSS, Vanilla JavaScript, and JSON. No frameworks, build steps, or external dependencies. Deploys cleanly via GitHub Pages and GitHub Actions.
+1. **The Technical River**: Visualizes the evolution and distribution of speaking topics over time. Time flows horizontally from 2023 to 2026. Each flowing channel represents a core technical theme (Cloud & Infrastructure, Kubernetes & Platforms, AI/ML & MLOps, GenAI & Autonomous Agents), expanding and converging based on real speaking volume across years.
+2. **Discrete Event Signals**: Individual talks are situated along their respective theme channels as discrete interactive nodes (`●`). Hovering or focusing displays talk metadata, while clicking opens the full speaking dossier dialog.
+3. **"Play History" Mode**: Chronologically animates through 2023 → 2024 → 2025 → 2026 accompanied by contextual editorial commentary explaining the architectural shifts.
+4. **Data-Driven Geographic Reach**: Rather than cartography, a lightweight regional distribution ribbon and cards break down speaking impact across 24 cities and 5 major regions (Türkiye, Central Asia, MENA, Balkans & Caucasus, and Online/Global), with an in-place talks inspector.
+5. **Accessible Chronological Ledger**: Beneath the river sits a semantic, accessible chronological ledger allowing visitors to read, filter, search, and scan talks in detail.
+6. **Data-Driven Architecture**: The entire site is rendered dynamically from [`data/events.json`](data/events.json). Adding an event automatically updates the total talk count, year timeline, river channels, event signals, topic strip, regional distribution, and archive rows without manual markup updates.
+7. **Zero-Dependency Lightweight Core**: Built entirely with pure static HTML, CSS, Vanilla JavaScript, and JSON. No frameworks, build steps, or external dependencies. Deploys cleanly via GitHub Pages and GitHub Actions.
 
 ---
 
@@ -22,8 +25,8 @@ The website is architected around the **Technical Constellation** concept:
 ```text
 /
 ├── index.html                  # Accessible semantic markup & landmarks
-├── styles.css                  # Editorial & constellation design system
-├── app.js                      # Constellation canvas, filtering & dialog engine
+├── styles.css                  # Editorial & Technical River design system
+├── app.js                      # Technical River SVG engine, filtering & dialog system
 ├── README.md                   # Site documentation & maintenance guide
 │
 ├── data/
@@ -44,11 +47,12 @@ The website is architected around the **Technical Constellation** concept:
 ## Interaction Model
 
 - **Year Focus**: Select any year (`ALL YEARS`, `2026`, `2025`, `2024`, `2023`) to isolate talks delivered in that period.
-- **Topic Illuminations**: Select or hover over any topic chip (e.g. `Kubernetes`, `AI Agents`, `Google Cloud`, `AI Infrastructure`) to trace its technical thread across years.
-- **Node Context**: Hovering, focusing, or tapping on any node in the constellation illuminates connected talks sharing common technical topics and reveals the talk title, conference name, and date directly at the node.
+- **Play History**: Click `▶ PLAY HISTORY` to watch a guided, animated progression through the 4-year technical journey.
+- **Topic Streams**: Select or hover over any topic chip or river channel to illuminate its stream while others gently recede.
+- **Signal Context**: Hovering or focusing on any talk signal along the river displays its exact date, location, event, and abstract preview.
 - **Search**: Type in the search box (or press `/` from anywhere on the page) to filter talks across titles, events, cities, descriptions, and topics.
-- **Event Dossier Dialog**: Click or press `Enter`/`Space` on any talk (in the constellation, city inspector, or archive ledger) to open an accessible modal dialog. Deep-links (`#<event-id>`) are automatically shareable and support browser back/forward history.
-- **Geographic Layer**: The vector map projection and city roster highlight international speaking reach. Selecting any city marker or location pill highlights the community with an active pulse beacon and opens an in-place talks inspector without jumping away from the map.
+- **Event Dossier Dialog**: Click or press `Enter`/`Space` on any talk signal or archive row to open an accessible modal dialog. Deep-links (`#<event-id>`) are automatically shareable and support browser back/forward history.
+- **Geographic Reach**: The regional distribution bar, summary cards, and city roster highlight international speaking reach across host communities without heavy cartographic maps.
 
 ---
 
