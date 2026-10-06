@@ -152,12 +152,28 @@
           <div id="river-nodes-overlay" class="river-nodes-overlay" role="region" aria-label="Interactive talk signals"></div>
           <div id="river-tooltip" class="river-tooltip" role="tooltip" aria-hidden="true"></div>
 
-          <div class="river-legend" aria-hidden="true">
-            <div class="legend-item"><span class="legend-color legend-cloud"></span><span>Cloud &amp; Infrastructure</span></div>
-            <div class="legend-item"><span class="legend-color legend-k8s"></span><span>Kubernetes &amp; Platforms</span></div>
-            <div class="legend-item"><span class="legend-color legend-aiml"></span><span>AI/ML &amp; MLOps</span></div>
-            <div class="legend-item"><span class="legend-color legend-agents"></span><span>GenAI &amp; AI Agents</span></div>
-            <div class="legend-item"><span class="legend-node-dot"></span><span>Talk Signal</span></div>
+          <div class="river-legend" id="river-legend" role="toolbar" aria-label="Technical stream filters">
+            <button type="button" class="legend-item" data-stream="cloud" aria-label="Filter by Cloud Architecture &amp; Serverless">
+              <span class="legend-color legend-cloud"></span><span>Cloud &amp; Serverless</span>
+            </button>
+            <button type="button" class="legend-item" data-stream="kubernetes" aria-label="Filter by Kubernetes &amp; GKE Platforms">
+              <span class="legend-color legend-k8s"></span><span>Kubernetes &amp; Platforms</span>
+            </button>
+            <button type="button" class="legend-item" data-stream="devops-sre" aria-label="Filter by DevOps &amp; Global SRE">
+              <span class="legend-color legend-sre"></span><span>DevOps &amp; Global SRE</span>
+            </button>
+            <button type="button" class="legend-item" data-stream="mlops" aria-label="Filter by AI/ML &amp; MLOps Platforms">
+              <span class="legend-color legend-mlops"></span><span>AI/ML &amp; MLOps</span>
+            </button>
+            <button type="button" class="legend-item" data-stream="genai" aria-label="Filter by Generative AI Systems">
+              <span class="legend-color legend-genai"></span><span>Generative AI</span>
+            </button>
+            <button type="button" class="legend-item" data-stream="agents" aria-label="Filter by Autonomous AI Agents &amp; ADK">
+              <span class="legend-color legend-agents"></span><span>Autonomous AI Agents</span>
+            </button>
+            <div class="legend-item legend-static" aria-hidden="true">
+              <span class="legend-node-dot"></span><span>Talk Signal</span>
+            </div>
           </div>
 
           <div class="field-status" id="field-status" aria-live="polite">

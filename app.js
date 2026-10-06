@@ -20,39 +20,63 @@
   const STREAMS = [
     {
       id: 'cloud',
-      label: 'Cloud & Infrastructure',
-      color: '#3b82f6',
+      label: 'Cloud Architecture & Serverless',
+      shortLabel: 'Cloud & Serverless',
+      color: '#2563eb',
       stroke: '#60a5fa',
-      fill: 'rgba(59, 130, 246, 0.28)',
-      highlightFill: 'rgba(59, 130, 246, 0.55)',
-      keywords: ['google cloud', 'cloud architecture', 'serverless', 'cloud run', 'cloud computing', 'infrastructure', 'architecture']
+      fill: 'rgba(37, 99, 235, 0.28)',
+      highlightFill: 'rgba(37, 99, 235, 0.55)',
+      keywords: ['google cloud', 'cloud architecture', 'serverless', 'cloud run', 'knative', 'cloud computing', 'infrastructure', 'scaling', 'study jam']
     },
     {
       id: 'kubernetes',
-      label: 'Kubernetes & Platforms',
-      color: '#0ea5e9',
+      label: 'Kubernetes & GKE Platforms',
+      shortLabel: 'Kubernetes & Platforms',
+      color: '#0284c7',
       stroke: '#38bdf8',
-      fill: 'rgba(14, 165, 233, 0.28)',
-      highlightFill: 'rgba(14, 165, 233, 0.55)',
-      keywords: ['kubernetes', 'gke', 'gke enterprise', 'platform engineering', 'devops', 'sre', 'reliability', 'developer experience', 'scheduling']
+      fill: 'rgba(2, 132, 199, 0.28)',
+      highlightFill: 'rgba(2, 132, 199, 0.55)',
+      keywords: ['kubernetes', 'gke', 'gke enterprise', 'gke autopilot', 'platform engineering', 'scheduling', 'containers', 'multi-cluster']
     },
     {
-      id: 'aiml',
-      label: 'AI/ML & MLOps',
-      color: '#8b5cf6',
-      stroke: '#a78bfa',
-      fill: 'rgba(139, 92, 246, 0.28)',
-      highlightFill: 'rgba(139, 92, 246, 0.55)',
-      keywords: ['ai/ml', 'mlops', 'vertex ai', 'machine learning', 'ai infrastructure', 'build with ai']
+      id: 'devops-sre',
+      label: 'DevOps & Global SRE',
+      shortLabel: 'DevOps & SRE',
+      color: '#d97706',
+      stroke: '#fbbf24',
+      fill: 'rgba(217, 119, 6, 0.28)',
+      highlightFill: 'rgba(217, 119, 6, 0.55)',
+      keywords: ['sre', 'reliability', 'observability', 'devops', 'software delivery', 'cloud engineering', 'operations']
+    },
+    {
+      id: 'mlops',
+      label: 'AI/ML & MLOps Platforms',
+      shortLabel: 'AI/ML & MLOps',
+      color: '#6366f1',
+      stroke: '#818cf8',
+      fill: 'rgba(99, 102, 241, 0.28)',
+      highlightFill: 'rgba(99, 102, 241, 0.55)',
+      keywords: ['mlops', 'ai/ml', 'vertex ai', 'machine learning', 'ai infrastructure', 'kubernetes for ai', 'ai platform', 'high-scale']
+    },
+    {
+      id: 'genai',
+      label: 'Generative AI Systems',
+      shortLabel: 'Generative AI',
+      color: '#9333ea',
+      stroke: '#c084fc',
+      fill: 'rgba(147, 51, 234, 0.28)',
+      highlightFill: 'rgba(147, 51, 234, 0.55)',
+      keywords: ['generative ai', 'genai', 'gemini', 'ai trends', 'frontier']
     },
     {
       id: 'agents',
-      label: 'GenAI & AI Agents',
-      color: '#ec4899',
+      label: 'Autonomous AI Agents & ADK',
+      shortLabel: 'Autonomous AI Agents',
+      color: '#db2777',
       stroke: '#f472b6',
-      fill: 'rgba(236, 72, 153, 0.28)',
-      highlightFill: 'rgba(236, 72, 153, 0.55)',
-      keywords: ['ai agents', 'generative ai', 'adk', 'agent', 'genai', 'ai', 'vertex ai', 'gemini']
+      fill: 'rgba(219, 39, 119, 0.28)',
+      highlightFill: 'rgba(219, 39, 119, 0.55)',
+      keywords: ['ai agents', 'adk', 'agent', 'intelligent agents', 'build with ai', 'langgraph', 'agentic']
     }
   ];
 
@@ -355,22 +379,67 @@
 
   // Assign Event to Primary Technical Stream
   function assignStream(event) {
+    const title = (event.talk || '').toLowerCase();
     const topics = (event.topics || []).map((t) => t.toLowerCase());
 
-    // Priority: Specific cutting-edge topics first
-    if (topics.some((t) => t.includes('agent') || t.includes('generative ai') || t.includes('langgraph') || t.includes('adk'))) {
+    // 1. Autonomous AI Agents & ADK
+    if (topics.some((t) => t.includes('agent') || t.includes('adk')) ||
+        title.includes('agent') || title.includes('adk')) {
       return 'agents';
     }
-    if (topics.some((t) => t.includes('ai/ml') || t.includes('mlops') || t.includes('vertex ai') || t.includes('build with ai'))) {
-      return 'aiml';
+
+    // 2. Generative AI Systems
+    if (topics.some((t) => t.includes('generative ai') || t.includes('genai')) ||
+        title.includes('generative ai')) {
+      return 'genai';
     }
-    if (topics.some((t) => t.includes('kubernetes') || t.includes('gke') || t.includes('platform') || t.includes('sre') || t.includes('scheduling'))) {
+
+    // 3. AI/ML & MLOps Platforms
+    if (topics.some((t) => t.includes('mlops') || t.includes('ai/ml') || t.includes('machine learning')) ||
+        title.includes('mlops') || title.includes('ai/ml') || title.includes('kubernetes for ai') ||
+        (topics.includes('gke') && topics.includes('ai')) ||
+        (topics.includes('ai') && title.includes('ai platform'))) {
+      return 'mlops';
+    }
+
+    // 4. DevOps & Global SRE
+    if (topics.some((t) => t.includes('sre') || t.includes('reliability') || t.includes('observability')) ||
+        title.includes('sre') || title.includes('reliability') ||
+        (topics.includes('devops') && !topics.includes('kubernetes'))) {
+      return 'devops-sre';
+    }
+
+    // 5. Kubernetes & GKE Platforms
+    if (topics.some((t) => t.includes('kubernetes') || t.includes('gke') || t.includes('scheduling')) ||
+        title.includes('kubernetes') || title.includes('gke') || title.includes('platform')) {
       return 'kubernetes';
     }
-    if (topics.some((t) => t === 'ai')) {
-      return 'agents';
-    }
+
+    // 6. Cloud Architecture & Serverless
     return 'cloud';
+  }
+
+  // Identify Cross-Cutting Secondary Streams (Topic Convergence)
+  function getSecondaryStreams(event, primaryStreamId) {
+    const topics = (event.topics || []).map((t) => t.toLowerCase());
+    const secondaries = [];
+
+    const checks = {
+      cloud: () => topics.some((t) => t.includes('cloud') || t.includes('serverless')),
+      kubernetes: () => topics.some((t) => t.includes('kubernetes') || t.includes('gke')),
+      'devops-sre': () => topics.some((t) => t.includes('sre') || t.includes('devops') || t.includes('reliability')),
+      mlops: () => topics.some((t) => t.includes('mlops') || t.includes('ai/ml') || t.includes('vertex ai')),
+      genai: () => topics.some((t) => t.includes('generative ai') || t.includes('gemini')),
+      agents: () => topics.some((t) => t.includes('agent') || t.includes('adk'))
+    };
+
+    Object.entries(checks).forEach(([id, fn]) => {
+      if (id !== primaryStreamId && fn()) {
+        secondaries.push(id);
+      }
+    });
+
+    return secondaries;
   }
 
   // Assign Event to Geographic Region
@@ -434,158 +503,222 @@
 
     const svgWidth = 1100;
     const svgHeight = 520;
-    const paddingX = 90;
-    const usableWidth = svgWidth - paddingX * 2;
+    const padLeft = 70;
+    const padRight = 70;
+    const usableWidth = svgWidth - padLeft - padRight;
 
-    // Distinct unique years sorted ascending
-    const years = Array.from(new Set(state.events.map(yearOf))).sort();
-    if (!years.length) return;
+    // Timeline domain: from May 1, 2023 to November 1, 2026 (42 calendar months)
+    const startEpoch = new Date('2023-05-01T00:00:00Z').getTime();
+    const endEpoch = new Date('2026-11-01T00:00:00Z').getTime();
+    const totalSpan = endEpoch - startEpoch;
 
-    // Horizontal X positions for each year column
-    const yearPositions = new Map();
-    years.forEach((yr, idx) => {
-      const x = paddingX + (idx / Math.max(1, years.length - 1)) * usableWidth;
-      yearPositions.set(yr, Math.round(x));
+    function timeToX(dateStr) {
+      const d = new Date(dateStr + 'T12:00:00Z').getTime();
+      return Math.round(padLeft + ((d - startEpoch) / totalSpan) * usableWidth);
+    }
+
+    // 1. Generate Monthly Sample Points for Continuous Ribbon Geometry
+    const months = [];
+    let curMonthDate = new Date('2023-05-01T00:00:00Z');
+    const endMonthDate = new Date('2026-11-01T00:00:00Z');
+    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+    while (curMonthDate <= endMonthDate) {
+      const y = curMonthDate.getUTCFullYear();
+      const m = curMonthDate.getUTCMonth();
+      const epoch = curMonthDate.getTime();
+      const dStr = `${y}-${String(m + 1).padStart(2, '0')}-01`;
+      const x = timeToX(dStr);
+      const isQuarter = (m === 0 || m === 3 || m === 6 || m === 9); // Jan, Apr, Jul, Oct
+
+      months.push({
+        year: y,
+        month: m,
+        name: monthNames[m],
+        epoch: epoch,
+        x: x,
+        isQuarter: isQuarter
+      });
+      curMonthDate.setUTCMonth(curMonthDate.getUTCMonth() + 1);
+    }
+
+    // Pre-calculate talk metadata & coordinates
+    const sigma = 75 * 24 * 3600 * 1000; // 75-day Gaussian smoothing kernel
+    const eventRecords = state.events.map((ev) => {
+      const pStream = assignStream(ev);
+      const sStreams = getSecondaryStreams(ev, pStream);
+      return {
+        ...ev,
+        stream: pStream,
+        secondaryStreams: sStreams,
+        epoch: new Date(ev.date + 'T12:00:00Z').getTime(),
+        x: timeToX(ev.date)
+      };
     });
 
-    // 1. Calculate Stream Volumes per Year
-    // Count talks per stream in each year
-    const yearlyCounts = new Map();
-    years.forEach((yr) => {
-      const map = new Map();
-      STREAMS.forEach((s) => map.set(s.id, 0));
-      yearlyCounts.set(yr, map);
-    });
+    // 2. Compute Dynamic Stream Thickness & Centers at Each Month Sample
+    const centerY = 265;
+    const streamSamples = new Map(); // streamId -> array of { x, yTop, yBot, yCenter }
+    STREAMS.forEach((s) => streamSamples.set(s.id, []));
 
-    state.events.forEach((ev) => {
-      const yr = yearOf(ev);
-      const sId = assignStream(ev);
-      if (yearlyCounts.has(yr)) {
-        const streamMap = yearlyCounts.get(yr);
-        streamMap.set(sId, (streamMap.get(sId) || 0) + 1);
-      }
-    });
-
-    // Compute vertical geometry: stream thickness & ribbon boundaries at each year
-    // Center the whole river vertically around Y = 250
-    const centerY = 250;
-    const streamGeometry = new Map(); // streamId -> array of { year, x, yTop, yBot, yCenter }
-    STREAMS.forEach((s) => streamGeometry.set(s.id, []));
-
-    years.forEach((yr) => {
-      const x = yearPositions.get(yr);
-      const streamMap = yearlyCounts.get(yr);
-      const yearEvents = state.events.filter((e) => yearOf(e) === yr);
-      const totalInYear = Math.max(1, yearEvents.length);
-
-      // Total ribbon height per stream based on share of talks in that year
-      const streamHeights = STREAMS.map((s) => {
-        const count = streamMap.get(s.id) || 0;
-        const baseThickness = 14;
-        const dynamicThickness = Math.round((count / totalInYear) * 160);
-        return {
-          id: s.id,
-          height: baseThickness + dynamicThickness
-        };
+    months.forEach((m) => {
+      const vols = STREAMS.map((s) => {
+        let sum = 0;
+        eventRecords.filter((e) => e.stream === s.id).forEach((e) => {
+          const dist = Math.abs(e.epoch - m.epoch);
+          sum += Math.exp(-Math.pow(dist / sigma, 2));
+        });
+        return { id: s.id, vol: sum };
       });
 
-      const gap = 12;
-      const totalStackHeight = streamHeights.reduce((sum, item) => sum + item.height, 0) + (STREAMS.length - 1) * gap;
-      let currentY = centerY - totalStackHeight / 2;
+      const baseH = 12;
+      const heights = vols.map((v) => ({
+        id: v.id,
+        h: baseH + Math.min(42, Math.round(v.vol * 9.5))
+      }));
 
-      streamHeights.forEach((item) => {
+      const gap = 8;
+      const totalStackH = heights.reduce((acc, item) => acc + item.h, 0) + (STREAMS.length - 1) * gap;
+      let currentY = centerY - totalStackH / 2;
+
+      heights.forEach((item) => {
         const yTop = currentY;
-        const yBot = currentY + item.height;
+        const yBot = currentY + item.h;
         const yCenter = (yTop + yBot) / 2;
-
-        streamGeometry.get(item.id).push({
-          year: yr,
-          x: x,
-          yTop: yTop,
-          yBot: yBot,
-          yCenter: yCenter
+        streamSamples.get(item.id).push({
+          x: m.x,
+          yTop: Math.round(yTop * 10) / 10,
+          yBot: Math.round(yBot * 10) / 10,
+          yCenter: Math.round(yCenter * 10) / 10
         });
-
         currentY = yBot + gap;
       });
     });
 
-    // 2. Render SVG Definitions (Gradients & Filters)
+    // Centerline vertical coordinate interpolator
+    function getStreamCenterY(streamId, x) {
+      const pts = streamSamples.get(streamId);
+      if (!pts || !pts.length) return centerY;
+      if (x <= pts[0].x) return pts[0].yCenter;
+      if (x >= pts[pts.length - 1].x) return pts[pts.length - 1].yCenter;
+      for (let i = 0; i < pts.length - 1; i += 1) {
+        if (x >= pts[i].x && x <= pts[i + 1].x) {
+          const span = pts[i + 1].x - pts[i].x;
+          const t = span > 0 ? (x - pts[i].x) / span : 0;
+          return pts[i].yCenter + t * (pts[i + 1].yCenter - pts[i].yCenter);
+        }
+      }
+      return pts[0].yCenter;
+    }
+
+    // 3. Render SVG Definitions (Gradients)
     let defsHtml = '';
     STREAMS.forEach((s) => {
       defsHtml += `
         <linearGradient id="grad-${s.id}" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="${s.color}" stop-opacity="0.32" />
+          <stop offset="0%" stop-color="${s.color}" stop-opacity="0.28" />
           <stop offset="50%" stop-color="${s.color}" stop-opacity="0.45" />
-          <stop offset="100%" stop-color="${s.stroke}" stop-opacity="0.35" />
+          <stop offset="100%" stop-color="${s.stroke}" stop-opacity="0.32" />
         </linearGradient>
       `;
     });
     els.riverDefs.innerHTML = defsHtml;
 
-    // 3. Render Background Grid Lines & Year Marks
+    // 4. Render Background Grid Lines, Year Focus & Monthly Ticks
+    const yearZones = [
+      { year: '2023', start: '2023-05-01', end: '2023-12-31', era: 'FOUNDATIONS' },
+      { year: '2024', start: '2024-01-01', end: '2024-12-31', era: 'CONVERGENCE' },
+      { year: '2025', start: '2025-01-01', end: '2025-12-31', era: 'AGENTIC WAVE' },
+      { year: '2026', start: '2026-01-01', end: '2026-11-01', era: 'GLOBAL SCALE' }
+    ];
+
     let gridHtml = '';
-    years.forEach((yr) => {
-      const x = yearPositions.get(yr);
-      const isYearActive = state.year === yr || state.year === 'all';
+
+    // Active year focus backdrop
+    if (state.year !== 'all') {
+      const activeZone = yearZones.find((z) => z.year === state.year);
+      if (activeZone) {
+        const x1 = timeToX(activeZone.start);
+        const x2 = timeToX(activeZone.end);
+        const w = Math.max(20, x2 - x1);
+        gridHtml += `
+          <rect class="river-year-focus" x="${x1}" y="14" width="${w}" height="${svgHeight - 28}" rx="4"></rect>
+        `;
+      }
+    }
+
+    // Year boundary vertical lines & labels
+    yearZones.forEach((z, idx) => {
+      const x = timeToX(z.start);
+      const isYearActive = state.year === z.year;
+      if (idx > 0) {
+        gridHtml += `<line class="river-year-line" x1="${x}" y1="16" x2="${x}" y2="${svgHeight - 36}"></line>`;
+      }
+      const labelX = x + (idx === 0 ? 30 : 16);
       gridHtml += `
-        <line class="river-year-line" x1="${x}" y1="36" x2="${x}" y2="${svgHeight - 40}"></line>
-        <text class="river-year-label ${state.year === yr ? 'active' : ''}" x="${x}" y="24">${yr}</text>
+        <text class="river-year-label ${isYearActive ? 'active' : ''}" x="${labelX}" y="24">${z.year}</text>
+        <text class="river-era-marker" x="${labelX + 2}" y="36">${z.era}</text>
+      `;
+    });
+
+    // Monthly tick marks & labels
+    months.forEach((m) => {
+      const tickClass = m.isQuarter ? 'river-month-tick quarter-tick' : 'river-month-tick';
+      const labelClass = m.isQuarter ? 'river-month-label quarter-mark' : 'river-month-label minor-month';
+      gridHtml += `
+        <line class="${tickClass}" x1="${m.x}" y1="46" x2="${m.x}" y2="${m.isQuarter ? '54' : '50'}"></line>
+        <text class="${labelClass}" x="${m.x}" y="43">${m.name}</text>
       `;
     });
     els.riverBackgroundGrid.innerHTML = gridHtml;
 
-    // 4. Render Fluid Stream Ribbons
-    let streamsHtml = '';
+    // 5. Render Fluid Stream Ribbons & Centerlines
     const activeStreamId = state.hoveredStreamId || (state.stream !== 'all' ? state.stream : null);
     const activeTopic = state.hoveredTopic || (state.topic !== 'all' ? state.topic : null);
 
+    let streamsHtml = '';
+    const areaGen = (typeof d3 !== 'undefined' && d3.area)
+      ? d3.area().x((d) => d.x).y0((d) => d.yTop).y1((d) => d.yBot).curve(d3.curveMonotoneX)
+      : null;
+    const lineGen = (typeof d3 !== 'undefined' && d3.line)
+      ? d3.line().x((d) => d.x).y((d) => d.yCenter).curve(d3.curveMonotoneX)
+      : null;
+
     STREAMS.forEach((s) => {
-      const points = streamGeometry.get(s.id);
+      const points = streamSamples.get(s.id);
       if (!points || points.length < 2) return;
 
-      // Construct Cubic Bézier Upper Boundary
-      let pathD = `M ${points[0].x - 40} ${points[0].yTop}`;
-      pathD += ` L ${points[0].x} ${points[0].yTop}`;
+      let pathD = '';
+      let centerD = '';
 
-      for (let i = 0; i < points.length - 1; i += 1) {
-        const p0 = points[i];
-        const p1 = points[i + 1];
-        const dx = p1.x - p0.x;
-        const cp1x = p0.x + dx * 0.45;
-        const cp2x = p1.x - dx * 0.45;
-        pathD += ` C ${cp1x} ${p0.yTop}, ${cp2x} ${p1.yTop}, ${p1.x} ${p1.yTop}`;
+      if (areaGen && lineGen) {
+        pathD = areaGen(points);
+        centerD = lineGen(points);
+      } else {
+        pathD = `M ${points[0].x} ${points[0].yTop}`;
+        for (let i = 0; i < points.length - 1; i += 1) {
+          const p0 = points[i];
+          const p1 = points[i + 1];
+          const dx = p1.x - p0.x;
+          pathD += ` C ${p0.x + dx * 0.45} ${p0.yTop}, ${p1.x - dx * 0.45} ${p1.yTop}, ${p1.x} ${p1.yTop}`;
+        }
+        pathD += ` L ${points[points.length - 1].x} ${points[points.length - 1].yBot}`;
+        for (let i = points.length - 1; i > 0; i -= 1) {
+          const p0 = points[i];
+          const p1 = points[i - 1];
+          const dx = p0.x - p1.x;
+          pathD += ` C ${p0.x - dx * 0.45} ${p0.yBot}, ${p1.x + dx * 0.45} ${p1.yBot}, ${p1.x} ${p1.yBot}`;
+        }
+        pathD += ' Z';
+
+        centerD = `M ${points[0].x} ${points[0].yCenter}`;
+        for (let i = 0; i < points.length - 1; i += 1) {
+          const p0 = points[i];
+          const p1 = points[i + 1];
+          const dx = p1.x - p0.x;
+          centerD += ` C ${p0.x + dx * 0.45} ${p0.yCenter}, ${p1.x - dx * 0.45} ${p1.yCenter}, ${p1.x} ${p1.yCenter}`;
+        }
       }
-
-      // Extension past the last year
-      const last = points[points.length - 1];
-      pathD += ` L ${last.x + 40} ${last.yTop}`;
-      pathD += ` L ${last.x + 40} ${last.yBot}`;
-      pathD += ` L ${last.x} ${last.yBot}`;
-
-      // Construct Cubic Bézier Lower Boundary (Reversed)
-      for (let i = points.length - 1; i > 0; i -= 1) {
-        const p0 = points[i];
-        const p1 = points[i - 1];
-        const dx = p0.x - p1.x;
-        const cp1x = p0.x - dx * 0.45;
-        const cp2x = p1.x + dx * 0.45;
-        pathD += ` C ${cp1x} ${p0.yBot}, ${cp2x} ${p1.yBot}, ${p1.x} ${p1.yBot}`;
-      }
-
-      pathD += ` L ${points[0].x - 40} ${points[0].yBot} Z`;
-
-      // Construct Centerline Stream
-      let centerD = `M ${points[0].x - 30} ${points[0].yCenter} L ${points[0].x} ${points[0].yCenter}`;
-      for (let i = 0; i < points.length - 1; i += 1) {
-        const p0 = points[i];
-        const p1 = points[i + 1];
-        const dx = p1.x - p0.x;
-        const cp1x = p0.x + dx * 0.45;
-        const cp2x = p1.x - dx * 0.45;
-        centerD += ` C ${cp1x} ${p0.yCenter}, ${cp2x} ${p1.yCenter}, ${p1.x} ${p1.yCenter}`;
-      }
-      centerD += ` L ${last.x + 30} ${last.yCenter}`;
 
       let isDim = false;
       let isHighlighted = false;
@@ -620,14 +753,14 @@
             d="${centerD}"
             fill="none"
             stroke="${s.stroke}"
-            stroke-width="1.5">
+            stroke-width="1.3">
           </path>
         </g>
       `;
     });
     els.riverStreamsLayer.innerHTML = streamsHtml;
 
-    // Attach stream click listeners
+    // Attach stream click & hover listeners
     const streamChannels = els.riverStreamsLayer.querySelectorAll('.river-stream-channel');
     streamChannels.forEach((ch) => {
       const sId = ch.getAttribute('data-stream');
@@ -644,64 +777,115 @@
       };
     });
 
-    // 5. Render Event Signals along the River
-    // Place each talk at its exact chronological position along its topic stream
-    let eventsHtml = '';
-    const sorted = state.events.slice().sort((a, b) => a.date.localeCompare(b.date));
+    // 6. Event Signals, Lanes, Same-Day Brackets & Multi-Topic Convergence
+    const sortedEvents = eventRecords.slice().sort((a, b) => a.date.localeCompare(b.date));
 
-    // Group talks by date to calculate lane offsets for simultaneous talks
-    const byDate = new Map();
-    sorted.forEach((e) => {
-      const arr = byDate.get(e.date) || [];
-      arr.push(e);
-      byDate.set(e.date, arr);
-    });
+    // Collision avoidance lane allocation
+    const laneOffsets = [0, -15, 15, -28, 28];
+    const streamPlacedEvents = new Map();
+    STREAMS.forEach((s) => streamPlacedEvents.set(s.id, []));
 
-    sorted.forEach((ev) => {
-      const yr = yearOf(ev);
-      const yrIdx = years.indexOf(yr);
-      if (yrIdx === -1) return;
+    sortedEvents.forEach((ev) => {
+      const sArr = streamPlacedEvents.get(ev.stream);
+      const occupiedLanes = new Set();
+      sArr.forEach((prev) => {
+        if (Math.abs(prev.x - ev.x) < 24) {
+          occupiedLanes.add(prev.laneIndex);
+        }
+      });
 
-      const sId = assignStream(ev);
-      const streamPoints = streamGeometry.get(sId);
-      if (!streamPoints) return;
-
-      const curPoint = streamPoints[yrIdx];
-      const nextPoint = streamPoints[yrIdx + 1] || curPoint;
-
-      // Fraction of the year (0.0 to 1.0)
-      let dayFraction = 0.5;
-      try {
-        const parts = ev.date.split('-');
-        const month = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-        dayFraction = (month * 30 + day) / 365;
-      } catch {
-        // fallback
+      let chosenLane = 0;
+      for (let l = 0; l < laneOffsets.length; l += 1) {
+        if (!occupiedLanes.has(l)) {
+          chosenLane = l;
+          break;
+        }
       }
 
-      // Calculate smooth X & Y on stream
-      const xSpan = nextPoint.x - curPoint.x;
-      const xPos = Math.round(curPoint.x + (dayFraction - 0.5) * (xSpan * 0.72));
+      ev.laneIndex = chosenLane;
+      ev.offsetY = laneOffsets[chosenLane];
+      ev.yCenter = getStreamCenterY(ev.stream, ev.x);
+      ev.y = Math.round(ev.yCenter + ev.offsetY);
+      sArr.push(ev);
+    });
 
-      // Calculate Y interpolated on center line with small siblings lane offset
-      const siblings = byDate.get(ev.date) || [ev];
-      const sibIdx = siblings.indexOf(ev);
-      const sibOffset = (sibIdx - (siblings.length - 1) / 2) * 14;
+    // Group talks by date to identify same-day events
+    const byDate = new Map();
+    sortedEvents.forEach((ev) => {
+      const arr = byDate.get(ev.date) || [];
+      arr.push(ev);
+      byDate.set(ev.date, arr);
+    });
 
-      const yBase = curPoint.yCenter + (nextPoint.yCenter - curPoint.yCenter) * dayFraction;
-      const yMin = curPoint.yTop + 6;
-      const yMax = curPoint.yBot - 6;
-      let yPos = Math.round(yBase + sibOffset);
-      if (yPos < yMin) yPos = yMin;
-      if (yPos > yMax) yPos = yMax;
+    let eventsHtml = '';
 
-      const streamObj = STREAMS.find((s) => s.id === sId) || STREAMS[0];
+    // A. Multi-Topic Convergence Curves
+    sortedEvents.forEach((ev) => {
+      if (!ev.secondaryStreams || !ev.secondaryStreams.length) return;
+      ev.secondaryStreams.forEach((secId) => {
+        const secStreamObj = STREAMS.find((s) => s.id === secId);
+        if (!secStreamObj) return;
+
+        const targetY = getStreamCenterY(secId, ev.x);
+        const isCurveHigh = (activeStreamId && (activeStreamId === ev.stream || activeStreamId === secId)) ||
+                            (state.hoveredEventId && state.hoveredEventId === ev.id);
+
+        const midY = (ev.y + targetY) / 2;
+        const curveD = `M ${ev.x} ${ev.y} C ${ev.x} ${midY}, ${ev.x} ${midY}, ${ev.x} ${targetY}`;
+
+        eventsHtml += `
+          <path class="river-convergence-link ${isCurveHigh ? 'highlighted' : ''}"
+            data-id="${escapeHtml(ev.id)}"
+            data-primary="${ev.stream}"
+            data-secondary="${secId}"
+            d="${curveD}"
+            stroke="${secStreamObj.stroke}">
+          </path>
+        `;
+      });
+    });
+
+    // B. Same-Day Synchronization Brackets
+    byDate.forEach((dayEvents, dateStr) => {
+      if (dayEvents.length < 2) return;
+      const sortedByY = dayEvents.slice().sort((a, b) => a.y - b.y);
+      const topNode = sortedByY[0];
+      const botNode = sortedByY[sortedByY.length - 1];
+      const midY = (topNode.y + botNode.y) / 2;
+      const isSameDayHigh = dayEvents.some((e) => e.id === state.hoveredEventId || e.id === state.selectedId);
+
+      eventsHtml += `
+        <g class="river-sameday-group" data-date="${dateStr}">
+          <line class="river-sameday-bracket ${isSameDayHigh ? 'highlighted' : ''}"
+            x1="${topNode.x}" y1="${topNode.y}"
+            x2="${botNode.x}" y2="${botNode.y}">
+          </line>
+          <circle class="river-sameday-dot" cx="${topNode.x}" cy="${midY}" r="2.5"></circle>
+          <text class="river-sameday-tag" x="${topNode.x + 6}" y="${midY + 3}">SAME DAY</text>
+        </g>
+      `;
+    });
+
+    // C. Leader Lines for Offset Lane Nodes
+    sortedEvents.forEach((ev) => {
+      if (ev.offsetY !== 0) {
+        eventsHtml += `
+          <line class="river-signal-leader"
+            x1="${ev.x}" y1="${ev.yCenter}"
+            x2="${ev.x}" y2="${ev.y}">
+          </line>
+        `;
+      }
+    });
+
+    // D. Event Signal Nodes
+    sortedEvents.forEach((ev) => {
+      const streamObj = STREAMS.find((s) => s.id === ev.stream) || STREAMS[0];
       const isMatch = matchesEvent(ev);
       const isSelected = ev.id === state.selectedId;
 
       let isHighlighted = false;
-      if (activeStreamId && activeStreamId === sId) isHighlighted = true;
+      if (activeStreamId && activeStreamId === ev.stream) isHighlighted = true;
       if (activeTopic && (ev.topics || []).includes(activeTopic)) isHighlighted = true;
 
       const groupClasses = [
@@ -714,14 +898,16 @@
       eventsHtml += `
         <g class="${groupClasses}"
           data-id="${escapeHtml(ev.id)}"
-          data-x="${xPos}"
-          data-y="${yPos}"
+          data-stream="${ev.stream}"
+          data-date="${ev.date}"
+          data-x="${ev.x}"
+          data-y="${ev.y}"
           tabindex="0"
           role="button"
           aria-label="${escapeHtml(ev.talk)} (${escapeHtml(formatDateShort(ev.date))}, ${escapeHtml(ev.city || 'Online')})">
-          <circle class="river-signal-halo" cx="${xPos}" cy="${yPos}" r="11"></circle>
-          <circle class="river-signal-point" cx="${xPos}" cy="${yPos}" r="4.5" fill="#ffffff" stroke="${streamObj.color}" stroke-width="2.5"></circle>
-          <circle class="river-signal-hit" cx="${xPos}" cy="${yPos}" r="16"></circle>
+          <circle class="river-signal-halo" cx="${ev.x}" cy="${ev.y}" r="11"></circle>
+          <circle class="river-signal-point" cx="${ev.x}" cy="${ev.y}" r="4.5" fill="#ffffff" stroke="${streamObj.color}" stroke-width="2.5"></circle>
+          <circle class="river-signal-hit" cx="${ev.x}" cy="${ev.y}" r="16"></circle>
         </g>
       `;
     });
@@ -737,12 +923,14 @@
       const onEnter = () => {
         state.hoveredEventId = id;
         showRiverTooltip(ev, grp);
+        updateRiverVisualClasses();
       };
 
       const onLeave = () => {
         if (state.hoveredEventId === id) {
           state.hoveredEventId = null;
           hideRiverTooltip();
+          updateRiverVisualClasses();
         }
       };
 
@@ -765,7 +953,25 @@
       });
     });
 
+    // Attach Legend Button Listeners
+    const legendButtons = document.querySelectorAll('#river-legend .legend-item[data-stream]');
+    legendButtons.forEach((btn) => {
+      const sId = btn.getAttribute('data-stream');
+      btn.onclick = () => {
+        setStream(state.stream === sId ? 'all' : sId);
+      };
+      btn.onmouseenter = () => {
+        state.hoveredStreamId = sId;
+        updateRiverVisualClasses();
+      };
+      btn.onmouseleave = () => {
+        state.hoveredStreamId = null;
+        updateRiverVisualClasses();
+      };
+    });
+
     updateEraReadout();
+    updateRiverVisualClasses();
   }
 
   function updateRiverVisualClasses() {
@@ -811,10 +1017,46 @@
       let isHighlighted = false;
       if (activeStreamId && activeStreamId === sId) isHighlighted = true;
       if (activeTopic && (ev.topics || []).includes(activeTopic)) isHighlighted = true;
+      if (state.hoveredEventId && state.hoveredEventId === id) isHighlighted = true;
 
       grp.classList.toggle('selected', isSelected);
       grp.classList.toggle('dim', !isMatch);
       grp.classList.toggle('highlighted', isHighlighted);
+    });
+
+    // Update Convergence Links
+    const convergenceLinks = els.riverSvg.querySelectorAll('.river-convergence-link');
+    convergenceLinks.forEach((link) => {
+      const linkEvId = link.getAttribute('data-id');
+      const primary = link.getAttribute('data-primary');
+      const secondary = link.getAttribute('data-secondary');
+
+      const isHigh = (state.hoveredEventId && state.hoveredEventId === linkEvId) ||
+                     (state.selectedId && state.selectedId === linkEvId) ||
+                     (activeStreamId && (activeStreamId === primary || activeStreamId === secondary));
+      link.classList.toggle('highlighted', isHigh);
+    });
+
+    // Update Same-Day Brackets
+    const sameDayBrackets = els.riverSvg.querySelectorAll('.river-sameday-bracket');
+    sameDayBrackets.forEach((bracket) => {
+      const grp = bracket.closest('.river-sameday-group');
+      const dateStr = grp ? grp.getAttribute('data-date') : null;
+      const hoveredEv = state.events.find((e) => e.id === state.hoveredEventId);
+      const selectedEv = state.events.find((e) => e.id === state.selectedId);
+
+      const isHigh = (hoveredEv && hoveredEv.date === dateStr) ||
+                     (selectedEv && selectedEv.date === dateStr);
+      bracket.classList.toggle('highlighted', isHigh);
+    });
+
+    // Update Legend Button Active States
+    const legendButtons = document.querySelectorAll('#river-legend .legend-item[data-stream]');
+    legendButtons.forEach((btn) => {
+      const sId = btn.getAttribute('data-stream');
+      const isActive = state.stream === sId;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
   }
 
@@ -827,16 +1069,31 @@
     const tipX = rect.left - wrapRect.left + rect.width / 2;
     const tipY = rect.top - wrapRect.top;
 
+    const pStreamId = assignStream(event);
+    const streamObj = STREAMS.find((s) => s.id === pStreamId) || STREAMS[0];
+    const secondaryIds = getSecondaryStreams(event, pStreamId);
+    const secondaryObjs = secondaryIds.map((id) => STREAMS.find((s) => s.id === id)).filter(Boolean);
+
     els.riverTooltip.innerHTML = `
       <div class="tooltip-date-row">
         <span>${escapeHtml(formatDateShort(event.date))}</span>
         <span>${escapeHtml(event.city || 'Online')}</span>
+      </div>
+      <div>
+        <span class="tooltip-stream-badge" style="color: ${streamObj.stroke}; border-color: ${streamObj.stroke}; background: ${streamObj.fill};">
+          ${streamObj.shortLabel}
+        </span>
       </div>
       <div class="tooltip-title">${escapeHtml(event.talk)}</div>
       <div class="tooltip-event">${escapeHtml(event.event)}</div>
       <div class="tooltip-topics">
         ${(event.topics || []).slice(0, 3).map((t) => `<span class="tooltip-topic-tag">#${escapeHtml(t)}</span>`).join('')}
       </div>
+      ${
+        secondaryObjs.length > 0
+          ? `<div class="tooltip-convergence-note">⇄ Bridges: ${escapeHtml(secondaryObjs.map((s) => s.shortLabel).join(', '))}</div>`
+          : ''
+      }
       <div class="tooltip-inspect-hint">
         <span>CLICK TO OPEN DOSSIER</span>
         <span aria-hidden="true">↗</span>
