@@ -1,6 +1,6 @@
 /* ==========================================================================
    Enes Turan — Technical Speaker
-   Design System & Technical Constellation Architecture
+   Design System & Technical Archive Architecture
    ========================================================================== */
 
 :root {
@@ -14,7 +14,7 @@
   --light-border: #dcd9d0;
   --light-border-subtle: #eae7de;
 
-  /* Technical Dark Constellation Palette */
+  /* Technical Dark Palette */
   --dark: #090b0e;
   --dark-surface: #101319;
   --dark-card: #151922;
@@ -467,7 +467,7 @@ button {
 }
 
 /* ==========================================================================
-   01 The Constellation Section
+   01 The Technical River Section
    ========================================================================== */
 .river-section {
   position: relative;
@@ -1109,6 +1109,13 @@ button {
   animation: journey-pulse 2s infinite ease-in-out;
 }
 
+.journey-status-indicator.paused .journey-pulse-dot {
+  background: #64748b;
+  box-shadow: none;
+  animation: none;
+  opacity: 0.6;
+}
+
 @keyframes journey-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.35; transform: scale(0.75); }
@@ -1138,7 +1145,8 @@ button {
   background: var(--dark-surface);
   border: 1px solid var(--dark-border);
   color: var(--dark-text);
-  padding: 6px 14px;
+  padding: 7px 14px;
+  min-height: 36px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
@@ -1220,14 +1228,16 @@ button {
 
 .journey-hist-dot {
   fill: #475569;
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.journey-hist-dot:hover {
+.journey-hist-dot:hover, .journey-hist-dot:focus-visible {
   fill: #93c5fd;
   opacity: 1;
+  r: 4.5;
+  outline: none;
 }
 
 .journey-marker-pulse {
@@ -1531,7 +1541,8 @@ button {
   align-items: center;
   gap: 3px;
   width: 100%;
-  height: 22px;
+  height: 24px;
+  padding: 4px 0;
 }
 
 .journey-scrub-tick {
@@ -1547,9 +1558,23 @@ button {
   position: relative;
 }
 
+.journey-scrub-tick::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  left: -2px;
+  right: -2px;
+}
+
 .journey-scrub-tick:hover, .journey-scrub-tick:focus-visible {
   background: #60a5fa;
   height: 16px;
+  outline: none;
+}
+
+.journey-scrub-tick:focus-visible {
+  box-shadow: 0 0 0 2px #60a5fa, 0 0 10px rgba(96, 165, 250, 0.8);
 }
 
 .journey-scrub-tick.active {
@@ -2903,6 +2928,12 @@ button {
   .journey-viewport {
     flex-direction: column;
     min-height: auto;
+  }
+
+  .journey-svg {
+    height: auto;
+    max-height: 380px;
+    width: 100%;
   }
 
   .journey-active-card {

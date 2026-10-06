@@ -52,7 +52,7 @@
       stroke: '#f472b6',
       fill: 'rgba(236, 72, 153, 0.28)',
       highlightFill: 'rgba(236, 72, 153, 0.55)',
-      keywords: ['ai agents', 'generative ai', 'langgraph', 'adk', 'agent', 'genai', 'ai']
+      keywords: ['ai agents', 'generative ai', 'adk', 'agent', 'genai', 'ai', 'vertex ai', 'gemini']
     }
   ];
 
@@ -128,7 +128,29 @@
     for (const [key, val] of Object.entries(CITY_COORDINATES)) {
       if (city.includes(val.label) || key.includes(city)) return val;
     }
-    return null;
+    console.warn(`[Speaking Journey] City "${city}" not mapped in CITY_COORDINATES, using Istanbul fallback.`);
+    return CITY_COORDINATES['Istanbul, Türkiye'];
+  }
+
+  function validateCoordinates(events) {
+    if (!Array.isArray(events)) return;
+    const unmapped = new Set();
+    events.forEach((ev) => {
+      if (!ev || ev.city === 'Online') return;
+      if (!CITY_COORDINATES[ev.city]) {
+        let found = false;
+        for (const [key, val] of Object.entries(CITY_COORDINATES)) {
+          if (ev.city.includes(val.label) || key.includes(ev.city)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) unmapped.add(ev.city);
+      }
+    });
+    if (unmapped.size > 0) {
+      console.warn('[Speaking Journey] Unmapped physical speaking locations detected:', Array.from(unmapped));
+    }
   }
 
   // ==========================================================================
@@ -149,7 +171,7 @@
     },
     '2025': {
       badge: 'EXPANSION · 2025',
-      text: '2025 — The Autonomous Agent Wave: Rapid transition into Generative AI and autonomous AI Agents, building with LangGraph, ADK, and Vertex AI across international stages.'
+      text: '2025 — The Autonomous Agent Wave: Rapid transition into Generative AI and autonomous AI Agents, building with Agent Development Kit (ADK), Vertex AI, and enterprise platform architectures across international stages.'
     },
     '2026': {
       badge: 'MODERN ARCHITECTURE · 2026',
@@ -220,6 +242,7 @@
     cityInspector: document.getElementById('city-inspector'),
     // Speaking Journey Elements
     journeyStageWrap: document.getElementById('journey-stage-wrap'),
+    journeyStatusIndicator: document.querySelector('.journey-status-indicator'),
     journeyStatusText: document.getElementById('journey-status-text'),
     journeyCounter: document.getElementById('journey-counter'),
     journeyPrevBtn: document.getElementById('journey-prev-btn'),
@@ -229,6 +252,7 @@
     journeyNextBtn: document.getElementById('journey-next-btn'),
     journeySvg: document.getElementById('journey-svg'),
     journeyDefs: document.getElementById('journey-defs'),
+    journeySpaceBg: document.getElementById('journey-space-bg'),
     journeySphere: document.getElementById('journey-sphere'),
     journeyGraticule: document.getElementById('journey-graticule'),
     journeyLand: document.getElementById('journey-land'),
@@ -250,6 +274,7 @@
     journeyDossierBtn: document.getElementById('journey-dossier-btn'),
     journeyHopDistance: document.getElementById('journey-hop-distance'),
     journeyScrubber: document.getElementById('journey-scrubber'),
+    journeySrAnnouncer: document.getElementById('journey-sr-announcer'),
     // Modal Dialog
     dialog: document.getElementById('event-dialog'),
     dialogClose: document.getElementById('dialog-close'),
@@ -1512,23 +1537,29 @@
     initialized: false,
     stops: [],
     currentIndex: 0,
-    isPlaying: true,
-    isManuallyPaused: false,
-    isHoverPaused: false,
-    isModalOpen: false,
-    isTraveling: false,
+
+    // Deterministic playback state machine
+    userPlaying: true,         // User's manual playback intent
+    hoverPaused: false,        // Transient pause on pointer hover
+    modalOpen: false,          // Paused while inspecting event dossier
+    inViewport: true,          // Active only when in viewport (IntersectionObserver)
+    tabHidden: false,          // Paused when tab is hidden (visibilitychange)
+    isTraveling: false,        // True during smooth camera motion
+
     currentCoords: [28.9784, 41.0082], // Starts centered on Istanbul
     currentScale: 230,
     baseScale: 230,
-    globeCenter: [660, 290],
+    globeCenter: [680, 290],
     visitedCoords: [],
     historicalArcs: [],
+
     holdTimer: null,
     resumeTimer: null,
     animId: null,
     landData: null,
     projection: null,
-    pathGen: null
+    pathGen: null,
+    graticuleGeo: null
   };
 
   function easeInOutCubic(t) {
@@ -1539,6 +1570,158 @@
     if (!p1 || !p2 || typeof d3 === 'undefined') return 0;
     const rad = d3.geoDistance(p1, p2);
     return Math.round(rad * 6371);
+  }
+
+  function isJourneyAutoAdvancing() {
+    return journeyState.userPlaying &&
+      !journeyState.hoverPaused &&
+      !journeyState.modalOpen &&
+      journeyState.inViewport &&
+      !journeyState.tabHidden;
+  }
+
+  function syncJourneyPlaybackUI() {
+    if (!journeyState.initialized) return;
+
+    if (!journeyState.userPlaying) {
+      if (els.journeyPlayIcon) els.journeyPlayIcon.textContent = '▶';
+      if (els.journeyPlayLabel) els.journeyPlayLabel.textContent = 'PLAY';
+      if (els.journeyStatusText) els.journeyStatusText.textContent = 'PAUSED';
+      if (els.journeyStatusIndicator) els.journeyStatusIndicator.classList.add('paused');
+    } else if (journeyState.modalOpen) {
+      if (els.journeyPlayIcon) els.journeyPlayIcon.textContent = '⏸';
+      if (els.journeyPlayLabel) els.journeyPlayLabel.textContent = 'PAUSE';
+      if (els.journeyStatusText) els.journeyStatusText.textContent = 'PAUSED (DOSSIER)';
+      if (els.journeyStatusIndicator) els.journeyStatusIndicator.classList.add('paused');
+    } else if (journeyState.hoverPaused) {
+      if (els.journeyPlayIcon) els.journeyPlayIcon.textContent = '⏸';
+      if (els.journeyPlayLabel) els.journeyPlayLabel.textContent = 'PAUSE';
+      if (els.journeyStatusText) els.journeyStatusText.textContent = 'PAUSED (HOVER)';
+      if (els.journeyStatusIndicator) els.journeyStatusIndicator.classList.add('paused');
+    } else {
+      if (els.journeyPlayIcon) els.journeyPlayIcon.textContent = '⏸';
+      if (els.journeyPlayLabel) els.journeyPlayLabel.textContent = 'PAUSE';
+      if (els.journeyStatusText) els.journeyStatusText.textContent = 'CHRONOLOGICAL PLAYBACK';
+      if (els.journeyStatusIndicator) els.journeyStatusIndicator.classList.remove('paused');
+    }
+  }
+
+  function pauseJourney(reason) {
+    clearTimeout(journeyState.holdTimer);
+    clearTimeout(journeyState.resumeTimer);
+
+    if (reason === 'user') {
+      journeyState.userPlaying = false;
+      journeyState.hoverPaused = false;
+    } else if (reason === 'hover') {
+      journeyState.hoverPaused = true;
+    } else if (reason === 'modal') {
+      journeyState.modalOpen = true;
+    } else if (reason === 'viewport') {
+      journeyState.inViewport = false;
+    } else if (reason === 'visibility') {
+      journeyState.tabHidden = true;
+    }
+
+    syncJourneyPlaybackUI();
+  }
+
+  function resumeJourney(reason, delayMs = 1200) {
+    clearTimeout(journeyState.resumeTimer);
+
+    if (reason === 'user') {
+      journeyState.userPlaying = true;
+      journeyState.hoverPaused = false; // Manual click clears any hover pause
+    } else if (reason === 'hover') {
+      journeyState.hoverPaused = false;
+    } else if (reason === 'modal') {
+      journeyState.modalOpen = false;
+    } else if (reason === 'viewport') {
+      journeyState.inViewport = true;
+    } else if (reason === 'visibility') {
+      journeyState.tabHidden = false;
+    }
+
+    syncJourneyPlaybackUI();
+
+    if (isJourneyAutoAdvancing() && !journeyState.isTraveling) {
+      scheduleJourneyAdvance(delayMs);
+    }
+  }
+
+  function scheduleJourneyAdvance(holdMs = 2800) {
+    clearTimeout(journeyState.holdTimer);
+    if (!isJourneyAutoAdvancing()) return;
+
+    journeyState.holdTimer = setTimeout(() => {
+      if (!isJourneyAutoAdvancing() || journeyState.isTraveling) return;
+
+      const nextIndex = (journeyState.currentIndex + 1) % journeyState.stops.length;
+      advanceChronologicalStop(nextIndex);
+    }, holdMs);
+  }
+
+  function getChronologicalHistoryUpTo(targetIndex) {
+    const visitedCoords = [];
+    const historicalArcs = [];
+    let lastPhysicalCoord = null;
+
+    for (let i = 0; i <= targetIndex; i++) {
+      const stop = journeyState.stops[i];
+      if (!stop || stop.city === 'Online') continue;
+      const coord = getCityCoord(stop.city);
+      if (!coord) continue;
+      const pt = [coord.lon, coord.lat];
+
+      if (i < targetIndex) {
+        const alreadyVisited = visitedCoords.some(
+          (v) => Math.abs(v[0] - pt[0]) < 0.001 && Math.abs(v[1] - pt[1]) < 0.001
+        );
+        if (!alreadyVisited) {
+          visitedCoords.push(pt);
+        }
+      }
+
+      if (lastPhysicalCoord) {
+        const isSameLoc =
+          Math.abs(lastPhysicalCoord[0] - pt[0]) < 0.001 &&
+          Math.abs(lastPhysicalCoord[1] - pt[1]) < 0.001;
+        if (!isSameLoc) {
+          historicalArcs.push({
+            type: 'LineString',
+            coordinates: [lastPhysicalCoord, pt]
+          });
+        }
+      }
+      lastPhysicalCoord = pt;
+    }
+
+    return { visitedCoords, historicalArcs };
+  }
+
+  function updateGlobeDimensions() {
+    const isMobile = window.innerWidth <= 860;
+    const center = isMobile ? [550, 290] : [680, 290];
+    const radius = isMobile ? 215 : 230;
+
+    journeyState.globeCenter = center;
+    journeyState.baseScale = radius;
+
+    if (els.journeySpaceBg) {
+      els.journeySpaceBg.setAttribute('cx', center[0]);
+      els.journeySpaceBg.setAttribute('cy', center[1]);
+      els.journeySpaceBg.setAttribute('r', radius);
+    }
+    if (els.journeyAtmosphere) {
+      els.journeyAtmosphere.setAttribute('cx', center[0]);
+      els.journeyAtmosphere.setAttribute('cy', center[1]);
+      els.journeyAtmosphere.setAttribute('r', radius);
+    }
+    if (journeyState.projection) {
+      journeyState.projection
+        .scale(journeyState.isTraveling ? journeyState.currentScale : radius)
+        .translate(center);
+    }
   }
 
   function initJourneyDefs() {
@@ -1567,9 +1750,8 @@
       els.journeySphere.setAttribute('d', journeyState.pathGen({ type: 'Sphere' }) || '');
     }
 
-    if (els.journeyGraticule) {
-      const graticule = d3.geoGraticule().step([30, 30])();
-      els.journeyGraticule.setAttribute('d', journeyState.pathGen(graticule) || '');
+    if (els.journeyGraticule && journeyState.graticuleGeo) {
+      els.journeyGraticule.setAttribute('d', journeyState.pathGen(journeyState.graticuleGeo) || '');
     }
 
     if (els.journeyLand && journeyState.landData) {
@@ -1579,11 +1761,24 @@
 
   function renderHistoricalTrails() {
     if (!els.journeyRoutesGroup || !journeyState.pathGen) return;
-    const pathsHtml = journeyState.historicalArcs.map((arc) => {
-      const d = journeyState.pathGen(arc);
-      return d ? `<path class="journey-route-trail" d="${d}"></path>` : '';
-    }).join('');
-    els.journeyRoutesGroup.innerHTML = pathsHtml;
+
+    if (journeyState.historicalArcs.length === 0) {
+      els.journeyRoutesGroup.innerHTML = '';
+      return;
+    }
+
+    const multiLine = {
+      type: 'MultiLineString',
+      coordinates: journeyState.historicalArcs.map((a) => a.coordinates)
+    };
+    const d = journeyState.pathGen(multiLine);
+
+    let trailPath = els.journeyRoutesGroup.querySelector('.journey-route-trail');
+    if (!trailPath) {
+      els.journeyRoutesGroup.innerHTML = `<path class="journey-route-trail" d="${d || ''}"></path>`;
+    } else {
+      trailPath.setAttribute('d', d || '');
+    }
   }
 
   function renderHistoricalMarkers() {
@@ -1592,13 +1787,59 @@
     const centerLat = -journeyState.projection.rotate()[1];
     const center = [centerLon, centerLat];
 
-    const dotsHtml = journeyState.visitedCoords.map((coord) => {
-      if (d3.geoDistance(center, coord) > Math.PI / 2) return '';
-      const pt = journeyState.projection(coord);
+    const visitedStops = [];
+    const seen = new Set();
+    for (let i = 0; i < journeyState.currentIndex; i++) {
+      const stop = journeyState.stops[i];
+      if (!stop || stop.city === 'Online') continue;
+      const coord = getCityCoord(stop.city);
+      if (!coord) continue;
+      const key = `${coord.lon.toFixed(2)},${coord.lat.toFixed(2)}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        visitedStops.push({
+          stopIndex: i,
+          event: stop,
+          coord: [coord.lon, coord.lat],
+          label: coord.label
+        });
+      }
+    }
+
+    const dotsHtml = visitedStops.map((v) => {
+      if (d3.geoDistance(center, v.coord) > Math.PI / 2) return '';
+      const pt = journeyState.projection(v.coord);
       if (!pt) return '';
-      return `<circle class="journey-hist-dot" cx="${Math.round(pt[0])}" cy="${Math.round(pt[1])}" r="3"></circle>`;
+      const x = Math.round(pt[0]);
+      const y = Math.round(pt[1]);
+      return `
+        <circle class="journey-hist-dot"
+          cx="${x}" cy="${y}" r="3.5"
+          data-event-id="${escapeHtml(v.event.id)}"
+          role="button"
+          tabindex="0"
+          aria-label="Inspect ${escapeHtml(v.label)}: ${escapeHtml(v.event.talk)} (${formatDateShort(v.event.date)})">
+        </circle>
+      `;
     }).join('');
+
     els.journeyMarkersGroup.innerHTML = dotsHtml;
+
+    const dots = els.journeyMarkersGroup.querySelectorAll('.journey-hist-dot');
+    dots.forEach((dot) => {
+      dot.onclick = (e) => {
+        e.stopPropagation();
+        const eventId = dot.dataset.eventId;
+        if (eventId) openEvent(eventId);
+      };
+      dot.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const eventId = dot.dataset.eventId;
+          if (eventId) openEvent(eventId);
+        }
+      };
+    });
   }
 
   function renderActiveMarker(coord, cityLabel, coordsText, pulse = false) {
@@ -1612,7 +1853,6 @@
     const centerLat = -journeyState.projection.rotate()[1];
     const center = [centerLon, centerLat];
 
-    // Only render if visible on the front hemisphere
     if (d3.geoDistance(center, coord) > Math.PI / 2) {
       els.journeyActiveMarkerGroup.innerHTML = '';
       return;
@@ -1634,12 +1874,13 @@
     const textX = x + dx + (isRightHalf ? 8 : -8);
     const textY = y + dy - 2;
 
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let markerHtml = '';
-    if (pulse) {
+    if (pulse && !prefersReducedMotion) {
       markerHtml += `<circle class="journey-marker-pulse" cx="${x}" cy="${y}" r="6"></circle>`;
     }
     markerHtml += `
-      <g class="journey-active-marker-pin" role="button" tabindex="0" aria-label="Active stop: ${escapeHtml(cityLabel)}">
+      <g class="journey-active-marker-pin" role="button" tabindex="0" aria-label="Active stop: ${escapeHtml(cityLabel)} — select to open dossier">
         <polyline class="journey-leader-line" points="${x},${y} ${x + dx},${y + dy} ${textX},${y + dy}"></polyline>
         <circle class="journey-marker-dot" cx="${x}" cy="${y}" r="4.5"></circle>
         <text class="journey-marker-label" x="${textX}" y="${textY}" text-anchor="${textAnchor}">${escapeHtml(cityLabel.toUpperCase())}</text>
@@ -1664,18 +1905,31 @@
     }
   }
 
+  function announceJourneyStop(stopIndex) {
+    if (!els.journeySrAnnouncer) return;
+    const stop = journeyState.stops[stopIndex];
+    if (!stop) return;
+    const isOnline = stop.city === 'Online';
+    const coord = getCityCoord(stop.city);
+    const loc = isOnline ? 'Online Broadcast' : (coord ? `${coord.label}, ${coord.country}` : stop.city);
+    els.journeySrAnnouncer.textContent = `Stop ${stopIndex + 1} of ${journeyState.stops.length}: ${formatDateShort(stop.date)} in ${loc} — ${stop.talk}`;
+  }
+
   function renderJourneyScrubber() {
     if (!els.journeyScrubber) return;
+    const total = journeyState.stops.length;
     els.journeyScrubber.innerHTML = journeyState.stops.map((stop, idx) => {
       const isOnline = stop.city === 'Online';
       const coord = getCityCoord(stop.city);
       const label = isOnline ? 'Online' : (coord ? coord.label : stop.city);
       const title = `${formatDateShort(stop.date)} · ${label} — ${stop.talk}`;
+      const isActive = idx === journeyState.currentIndex;
       return `
-        <button type="button" class="journey-scrub-tick ${isOnline ? 'online' : ''} ${idx === 0 ? 'active' : ''}"
+        <button type="button" class="journey-scrub-tick ${isOnline ? 'online' : ''} ${isActive ? 'active' : ''}"
           data-index="${idx}"
           title="${escapeHtml(title)}"
-          aria-label="Stop ${idx + 1} of ${journeyState.stops.length}: ${escapeHtml(title)}">
+          aria-label="Stop ${idx + 1} of ${total}: ${escapeHtml(title)}"
+          aria-current="${isActive ? 'step' : 'false'}">
         </button>
       `;
     }).join('');
@@ -1685,7 +1939,29 @@
       tick.addEventListener('click', () => {
         const idx = parseInt(tick.dataset.index, 10);
         if (!isNaN(idx)) {
-          travelToJourneyStop(idx, false);
+          jumpToJourneyStop(idx, false, true);
+        }
+      });
+      tick.addEventListener('keydown', (e) => {
+        const currIdx = parseInt(tick.dataset.index, 10);
+        let targetIdx = null;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          targetIdx = (currIdx - 1 + total) % total;
+        } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          targetIdx = (currIdx + 1) % total;
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          targetIdx = 0;
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          targetIdx = total - 1;
+        }
+        if (targetIdx !== null) {
+          jumpToJourneyStop(targetIdx, false, true);
+          const nextTick = els.journeyScrubber.querySelector(`[data-index="${targetIdx}"]`);
+          if (nextTick) nextTick.focus();
         }
       });
     });
@@ -1756,12 +2032,13 @@
     if (els.journeyScrubber) {
       const ticks = els.journeyScrubber.querySelectorAll('.journey-scrub-tick');
       ticks.forEach((tick, idx) => {
-        tick.classList.toggle('active', idx === journeyState.currentIndex);
+        const isActive = idx === journeyState.currentIndex;
+        tick.classList.toggle('active', isActive);
         tick.classList.toggle('visited', idx < journeyState.currentIndex);
+        tick.setAttribute('aria-current', isActive ? 'step' : 'false');
       });
     }
 
-    // Dossier button hook
     if (els.journeyDossierBtn) {
       els.journeyDossierBtn.onclick = () => {
         openEvent(event.id);
@@ -1769,21 +2046,7 @@
     }
   }
 
-  function scheduleNextJourneyHold(holdMs) {
-    clearTimeout(journeyState.holdTimer);
-    journeyState.holdTimer = setTimeout(() => {
-      if (journeyState.isPlaying && !journeyState.isManuallyPaused && !journeyState.isHoverPaused && !journeyState.isModalOpen) {
-        const nextIndex = (journeyState.currentIndex + 1) % journeyState.stops.length;
-        if (nextIndex === 0) {
-          journeyState.visitedCoords = [];
-          journeyState.historicalArcs = [];
-        }
-        travelToJourneyStop(nextIndex, false);
-      }
-    }, holdMs);
-  }
-
-  function travelToJourneyStop(targetIndex, instant = false) {
+  function advanceChronologicalStop(nextIndex) {
     if (!journeyState.stops.length) return;
 
     clearTimeout(journeyState.holdTimer);
@@ -1792,33 +2055,101 @@
       journeyState.animId = null;
     }
 
-    const total = journeyState.stops.length;
-    const nextIdx = (targetIndex + total) % total;
-    const prevIdx = journeyState.currentIndex;
-    journeyState.currentIndex = nextIdx;
+    const prevIndex = journeyState.currentIndex;
+    journeyState.currentIndex = nextIndex;
 
-    const currentEvent = journeyState.stops[nextIdx];
-    const prevEvent = journeyState.stops[prevIdx];
-    const isOnline = currentEvent.city === 'Online';
-    const nextCoordObj = getCityCoord(currentEvent.city);
-    const prevCoordObj = getCityCoord(prevEvent.city) || (journeyState.currentCoords ? { lon: journeyState.currentCoords[0], lat: journeyState.currentCoords[1], label: 'Prior Location' } : null);
-
-    const isSameCity = !isOnline && prevCoordObj && nextCoordObj &&
-      Math.abs(prevCoordObj.lat - nextCoordObj.lat) < 0.001 &&
-      Math.abs(prevCoordObj.lon - nextCoordObj.lon) < 0.001;
-
+    const currentEvent = journeyState.stops[nextIndex];
+    const prevEvent = journeyState.stops[prevIndex];
     const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const shouldInstant = instant || prefersReducedMotion;
 
-    // 1. Handle Online Interlude
+    // A. Loop back to Origin: Reset historical routes & markers cleanly without fake return arc
+    if (nextIndex === 0) {
+      journeyState.visitedCoords = [];
+      journeyState.historicalArcs = [];
+      if (els.journeyActiveArc) {
+        els.journeyActiveArc.setAttribute('d', '');
+        els.journeyActiveArc.style.display = 'none';
+      }
+
+      const originCoord = getCityCoord(currentEvent.city) || CITY_COORDINATES['Istanbul, Türkiye'];
+      const targetLonLat = [originCoord.lon, originCoord.lat];
+
+      if (prefersReducedMotion) {
+        journeyState.isTraveling = false;
+        journeyState.currentCoords = targetLonLat;
+        journeyState.projection
+          .scale(journeyState.baseScale)
+          .rotate([-targetLonLat[0], -targetLonLat[1]]);
+        renderGlobeStatic();
+        renderHistoricalTrails();
+        renderHistoricalMarkers();
+        const latStr = `${Math.abs(originCoord.lat).toFixed(1)}°${originCoord.lat >= 0 ? 'N' : 'S'}`;
+        const lonStr = `${Math.abs(originCoord.lon).toFixed(1)}°${originCoord.lon >= 0 ? 'E' : 'W'}`;
+        renderActiveMarker(targetLonLat, originCoord.label, `${latStr} · ${lonStr}`, false);
+        updateJourneyCard(currentEvent, null, 0, false);
+        if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+        scheduleJourneyAdvance(3000);
+        return;
+      }
+
+      // Smooth camera reset rotation without active route arc
+      journeyState.isTraveling = true;
+      if (els.journeyActiveCard) els.journeyActiveCard.classList.add('fading');
+
+      const prevLonLat = journeyState.currentCoords;
+      const interp = d3.geoInterpolate(prevLonLat, targetLonLat);
+      const startTime = performance.now();
+      const duration = 2200;
+
+      function stepResetLoop(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        const ease = easeInOutCubic(progress);
+        const currentInterp = interp(ease);
+        const currentScale = journeyState.baseScale - 30 * Math.sin(Math.PI * ease);
+
+        journeyState.projection
+          .scale(currentScale)
+          .rotate([-currentInterp[0], -currentInterp[1]]);
+
+        renderGlobeStatic();
+        renderHistoricalTrails();
+        renderHistoricalMarkers();
+
+        if (progress < 1) {
+          journeyState.animId = requestAnimationFrame(stepResetLoop);
+        } else {
+          journeyState.isTraveling = false;
+          journeyState.currentCoords = targetLonLat;
+          journeyState.projection
+            .scale(journeyState.baseScale)
+            .rotate([-targetLonLat[0], -targetLonLat[1]]);
+          renderGlobeStatic();
+          renderHistoricalTrails();
+          renderHistoricalMarkers();
+          const latStr = `${Math.abs(originCoord.lat).toFixed(1)}°${originCoord.lat >= 0 ? 'N' : 'S'}`;
+          const lonStr = `${Math.abs(originCoord.lon).toFixed(1)}°${originCoord.lon >= 0 ? 'E' : 'W'}`;
+          renderActiveMarker(targetLonLat, originCoord.label, `${latStr} · ${lonStr}`, true);
+          updateJourneyCard(currentEvent, null, 0, false);
+          if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+          scheduleJourneyAdvance(3000);
+        }
+      }
+
+      journeyState.animId = requestAnimationFrame(stepResetLoop);
+      return;
+    }
+
+    // B. Online Digital Interlude
+    const isOnline = currentEvent.city === 'Online';
     if (isOnline) {
       journeyState.isTraveling = false;
       if (els.journeyBroadcastGroup) {
         els.journeyBroadcastGroup.classList.remove('hidden');
         els.journeyBroadcastGroup.innerHTML = `
-          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="230" style="animation-delay: 0s;"></circle>
-          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="230" style="animation-delay: 0.8s;"></circle>
-          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="230" style="animation-delay: 1.6s;"></circle>
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="${journeyState.baseScale}" style="animation-delay: 0s;"></circle>
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="${journeyState.baseScale}" style="animation-delay: 0.8s;"></circle>
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="${journeyState.baseScale}" style="animation-delay: 1.6s;"></circle>
         `;
       }
       if (els.journeyLand) els.journeyLand.style.opacity = '0.35';
@@ -1831,12 +2162,11 @@
 
       updateJourneyCard(currentEvent, prevEvent, 0, false);
       if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
-
-      scheduleNextJourneyHold(2400);
+      scheduleJourneyAdvance(2400);
       return;
     }
 
-    // Restore normal visual styles if physical stop
+    // C. Physical Speaking Stop Transition
     if (els.journeyBroadcastGroup) {
       els.journeyBroadcastGroup.classList.add('hidden');
       els.journeyBroadcastGroup.innerHTML = '';
@@ -1844,40 +2174,43 @@
     if (els.journeyLand) els.journeyLand.style.opacity = '1';
     if (els.journeyOnlineOverlay) els.journeyOnlineOverlay.classList.add('hidden');
 
-    if (!nextCoordObj) {
-      scheduleNextJourneyHold(2400);
-      return;
-    }
-
+    const nextCoordObj = getCityCoord(currentEvent.city);
+    const prevCoordObj = getCityCoord(prevEvent.city);
     const targetLonLat = [nextCoordObj.lon, nextCoordObj.lat];
     const prevLonLat = prevCoordObj ? [prevCoordObj.lon, prevCoordObj.lat] : journeyState.currentCoords;
+
+    const isSameCity = prevCoordObj &&
+      Math.abs(prevCoordObj.lat - nextCoordObj.lat) < 0.001 &&
+      Math.abs(prevCoordObj.lon - nextCoordObj.lon) < 0.001;
 
     const latStr = `${Math.abs(nextCoordObj.lat).toFixed(1)}°${nextCoordObj.lat >= 0 ? 'N' : 'S'}`;
     const lonStr = `${Math.abs(nextCoordObj.lon).toFixed(1)}°${nextCoordObj.lon >= 0 ? 'E' : 'W'}`;
     const coordStr = `${latStr} · ${lonStr}`;
 
-    // 2. Handle Repeated City (Consecutive stop)
-    if (isSameCity && !shouldInstant) {
+    // Consecutive session in the same city
+    if (isSameCity) {
       journeyState.isTraveling = false;
       journeyState.currentCoords = targetLonLat;
       updateJourneyCard(currentEvent, prevEvent, 0, true);
       renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, true);
       if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
-      scheduleNextJourneyHold(2800);
+      scheduleJourneyAdvance(2800);
       return;
     }
 
-    // 3. Handle Instant Travel (Reduced motion or initial mount)
-    if (shouldInstant) {
+    // Instant mode under prefers-reduced-motion
+    if (prefersReducedMotion) {
       journeyState.isTraveling = false;
       journeyState.currentCoords = targetLonLat;
-      journeyState.currentScale = journeyState.baseScale;
       journeyState.projection
         .scale(journeyState.baseScale)
         .rotate([-targetLonLat[0], -targetLonLat[1]]);
 
       if (prevLonLat && (prevLonLat[0] !== targetLonLat[0] || prevLonLat[1] !== targetLonLat[1])) {
-        journeyState.visitedCoords.push(prevLonLat);
+        const alreadyVisited = journeyState.visitedCoords.some(
+          (v) => Math.abs(v[0] - prevLonLat[0]) < 0.001 && Math.abs(v[1] - prevLonLat[1]) < 0.001
+        );
+        if (!alreadyVisited) journeyState.visitedCoords.push(prevLonLat);
         journeyState.historicalArcs.push({
           type: 'LineString',
           coordinates: [prevLonLat, targetLonLat]
@@ -1887,15 +2220,14 @@
       renderGlobeStatic();
       renderHistoricalTrails();
       renderHistoricalMarkers();
-      renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, true);
+      renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, false);
       updateJourneyCard(currentEvent, prevEvent, calcDistanceKm(prevLonLat, targetLonLat), false);
       if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
-
-      scheduleNextJourneyHold(3000);
+      scheduleJourneyAdvance(3000);
       return;
     }
 
-    // 4. Smooth Cinematic Great-Circle Camera Transition
+    // Great-Circle Cinematic Camera Journey
     journeyState.isTraveling = true;
     if (els.journeyActiveCard) els.journeyActiveCard.classList.add('fading');
 
@@ -1911,8 +2243,8 @@
       duration = 2100;
       scaleDip = 32;
     } else {
-      duration = 2900;
-      scaleDip = 54;
+      duration = 2800;
+      scaleDip = 52;
     }
 
     const interp = d3.geoInterpolate(prevLonLat, targetLonLat);
@@ -1934,7 +2266,7 @@
       renderHistoricalTrails();
       renderHistoricalMarkers();
 
-      // Traveling glowing active arc
+      // Traveling active arc
       if (els.journeyActiveArc) {
         const arcGeo = {
           type: 'LineString',
@@ -1955,7 +2287,10 @@
           .scale(journeyState.baseScale)
           .rotate([-targetLonLat[0], -targetLonLat[1]]);
 
-        journeyState.visitedCoords.push(prevLonLat);
+        const alreadyVisited = journeyState.visitedCoords.some(
+          (v) => Math.abs(v[0] - prevLonLat[0]) < 0.001 && Math.abs(v[1] - prevLonLat[1]) < 0.001
+        );
+        if (!alreadyVisited) journeyState.visitedCoords.push(prevLonLat);
         journeyState.historicalArcs.push({
           type: 'LineString',
           coordinates: [prevLonLat, targetLonLat]
@@ -1969,35 +2304,172 @@
         renderGlobeStatic();
         renderHistoricalTrails();
         renderHistoricalMarkers();
-
         renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, true);
 
         updateJourneyCard(currentEvent, prevEvent, distKm, false);
         if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
-
-        scheduleNextJourneyHold(2800);
+        scheduleJourneyAdvance(2800);
       }
     }
 
     journeyState.animId = requestAnimationFrame(stepAnimation);
   }
 
+  function jumpToJourneyStop(targetIndex, instant = false, announce = true) {
+    if (!journeyState.stops.length) return;
+
+    clearTimeout(journeyState.holdTimer);
+    if (journeyState.animId) {
+      cancelAnimationFrame(journeyState.animId);
+      journeyState.animId = null;
+    }
+
+    const total = journeyState.stops.length;
+    const nextIdx = (targetIndex + total) % total;
+    const prevIdx = journeyState.currentIndex;
+    journeyState.currentIndex = nextIdx;
+
+    // Derived canonical chronological speaking history up to target stop (prevents fake routes)
+    const { visitedCoords, historicalArcs } = getChronologicalHistoryUpTo(nextIdx);
+    journeyState.visitedCoords = visitedCoords;
+    journeyState.historicalArcs = historicalArcs;
+
+    if (els.journeyActiveArc) {
+      els.journeyActiveArc.setAttribute('d', '');
+      els.journeyActiveArc.style.display = 'none';
+    }
+
+    const currentEvent = journeyState.stops[nextIdx];
+    const prevEvent = journeyState.stops[prevIdx];
+    const isOnline = currentEvent.city === 'Online';
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (announce) {
+      announceJourneyStop(nextIdx);
+    }
+
+    // 1. Online Interlude
+    if (isOnline) {
+      journeyState.isTraveling = false;
+      if (els.journeyBroadcastGroup) {
+        els.journeyBroadcastGroup.classList.remove('hidden');
+        els.journeyBroadcastGroup.innerHTML = `
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="${journeyState.baseScale}" style="animation-delay: 0s;"></circle>
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="${journeyState.baseScale}" style="animation-delay: 0.8s;"></circle>
+          <circle class="journey-orbit-ring" cx="${journeyState.globeCenter[0]}" cy="${journeyState.globeCenter[1]}" r="${journeyState.baseScale}" style="animation-delay: 1.6s;"></circle>
+        `;
+      }
+      if (els.journeyLand) els.journeyLand.style.opacity = '0.35';
+      if (els.journeyOnlineOverlay) els.journeyOnlineOverlay.classList.remove('hidden');
+      if (els.journeyActiveMarkerGroup) els.journeyActiveMarkerGroup.innerHTML = '';
+
+      renderGlobeStatic();
+      renderHistoricalTrails();
+      renderHistoricalMarkers();
+      updateJourneyCard(currentEvent, prevEvent, 0, false);
+      if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+
+      if (isJourneyAutoAdvancing()) {
+        scheduleJourneyAdvance(3200);
+      }
+      return;
+    }
+
+    // 2. Physical Speaking Stop
+    if (els.journeyBroadcastGroup) {
+      els.journeyBroadcastGroup.classList.add('hidden');
+      els.journeyBroadcastGroup.innerHTML = '';
+    }
+    if (els.journeyLand) els.journeyLand.style.opacity = '1';
+    if (els.journeyOnlineOverlay) els.journeyOnlineOverlay.classList.add('hidden');
+
+    const nextCoordObj = getCityCoord(currentEvent.city) || CITY_COORDINATES['Istanbul, Türkiye'];
+    const targetLonLat = [nextCoordObj.lon, nextCoordObj.lat];
+    const prevLonLat = journeyState.currentCoords || targetLonLat;
+
+    const latStr = `${Math.abs(nextCoordObj.lat).toFixed(1)}°${nextCoordObj.lat >= 0 ? 'N' : 'S'}`;
+    const lonStr = `${Math.abs(nextCoordObj.lon).toFixed(1)}°${nextCoordObj.lon >= 0 ? 'E' : 'W'}`;
+    const coordStr = `${latStr} · ${lonStr}`;
+
+    const distKm = calcDistanceKm(prevLonLat, targetLonLat);
+
+    if (instant || prefersReducedMotion) {
+      journeyState.isTraveling = false;
+      journeyState.currentCoords = targetLonLat;
+      journeyState.projection
+        .scale(journeyState.baseScale)
+        .rotate([-targetLonLat[0], -targetLonLat[1]]);
+
+      renderGlobeStatic();
+      renderHistoricalTrails();
+      renderHistoricalMarkers();
+      renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, false);
+      updateJourneyCard(currentEvent, prevEvent, distKm, false);
+      if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+
+      if (isJourneyAutoAdvancing()) {
+        scheduleJourneyAdvance(3500);
+      }
+      return;
+    }
+
+    // Smooth camera refocus without drawing non-chronological active arc
+    journeyState.isTraveling = true;
+    updateJourneyCard(currentEvent, prevEvent, distKm, false);
+    if (els.journeyActiveCard) els.journeyActiveCard.classList.add('fading');
+
+    const interp = d3.geoInterpolate(prevLonLat, targetLonLat);
+    const startTime = performance.now();
+    const duration = 1600;
+
+    function stepJumpAnimation(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const ease = easeInOutCubic(progress);
+
+      const currentInterp = interp(ease);
+      const currentScale = journeyState.baseScale - 24 * Math.sin(Math.PI * ease);
+
+      journeyState.projection
+        .scale(currentScale)
+        .rotate([-currentInterp[0], -currentInterp[1]]);
+
+      renderGlobeStatic();
+      renderHistoricalTrails();
+      renderHistoricalMarkers();
+
+      if (progress < 1) {
+        journeyState.animId = requestAnimationFrame(stepJumpAnimation);
+      } else {
+        journeyState.isTraveling = false;
+        journeyState.currentCoords = targetLonLat;
+        journeyState.projection
+          .scale(journeyState.baseScale)
+          .rotate([-targetLonLat[0], -targetLonLat[1]]);
+
+        renderGlobeStatic();
+        renderHistoricalTrails();
+        renderHistoricalMarkers();
+        renderActiveMarker(targetLonLat, nextCoordObj.label, coordStr, true);
+        updateJourneyCard(currentEvent, prevEvent, distKm, false);
+        if (els.journeyActiveCard) els.journeyActiveCard.classList.remove('fading');
+
+        if (isJourneyAutoAdvancing()) {
+          scheduleJourneyAdvance(3500);
+        }
+      }
+    }
+
+    journeyState.animId = requestAnimationFrame(stepJumpAnimation);
+  }
+
   function setupJourneyListeners() {
     if (els.journeyPlayBtn) {
       els.journeyPlayBtn.addEventListener('click', () => {
-        if (journeyState.isPlaying && !journeyState.isManuallyPaused) {
-          journeyState.isManuallyPaused = true;
-          clearTimeout(journeyState.holdTimer);
-          if (els.journeyPlayIcon) els.journeyPlayIcon.textContent = '▶';
-          if (els.journeyPlayLabel) els.journeyPlayLabel.textContent = 'PLAY';
-          if (els.journeyStatusText) els.journeyStatusText.textContent = 'PAUSED';
+        if (journeyState.userPlaying) {
+          pauseJourney('user');
         } else {
-          journeyState.isManuallyPaused = false;
-          journeyState.isPlaying = true;
-          if (els.journeyPlayIcon) els.journeyPlayIcon.textContent = '⏸';
-          if (els.journeyPlayLabel) els.journeyPlayLabel.textContent = 'PAUSE';
-          if (els.journeyStatusText) els.journeyStatusText.textContent = 'CHRONOLOGICAL PLAYBACK';
-          scheduleNextJourneyHold(1000);
+          resumeJourney('user', 600);
         }
       });
     }
@@ -2005,39 +2477,72 @@
     if (els.journeyPrevBtn) {
       els.journeyPrevBtn.addEventListener('click', () => {
         const prevIdx = (journeyState.currentIndex - 1 + journeyState.stops.length) % journeyState.stops.length;
-        travelToJourneyStop(prevIdx, false);
+        jumpToJourneyStop(prevIdx, false, true);
       });
     }
 
     if (els.journeyNextBtn) {
       els.journeyNextBtn.addEventListener('click', () => {
         const nextIdx = (journeyState.currentIndex + 1) % journeyState.stops.length;
-        travelToJourneyStop(nextIdx, false);
+        jumpToJourneyStop(nextIdx, false, true);
       });
     }
 
-    // Hover pause and resume with 800ms buffer
     if (els.journeyStageWrap) {
-      els.journeyStageWrap.addEventListener('mouseenter', () => {
-        clearTimeout(journeyState.resumeTimer);
-        if (journeyState.isPlaying && !journeyState.isManuallyPaused && !journeyState.isModalOpen) {
-          journeyState.isHoverPaused = true;
-          clearTimeout(journeyState.holdTimer);
-          if (els.journeyStatusText) els.journeyStatusText.textContent = 'PAUSED (HOVER)';
-        }
+      els.journeyStageWrap.addEventListener('pointerenter', (e) => {
+        if (e.pointerType === 'touch') return;
+        pauseJourney('hover');
       });
 
-      els.journeyStageWrap.addEventListener('mouseleave', () => {
+      els.journeyStageWrap.addEventListener('pointerleave', (e) => {
+        if (e.pointerType === 'touch') return;
         clearTimeout(journeyState.resumeTimer);
-        if (journeyState.isPlaying && !journeyState.isManuallyPaused && !journeyState.isModalOpen) {
-          journeyState.resumeTimer = setTimeout(() => {
-            journeyState.isHoverPaused = false;
-            if (els.journeyStatusText) els.journeyStatusText.textContent = 'CHRONOLOGICAL PLAYBACK';
-            scheduleNextJourneyHold(1000);
-          }, 800);
-        }
+        journeyState.resumeTimer = setTimeout(() => {
+          resumeJourney('hover', 800);
+        }, 400);
       });
     }
+  }
+
+  function setupJourneyLifecycle() {
+    if (window.IntersectionObserver && els.journeyStageWrap) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            resumeJourney('viewport', 1000);
+          } else {
+            pauseJourney('viewport');
+          }
+        });
+      }, { threshold: 0.15 });
+      observer.observe(els.journeyStageWrap);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        pauseJourney('visibility');
+      } else {
+        resumeJourney('visibility', 1000);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      updateGlobeDimensions();
+      renderGlobeStatic();
+      renderHistoricalTrails();
+      renderHistoricalMarkers();
+      if (journeyState.stops.length > 0) {
+        const currentStop = journeyState.stops[journeyState.currentIndex];
+        if (currentStop && currentStop.city !== 'Online') {
+          const coord = getCityCoord(currentStop.city);
+          if (coord) {
+            const latStr = `${Math.abs(coord.lat).toFixed(1)}°${coord.lat >= 0 ? 'N' : 'S'}`;
+            const lonStr = `${Math.abs(coord.lon).toFixed(1)}°${coord.lon >= 0 ? 'E' : 'W'}`;
+            renderActiveMarker([coord.lon, coord.lat], coord.label, `${latStr} · ${lonStr}`, false);
+          }
+        }
+      }
+    });
   }
 
   function initSpeakingJourney(landData) {
@@ -2051,11 +2556,15 @@
     journeyState.stops = state.events.slice().sort((a, b) => a.date.localeCompare(b.date));
     if (!journeyState.stops.length) return;
 
+    validateCoordinates(journeyState.stops);
+
     const firstPhysical = journeyState.stops.find((s) => s.city !== 'Online');
     const firstCoord = firstPhysical ? getCityCoord(firstPhysical.city) : CITY_COORDINATES['Istanbul, Türkiye'];
     if (firstCoord) {
       journeyState.currentCoords = [firstCoord.lon, firstCoord.lat];
     }
+
+    updateGlobeDimensions();
 
     journeyState.projection = d3.geoOrthographic()
       .scale(journeyState.baseScale)
@@ -2064,16 +2573,28 @@
       .clipAngle(90);
 
     journeyState.pathGen = d3.geoPath(journeyState.projection);
+    journeyState.graticuleGeo = d3.geoGraticule().step([30, 30])();
+
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      journeyState.userPlaying = false;
+    }
 
     initJourneyDefs();
     renderGlobeStatic();
     renderJourneyScrubber();
     setupJourneyListeners();
+    setupJourneyLifecycle();
 
     journeyState.currentIndex = 0;
     journeyState.initialized = true;
 
-    travelToJourneyStop(0, true);
+    jumpToJourneyStop(0, true, false);
+    syncJourneyPlaybackUI();
+
+    if (isJourneyAutoAdvancing()) {
+      scheduleJourneyAdvance(3000);
+    }
   }
 
   // ==========================================================================
@@ -2084,13 +2605,12 @@
     if (!event || !els.dialog) return;
 
     // Pause journey playback during dossier examination
-    journeyState.isModalOpen = true;
-    clearTimeout(journeyState.holdTimer);
+    pauseJourney('modal');
 
     if (journeyState.initialized) {
       const stopIdx = journeyState.stops.findIndex((s) => s.id === id);
       if (stopIdx !== -1 && stopIdx !== journeyState.currentIndex) {
-        travelToJourneyStop(stopIdx, true);
+        jumpToJourneyStop(stopIdx, true, false);
       }
     }
 
@@ -2290,10 +2810,7 @@
     updateRiverVisualClasses();
 
     // Resume Speaking Journey playback
-    journeyState.isModalOpen = false;
-    if (journeyState.initialized && journeyState.isPlaying && !journeyState.isManuallyPaused && !journeyState.isHoverPaused) {
-      scheduleNextJourneyHold(1500);
-    }
+    resumeJourney('modal', 1200);
   }
 
   function handleRouteFromHash() {
