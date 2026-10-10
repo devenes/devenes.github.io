@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="512" height="512" viewBox="114 -141 1400 1340">
+  <title>Glossy Blue and White ET Emblem</title>
+  <defs>
+    <!-- Dark Mode (Original Glossy White & Ice Blue E Gradients for Dark Browser Tabs) -->
+    <linearGradient id="e-dark-top" x1="25%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="58%" stop-color="#f7faff" />
+      <stop offset="100%" stop-color="#d2e3fc" />
+    </linearGradient>
+    <linearGradient id="e-dark-mid" x1="15%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="55%" stop-color="#f4f8fd" />
+      <stop offset="100%" stop-color="#d4e5fc" />
+    </linearGradient>
+    <linearGradient id="e-dark-bot" x1="15%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="55%" stop-color="#f5f9fe" />
+      <stop offset="100%" stop-color="#d5e9fe" />
+    </linearGradient>
+
+    <!-- Light Mode (High-Contrast Glossy Slate/Navy E Gradients for Light Browser Tabs) -->
+    <linearGradient id="e-light-top" x1="20%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="50%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="e-light-mid" x1="15%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="50%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="e-light-bot" x1="15%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="50%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+
+    <!-- Glossy Electric Blue T Gradients -->
+    <linearGradient id="t-top" x1="90%" y1="0%" x2="5%" y2="100%">
+      <stop offset="0%" stop-color="#00d3fd" />
+      <stop offset="55%" stop-color="#019bfd" />
+      <stop offset="85%" stop-color="#0156e6" />
+      <stop offset="100%" stop-color="#0123a6" />
+    </linearGradient>
+    <linearGradient id="t-stem" x1="65%" y1="15%" x2="35%" y2="100%">
+      <stop offset="0%" stop-color="#01b8fd" />
+      <stop offset="52%" stop-color="#017cfd" />
+      <stop offset="85%" stop-color="#0143fd" />
+      <stop offset="100%" stop-color="#010ffd" />
+    </linearGradient>
+    <linearGradient id="t-fold" x1="0%" y1="0%" x2="95%" y2="75%">
+      <stop offset="0%" stop-color="#012396" />
+      <stop offset="55%" stop-color="#012bc0" />
+      <stop offset="100%" stop-color="#001cf0" />
+    </linearGradient>
+  </defs>
+
+  <style>
+    .et-mark {
+      filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.16));
+    }
+    .e-top, .e-mid, .e-bot {
+      paint-order: stroke fill;
+      stroke: rgba(255, 255, 255, 0.35);
+      stroke-width: 10px;
+      stroke-linejoin: round;
+    }
+    .e-top { fill: url(#e-light-top); }
+    .e-mid { fill: url(#e-light-mid); }
+    .e-bot { fill: url(#e-light-bot); }
+    .t-top { fill: url(#t-top); }
+    .t-stem { fill: url(#t-stem); }
+    .t-fold { fill: url(#t-fold); }
+
+    @media (prefers-color-scheme: dark) {
+      .et-mark {
+        filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.55));
+      }
+      .e-top, .e-mid, .e-bot {
+        stroke: rgba(15, 23, 42, 0.28);
+        stroke-width: 10px;
+      }
+      .e-top { fill: url(#e-dark-top); }
+      .e-mid { fill: url(#e-dark-mid); }
+      .e-bot { fill: url(#e-dark-bot); }
+    }
+  </style>
+
+  <g class="et-mark">
+    <!-- E Bars -->
+    <polygon class="e-top" points="299,117 880,117 674,342 144,342" />
+    <polygon class="e-mid" points="153,456 772,456 619.5,655 153,655" />
+    <polygon class="e-bot" points="153,748 695,748 825.2,940 153,940" />
+
+    <!-- T Stem & Fold Shadow -->
+    <polygon class="t-stem" points="855,342 1136,342 1136,941 855,941" />
+    <polygon class="t-fold" points="855,342 1136,342 855,540" />
+
+    <!-- T Top Crossbar -->
+    <polygon class="t-top" points="880,117 1484,117 1311,342 674,342" />
+  </g>
+</svg>

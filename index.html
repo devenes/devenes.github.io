@@ -1,22 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Enes Turan — Technical Speaker</title>
-  <meta name="description" content="Technical speaker archive of Enes Turan, Google Developer Expert and Platform Engineer. Chronological technical river and speaking journey across 43 talks on Kubernetes, AI Infrastructure, AI Agents, and Google Cloud.">
+  <meta name="description"
+    content="Technical speaker archive of Enes Turan, Google Developer Expert and Platform Engineer. Chronological technical river and speaking journey across 43 talks on Kubernetes, AI Infrastructure, AI Agents, and Google Cloud.">
   <meta name="author" content="Enes Turan">
-  
+
   <meta property="og:type" content="website">
   <meta property="og:title" content="Enes Turan — Technical Speaker">
-  <meta property="og:description" content="Google Developer Expert & Platform Engineer. Interactive technical river and speaking journey across 43 speaking events on Kubernetes, AI Infrastructure, AI Agents, and Cloud.">
+  <meta property="og:description"
+    content="Google Developer Expert & Platform Engineer. Interactive technical river and speaking journey across 43 speaking events on Kubernetes, AI Infrastructure, AI Agents, and Cloud.">
   <meta property="og:url" content="https://devenes.github.io/">
+  <meta property="og:image" content="https://devenes.github.io/assets/icons/et.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Enes Turan — Technical Speaker">
-  <meta name="twitter:description" content="Google Developer Expert & Platform Engineer. Interactive technical river and speaking journey across 43 talks on Kubernetes, AI Infrastructure, and Cloud.">
-  
+  <meta name="twitter:description"
+    content="Google Developer Expert & Platform Engineer. Interactive technical river and speaking journey across 43 talks on Kubernetes, AI Infrastructure, and Cloud.">
+  <meta name="twitter:image" content="https://devenes.github.io/assets/icons/et.png">
+  <meta name="color-scheme" content="light dark">
+
+  <link rel="icon" type="image/svg+xml" sizes="any" href="assets/icons/et.svg" id="site-favicon">
+  <link rel="apple-touch-icon" href="assets/icons/et.png">
+
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <a class="skip-link" href="#archive">Skip to speaking archive</a>
 
@@ -24,6 +35,9 @@
   <header class="site-header" id="site-header">
     <div class="header-container">
       <a class="brand" href="#top" aria-label="Enes Turan — Technical Speaker Archive">
+        <span class="brand-logo-badge" aria-hidden="true">
+          <img src="assets/icons/et.png" alt="" class="brand-logo" width="30" height="20" fetchpriority="high">
+        </span>
         <span class="brand-name">ENES TURAN</span>
         <span class="brand-sep" aria-hidden="true">/</span>
         <span class="brand-sub">SPEAKER ARCHIVE</span>
@@ -36,10 +50,12 @@
         <a href="#threads" class="nav-link">Threads</a>
         <a href="#reach" class="nav-link">Reach</a>
         <a href="#about" class="nav-link">About</a>
-        <a href="https://github.com/devenes" target="_blank" rel="noopener noreferrer" class="nav-link ext-link" aria-label="GitHub Profile">
+        <a href="https://github.com/devenes" target="_blank" rel="noopener noreferrer" class="nav-link ext-link"
+          aria-label="GitHub Profile">
           GitHub <span aria-hidden="true">↗</span>
         </a>
-        <a href="https://www.linkedin.com/in/devenes/" target="_blank" rel="noopener noreferrer" class="nav-link ext-link" aria-label="LinkedIn Profile">
+        <a href="https://www.linkedin.com/in/devenes/" target="_blank" rel="noopener noreferrer"
+          class="nav-link ext-link" aria-label="LinkedIn Profile">
           LinkedIn <span aria-hidden="true">↗</span>
         </a>
       </nav>
@@ -50,13 +66,14 @@
     <!-- HERO SECTION -->
     <section class="hero-section" aria-labelledby="hero-title">
       <div class="hero-gridline" aria-hidden="true"></div>
-      
+
       <div class="hero-container">
         <div class="hero-copy">
           <p class="hero-eyebrow">GOOGLE DEVELOPER EXPERT · PLATFORM ENGINEER</p>
           <h1 id="hero-title" class="hero-title">TECHNICAL<br><em class="accent-text">SPEAKER</em></h1>
           <p class="hero-lede">
-            A living digital archive of keynotes, conference talks, and technical deep-dives across Kubernetes, AI Infrastructure, AI Agents, and Cloud Platforms.
+            A living digital archive of keynotes, conference talks, and technical deep-dives across Kubernetes, AI
+            Infrastructure, AI Agents, and Cloud Platforms.
           </p>
           <div class="hero-topics-ledger" aria-label="Core speaking topics">
             <span class="hero-topic-pill">KUBERNETES</span>
@@ -67,6 +84,12 @@
         </div>
 
         <div class="hero-signal" aria-label="Archive summary metrics">
+          <div class="signal-brand-header">
+            <span class="signal-logo-badge" aria-hidden="true">
+              <img src="assets/icons/et.png" alt="" class="signal-logo" width="27" height="18">
+            </span>
+            <span class="signal-brand-code">ARCHIVE SIGNAL</span>
+          </div>
           <div class="signal-big">
             <strong id="hero-talk-count">43</strong>
             <span class="signal-label">TALKS</span>
@@ -98,7 +121,9 @@
             </h2>
           </div>
           <p class="section-description">
-            Time flows from left to right. Each flowing channel represents a core technical theme, expanding and converging as speaking focus evolves from cloud and container foundations into autonomous AI systems.
+            Forty-three speaking engagements mapped in chronological sequence across six core architectural tracks.
+            Watch speaking focus ascend from cloud and Kubernetes foundations into MLOps and autonomous AI agent
+            systems.
           </p>
         </div>
 
@@ -112,7 +137,8 @@
               </div>
             </div>
 
-            <button type="button" id="play-history-btn" class="play-history-btn" aria-label="Play chronological speaking history">
+            <button type="button" id="play-history-btn" class="play-history-btn"
+              aria-label="Play chronological speaking history">
               <span class="play-icon" aria-hidden="true">▶</span>
               <span class="play-label">PLAY HISTORY</span>
             </button>
@@ -120,8 +146,11 @@
 
           <div class="search-field">
             <label for="archive-search" class="sr-only">Search archive</label>
-            <input id="archive-search" type="search" autocomplete="off" placeholder="Search talks, events, cities, topics… (press '/' to focus)" aria-label="Search speaking archive">
-            <button id="clear-search" type="button" class="search-clear-btn hidden" aria-label="Clear search input">✕</button>
+            <input id="archive-search" type="search" autocomplete="off"
+              placeholder="Search talks, events, cities, topics… (press '/' to focus)"
+              aria-label="Search speaking archive">
+            <button id="clear-search" type="button" class="search-clear-btn hidden"
+              aria-label="Clear search input">✕</button>
           </div>
         </div>
 
@@ -130,54 +159,78 @@
           <!-- Dynamically populated with topic chips & counts -->
         </div>
 
-        <!-- Era Commentary Card (Speaks dynamically to the active year / timeline state) -->
-        <div class="river-era-card" id="river-era-card" aria-live="polite">
-          <div class="era-badge" id="era-badge">OVERVIEW · 2023–2026</div>
-          <p class="era-text" id="era-text">
-            Tracing 43 speaking engagements across 4 years: from enterprise Kubernetes and cloud architectures to autonomous AI agents and global reliability engineering.
-          </p>
-          <div class="era-timeline-progress hidden" id="era-progress-bar" aria-hidden="true">
-            <div class="era-progress-fill" id="era-progress-fill"></div>
-          </div>
-        </div>
-
-        <!-- Interactive Technical River SVG Container & Event Signal Overlay -->
+        <!-- Interactive Technical River & Signal Matrix Stage -->
         <div class="river-field-wrap" id="river-field-wrap">
-          <svg id="river-svg" class="river-svg" viewBox="0 0 1100 520" role="img" aria-label="Technical River showing topic channels and talk signals over time">
-            <defs id="river-defs"></defs>
-            <g id="river-background-grid" class="river-grid-group"></g>
-            <g id="river-streams-layer" class="river-streams-group"></g>
-            <g id="river-events-layer" class="river-events-group"></g>
-          </svg>
-          <div id="river-nodes-overlay" class="river-nodes-overlay" role="region" aria-label="Interactive talk signals"></div>
-          <div id="river-tooltip" class="river-tooltip" role="tooltip" aria-hidden="true"></div>
-
-          <div class="river-legend" id="river-legend" role="toolbar" aria-label="Technical stream filters">
-            <button type="button" class="legend-item" data-stream="cloud" aria-label="Filter by Cloud Architecture &amp; Serverless">
-              <span class="legend-color legend-cloud"></span><span>Cloud &amp; Serverless</span>
-            </button>
-            <button type="button" class="legend-item" data-stream="kubernetes" aria-label="Filter by Kubernetes &amp; GKE Platforms">
-              <span class="legend-color legend-k8s"></span><span>Kubernetes &amp; Platforms</span>
-            </button>
-            <button type="button" class="legend-item" data-stream="devops-sre" aria-label="Filter by DevOps &amp; Global SRE">
-              <span class="legend-color legend-sre"></span><span>DevOps &amp; Global SRE</span>
-            </button>
-            <button type="button" class="legend-item" data-stream="mlops" aria-label="Filter by AI/ML &amp; MLOps Platforms">
-              <span class="legend-color legend-mlops"></span><span>AI/ML &amp; MLOps</span>
-            </button>
-            <button type="button" class="legend-item" data-stream="genai" aria-label="Filter by Generative AI Systems">
-              <span class="legend-color legend-genai"></span><span>Generative AI</span>
-            </button>
-            <button type="button" class="legend-item" data-stream="agents" aria-label="Filter by Autonomous AI Agents &amp; ADK">
-              <span class="legend-color legend-agents"></span><span>Autonomous AI Agents</span>
-            </button>
-            <div class="legend-item legend-static" aria-hidden="true">
-              <span class="legend-node-dot"></span><span>Talk Signal</span>
+          <!-- Docked Era Commentary & Telemetry Topbar -->
+          <div class="river-era-card" id="river-era-card" aria-live="polite">
+            <div class="river-era-header-row">
+              <div class="era-badge" id="era-badge">OVERVIEW · 2023–2026</div>
+              <div class="field-status" id="field-status" aria-live="polite">
+                43 talks · 4 years · select any signal to inspect details
+              </div>
+            </div>
+            <p class="era-text" id="era-text">
+              Tracing 43 speaking engagements across 4 years: from enterprise Kubernetes and cloud architectures to
+              autonomous AI agents and global reliability engineering.
+            </p>
+            <div class="era-timeline-progress hidden" id="era-progress-bar" aria-hidden="true">
+              <div class="era-progress-fill" id="era-progress-fill"></div>
             </div>
           </div>
 
-          <div class="field-status" id="field-status" aria-live="polite">
-            43 talks · 4 years · select any signal to inspect details
+          <!-- SVG Visualization Viewport -->
+          <div class="river-canvas-stage" id="river-canvas-stage">
+            <svg id="river-svg" class="river-svg" viewBox="0 0 1120 510" role="img"
+              aria-label="Technical River and Signal Matrix showing topic evolution and talk signals across six architectural streams from 2023 to 2026">
+              <defs id="river-defs"></defs>
+              <g id="river-background-grid" class="river-grid-group"></g>
+              <g id="river-streams-layer" class="river-streams-group"></g>
+              <g id="river-events-layer" class="river-events-group"></g>
+            </svg>
+            <div id="river-nodes-overlay" class="river-nodes-overlay" role="region"
+              aria-label="Interactive talk signals"></div>
+            <div id="river-tooltip" class="river-tooltip" role="tooltip" aria-hidden="true"></div>
+          </div>
+
+          <!-- Live Signal Inspector Dock -->
+          <div class="river-signal-dock" id="river-signal-dock" aria-live="polite">
+            <!-- Dynamically updated on signal hover/focus/selection -->
+          </div>
+
+          <!-- Stream Filter Legend & Key Footer -->
+          <div class="river-footer-bar">
+            <div class="river-legend" id="river-legend" role="toolbar" aria-label="Technical stream filters">
+              <button type="button" class="legend-item" data-stream="agents"
+                aria-label="Filter by Autonomous AI Agents &amp; ADK">
+                <span class="legend-color legend-agents"></span><span>Autonomous AI Agents</span>
+              </button>
+              <button type="button" class="legend-item" data-stream="genai"
+                aria-label="Filter by Generative AI Systems">
+                <span class="legend-color legend-genai"></span><span>Generative AI</span>
+              </button>
+              <button type="button" class="legend-item" data-stream="mlops"
+                aria-label="Filter by AI/ML &amp; MLOps Platforms">
+                <span class="legend-color legend-mlops"></span><span>AI/ML &amp; MLOps</span>
+              </button>
+              <button type="button" class="legend-item" data-stream="devops-sre"
+                aria-label="Filter by DevOps &amp; Global SRE">
+                <span class="legend-color legend-sre"></span><span>DevOps &amp; Global SRE</span>
+              </button>
+              <button type="button" class="legend-item" data-stream="kubernetes"
+                aria-label="Filter by Kubernetes &amp; GKE Platforms">
+                <span class="legend-color legend-k8s"></span><span>Kubernetes &amp; Platforms</span>
+              </button>
+              <button type="button" class="legend-item" data-stream="cloud"
+                aria-label="Filter by Cloud Architecture &amp; Serverless">
+                <span class="legend-color legend-cloud"></span><span>Cloud &amp; Serverless</span>
+              </button>
+            </div>
+
+            <div class="river-key-group" aria-hidden="true">
+              <span class="river-key-item"><span class="legend-node-dot"></span>Session</span>
+              <span class="river-key-item"><span class="legend-node-diamond"></span>Keynote</span>
+              <span class="river-key-item"><span class="legend-node-bridge"></span>Multi-Track Bridge</span>
+            </div>
           </div>
         </div>
 
@@ -199,13 +252,15 @@
             </h2>
           </div>
           <p class="section-description">
-            A cinematic timeline of speaking locations in chronological sequence. Watch conversations travel across Eurasia, the Mediterranean, Middle East, and Central Asia from 2023 to 2026.
+            A cinematic timeline of speaking locations in chronological sequence. Watch conversations travel across
+            Eurasia, the Mediterranean, Middle East, and Central Asia from 2023 to 2026.
           </p>
         </div>
 
         <!-- Journey Stage Container -->
-        <div class="journey-stage-wrap" id="journey-stage-wrap" role="region" aria-label="Speaking Journey Cinematic World Visualization">
-          
+        <div class="journey-stage-wrap" id="journey-stage-wrap" role="region"
+          aria-label="Speaking Journey Cinematic World Visualization">
+
           <!-- Top Journey Meta & Playback Controls Bar -->
           <div class="journey-topbar">
             <div class="journey-status-indicator">
@@ -218,7 +273,8 @@
               <button type="button" class="journey-ctrl-btn" id="journey-prev-btn" aria-label="Previous speaking stop">
                 <span aria-hidden="true">←</span> PREV
               </button>
-              <button type="button" class="journey-ctrl-btn" id="journey-play-btn" aria-label="Pause or play timeline playback">
+              <button type="button" class="journey-ctrl-btn" id="journey-play-btn"
+                aria-label="Pause or play timeline playback">
                 <span class="journey-play-icon" id="journey-play-icon" aria-hidden="true">⏸</span>
                 <span class="journey-play-label" id="journey-play-label">PAUSE</span>
               </button>
@@ -233,7 +289,8 @@
 
           <!-- Main Visual Viewport: Dark Globe & Editorial Card Stage -->
           <div class="journey-viewport" id="journey-viewport">
-            <svg id="journey-svg" class="journey-svg" viewBox="0 0 1100 580" role="img" aria-label="Interactive dark globe showing chronological speaking journey">
+            <svg id="journey-svg" class="journey-svg" viewBox="0 0 1100 580" role="img"
+              aria-label="Interactive dark globe showing chronological speaking journey">
               <defs id="journey-defs">
                 <!-- Gradients and clip paths rendered dynamically -->
               </defs>
@@ -285,7 +342,8 @@
                 <div class="journey-card-topics" id="journey-card-topics">
                   <!-- Dynamic topic pills -->
                 </div>
-                <button type="button" class="journey-dossier-btn" id="journey-dossier-btn" aria-label="View talk abstract and photographs">
+                <button type="button" class="journey-dossier-btn" id="journey-dossier-btn"
+                  aria-label="View talk abstract and photographs">
                   <span>EXPLORE DOSSIER</span>
                   <span aria-hidden="true">↗</span>
                 </button>
@@ -318,7 +376,8 @@
             </h2>
           </div>
           <p class="section-description">
-            The Technical River and Speaking Journey offer visual and spatial discovery. This ledger provides the complete, accessible, data-driven record of every speaking engagement in chronological sequence.
+            The Technical River and Speaking Journey offer visual and spatial discovery. This ledger provides the
+            complete, accessible, data-driven record of every speaking engagement in chronological sequence.
           </p>
         </div>
 
@@ -351,7 +410,8 @@
             </h2>
           </div>
           <p class="section-description">
-            Core architectural concepts that persist and evolve across conferences. Select any technical thread to isolate its trajectory in the river and archive.
+            Core architectural concepts that persist and evolve across conferences. Select any technical thread to
+            isolate its trajectory in the river and archive.
           </p>
         </div>
 
@@ -372,7 +432,8 @@
             </h2>
           </div>
           <p class="section-description">
-            Speaking engagements across 23 cities and global online communities. Rather than cartography, explore the distribution of speaking impact across key regions and host communities.
+            Speaking engagements across 23 cities and global online communities. Rather than cartography, explore the
+            distribution of speaking impact across key regions and host communities.
           </p>
         </div>
 
@@ -411,7 +472,8 @@
         </div>
 
         <!-- In-Place City Talks Inspector Drawer -->
-        <div class="city-inspector empty" id="city-inspector" role="region" aria-label="Selected location speaking details">
+        <div class="city-inspector empty" id="city-inspector" role="region"
+          aria-label="Selected location speaking details">
           <!-- Dynamically rendered based on active city selection -->
         </div>
       </div>
@@ -422,7 +484,11 @@
       <div class="section-container">
         <div class="about-grid">
           <div class="about-left-col">
-            <p class="section-eyebrow">ABOUT ENES TURAN</p>
+            <div class="about-identity-mark">
+              <img src="assets/icons/et.png" alt="Enes Turan ET Emblem" class="about-emblem" width="54" height="36"
+                loading="lazy">
+              <p class="section-eyebrow">ABOUT ENES TURAN</p>
+            </div>
             <h2 id="about-title" class="section-title">
               Engineering systems.<br><em class="accent-text">Explaining them clearly.</em>
             </h2>
@@ -438,7 +504,8 @@
                 <span>GitHub Profile</span>
                 <span aria-hidden="true">↗</span>
               </a>
-              <a href="https://www.linkedin.com/in/devenes/" target="_blank" rel="noopener noreferrer" class="about-link-btn">
+              <a href="https://www.linkedin.com/in/devenes/" target="_blank" rel="noopener noreferrer"
+                class="about-link-btn">
                 <span>LinkedIn Profile</span>
                 <span aria-hidden="true">↗</span>
               </a>
@@ -448,24 +515,35 @@
           <div class="about-right-col">
             <div class="about-bio-text">
               <p>
-                Enes Turan is a Platform Engineer and Google Developer Expert dedicated to demystifying modern cloud platforms, Kubernetes internals, and production AI architectures.
+                Enes Turan is a Platform Engineer and Google Developer Expert dedicated to demystifying modern cloud
+                platforms, Kubernetes internals, and production AI architectures.
               </p>
               <p>
-                Across international keynotes, Google DevFest events, Google I/O Extended editions, and engineering symposiums, Enes focuses on practical, production-proven engineering: unraveling the inner workings of Kubernetes schedulers, running high-scale AI/ML workloads on GKE, implementing Site Reliability Engineering at scale, and architecting autonomous multi-agent workflows with the Google Agent Development Kit (ADK).
+                Across international keynotes, Google DevFest events, Google I/O Extended editions, and engineering
+                symposiums, Enes focuses on practical, production-proven engineering: unraveling the inner workings of
+                Kubernetes schedulers, running high-scale AI/ML workloads on GKE, implementing Site Reliability
+                Engineering at scale, and architecting autonomous multi-agent workflows with the Google Agent
+                Development Kit (ADK).
               </p>
             </div>
 
             <!-- Speaking Inquiries Box -->
             <div class="inquiries-card">
               <div class="inquiries-header">
-                <span class="inquiries-badge">SPEAKING INQUIRIES</span>
+                <div class="inquiries-badge-row">
+                  <img src="assets/icons/et.png" alt="" class="inquiries-emblem" width="27" height="18" loading="lazy">
+                  <span class="inquiries-badge">SPEAKING INQUIRIES</span>
+                </div>
                 <h3 class="inquiries-title">Invite Enes to Speak</h3>
               </div>
               <p class="inquiries-body">
-                Organizing a technical conference, developer summit, or engineering meetup? Enes is available for keynote sessions, technical deep-dives, and hands-on workshops on Kubernetes, AI Infrastructure, and AI Agents.
+                Organizing a technical conference, developer summit, or engineering meetup? Enes is available for
+                keynote sessions, technical deep-dives, and hands-on workshops on Kubernetes, AI Infrastructure, and AI
+                Agents.
               </p>
               <div class="inquiries-actions">
-                <a href="https://www.linkedin.com/in/devenes/" target="_blank" rel="noopener noreferrer" class="inquiry-btn primary">
+                <a href="https://www.linkedin.com/in/devenes/" target="_blank" rel="noopener noreferrer"
+                  class="inquiry-btn primary">
                   <span>Connect via LinkedIn</span>
                   <span aria-hidden="true">↗</span>
                 </a>
@@ -481,7 +559,10 @@
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-left">
-        <span class="footer-brand">ENES TURAN</span>
+        <a href="#top" class="footer-brand-link" aria-label="Enes Turan — Back to top">
+          <img src="assets/icons/et.png" alt="" class="footer-logo" width="30" height="20" loading="lazy">
+          <span class="footer-brand">ENES TURAN</span>
+        </a>
         <span class="footer-sub">Google Developer Expert · Platform Engineer · Technical Speaker</span>
       </div>
       <div class="footer-right">
@@ -497,6 +578,7 @@
     <div class="dialog-inner">
       <header class="dialog-top">
         <div class="dialog-stamps">
+          <img src="assets/icons/et.png" alt="" class="dialog-brand-logo" width="24" height="16" loading="lazy">
           <span class="dialog-index" id="dialog-index">01 / 43</span>
           <span class="dialog-stamp-sep" aria-hidden="true">·</span>
           <span class="dialog-stamp-date" id="dialog-date">Date</span>
@@ -543,8 +625,10 @@
           </div>
 
           <div class="gallery-nav-row" id="gallery-nav-row">
-            <button type="button" class="gallery-nav-btn prev" id="gallery-prev-btn" aria-label="Previous photograph">← Prev</button>
-            <button type="button" class="gallery-nav-btn next" id="gallery-next-btn" aria-label="Next photograph">Next →</button>
+            <button type="button" class="gallery-nav-btn prev" id="gallery-prev-btn" aria-label="Previous photograph">←
+              Prev</button>
+            <button type="button" class="gallery-nav-btn next" id="gallery-next-btn" aria-label="Next photograph">Next
+              →</button>
           </div>
 
           <div class="gallery-thumbnails" id="gallery-thumbnails" aria-label="Photograph thumbnails"></div>
@@ -556,4 +640,5 @@
   <script src="assets/vendor/d3.min.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
