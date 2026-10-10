@@ -34,7 +34,7 @@ The website couples two specialized data art visualizations sharing a single aut
 ├── README.md                   # Site documentation & maintenance guide
 │
 ├── data/
-│   ├── events.json             # Central authoritative speaking event database (43 talks)
+│   ├── events.json             # Central authoritative speaking event database (44 talks)
 │   └── land.json               # Lightweight self-contained world land geometry (Natural Earth)
 │
 ├── assets/

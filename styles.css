@@ -2394,12 +2394,17 @@ button {
   font-weight: 500;
 }
 
+.archive-talk-desc,
 .archive-abstract-snippet {
   margin: 8px 0 0;
   color: var(--ink-muted);
   font-size: 13px;
   line-height: 1.5;
   max-width: 680px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .archive-topics-list {
@@ -3325,6 +3330,7 @@ button {
   font-size: 16px;
   line-height: 1.65;
   color: #cbd1dc;
+  white-space: pre-line;
 }
 
 .dialog-topics-block {

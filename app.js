@@ -189,7 +189,7 @@
   const ERA_NARRATIVES = {
     all: {
       badge: 'OVERVIEW · 2023–2026',
-      text: 'Tracing 43 speaking engagements across 4 years: from enterprise Kubernetes and cloud architectures to autonomous AI agents and global reliability engineering.'
+      text: 'Tracing 44 speaking engagements across 4 years: from enterprise Kubernetes and cloud architectures to autonomous AI agents and global reliability engineering.'
     },
     '2023': {
       badge: 'FOUNDATIONS · 2023',
@@ -205,7 +205,7 @@
     },
     '2026': {
       badge: 'MODERN ARCHITECTURE · 2026',
-      text: '2026 — AI Infrastructure & Global Reliability: High-scale AI infrastructure, Kubernetes for AI workloads, developer experience, and SRE at Google scale.'
+      text: '2026 — AI Infrastructure, Surgical AI Agents & Global Reliability: High-scale AI infrastructure, surgical AI agent workshops, Kubernetes for AI workloads, developer experience, and SRE at Google scale.'
     }
   };
 
@@ -523,7 +523,8 @@
     'sre-summit-istanbul-2026': 'Global SRE',
     'build-with-ai-prishtina-hackathon-2026': 'Intelligent Systems',
     'io-extended-cairo-2026': 'Cloud & AI 2026',
-    'devfest-dubai-2026': 'Kubernetes for AI'
+    'devfest-dubai-2026': 'Kubernetes for AI',
+    'ai-surgery-congress-istanbul-2026': 'Surgical AI Agents'
   };
 
   function isKeynoteEvent(ev) {
@@ -727,7 +728,7 @@
       `;
     });
 
-    // Subtle Vertical Column Hairlines for All 43 Chronological Talks
+    // Subtle Vertical Column Hairlines for All 44 Chronological Talks
     eventRecords.forEach((ev) => {
       gridHtml += `
         <line class="river-col-guide"
@@ -1153,7 +1154,7 @@
     els.riverSignalDock.innerHTML = `
       <div class="signal-dock-left">
         <span class="signal-dock-index ${isLiveHover ? 'active' : ''}">
-          SIGNAL ${String(target.seqIndex || 43).padStart(2, '0')} / ${records.length}
+          SIGNAL ${String(target.seqIndex || 44).padStart(2, '0')} / ${records.length}
         </span>
         ${target.isKeynote ? '<span class="signal-dock-keynote">◆ KEYNOTE</span>' : ''}
         <span class="signal-dock-date">${escapeHtml(formatDateShort(target.date))}</span>

@@ -1,5 +1,21 @@
 [
   {
+    "id": "ai-surgery-congress-istanbul-2026",
+    "date": "2026-10-10",
+    "event": "1st National AI in Surgery Congress (1. Ulusal Yapay Zeka Cerrahi Kongresi)",
+    "city": "Istanbul, Türkiye",
+    "talk": "Transforming Surgical Problems into AI Projects with Google AI Agents Workshop",
+    "photos": [],
+    "description": "Transforming Surgical Problems into AI Projects with Google AI Agents Workshop.\n\nThe workshop focuses on moving beyond using artificial intelligence merely as a conversational Q&A tool, demonstrating how clinical workflow challenges and surgical research questions can be formulated into production-ready, agentic AI projects.\n\nSession Agenda (60 Minutes):\n1. Framing Surgical Problems as AI Problems: Scoping and decomposing clinical research challenges into modular, AI-addressable components.\n2. Live Agentic AI Workflow: Exploring multi-agent orchestration without code—watching an orchestrator agent collaborate with specialized sub-agents handling literature/evidence discovery, clinical guideline retrieval, and evidence synthesis to contrast basic single-prompt chatbots with multi-step agentic systems.\n3. Live Surgical Research Case Study: Working through an actual surgical inquiry, demonstrating problem decomposition, automated literature exploration, knowledge source querying, and evidence consolidation.\n4. Hands-on Participant Implementation: Interactive blueprinting on participants' own laptops using a structured design framework (Problem → User → Input → Output → AI Tasks → Tools/Knowledge Sources → Expected Outcomes → Next Steps), leaving clinicians and researchers with actionable, concrete project concepts.\n5. Multimodal AI & Computer Vision Demo: Demonstrating how foundation vision models analyze surgical video and imaging data, integrating visual modalities into surgical intelligence workflows.",
+    "topics": [
+      "AI Agents",
+      "Generative AI",
+      "Healthcare AI",
+      "Computer Vision",
+      "Google AI"
+    ]
+  },
+  {
     "id": "devfest-dubai-2026",
     "date": "2026-09-27",
     "event": "DevFest Dubai 2026",
