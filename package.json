@@ -1,0 +1,32 @@
+{
+  "name": "orbit-speaker-network",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ORBIT — The Speaker Network: Personal speaker portfolio for Ahmed Enes Turan (Google Developer Expert in Cloud, Kubernetes, and AI)",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview --port 4321",
+    "check": "astro check && tsc --noEmit",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run build && npm run test:e2e"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^5.1.5",
+    "astro": "^5.5.0",
+    "gsap": "^3.12.7",
+    "tailwindcss": "^3.4.17",
+    "three": "^0.174.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@playwright/test": "^1.51.0",
+    "@types/node": "^22.13.0",
+    "@types/three": "^0.174.0",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
+  }
+}

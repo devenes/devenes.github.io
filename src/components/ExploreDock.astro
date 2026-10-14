@@ -1,0 +1,198 @@
+---
+import type { Cluster } from '../schemas/talkSchema';
+import type { OrbitTelemetry } from '../utils/metrics';
+
+interface Props {
+  clusters: Cluster[];
+  telemetry: OrbitTelemetry;
+}
+
+const { clusters, telemetry } = Astro.props;
+
+const clusterPillLabels: Record<string, { label: string; dotColor: string }> = {
+  ai: { label: 'AI Agents', dotColor: '#38BDF8' },
+  k8s: { label: 'Kubernetes', dotColor: '#F59E0B' },
+  cloud: { label: 'Google Cloud', dotColor: '#FACC15' },
+  workshops: { label: 'Workshops', dotColor: '#10B981' },
+};
+---
+
+<!-- 2D Projected Floating Cluster Hub Labels (Positioned dynamically over 3D canvas) -->
+<div
+  id="orbit-cluster-labels"
+  class="fixed inset-0 z-10 pointer-events-none overflow-hidden"
+  aria-label="3D Constellation Cluster Hubs"
+>
+  {
+    clusters.map((cluster) => {
+      const metric = telemetry.clusterMetrics[cluster.id];
+      return (
+        <div
+          data-cluster-hub={cluster.id}
+          data-testid={`cluster-hub-${cluster.id}`}
+          style="transform: translate3d(-9999px, -9999px, 0);"
+          class="orbit-hub-label absolute top-0 left-0 pointer-events-auto select-none transition-opacity duration-300"
+        >
+          <button
+            type="button"
+            data-action="select-cluster"
+            data-cluster-id={cluster.id}
+            class="group flex flex-col items-center text-center focus:outline-none cursor-pointer -translate-x-1/2 -translate-y-full pb-2"
+          >
+            <div class="rounded-lg px-3 py-1.5 bg-[#050811]/80 backdrop-blur-md border border-white/15 group-hover:border-white/45 transition-all shadow-[0_6px_24px_rgba(0,0,0,0.65)]">
+              <div class="flex items-center justify-center gap-1.5">
+                <span
+                  class="h-2 w-2 rounded-full"
+                  style={`background-color: ${cluster.color}; box-shadow: 0 0 10px ${cluster.color};`}
+                />
+                <span class="font-display text-xs sm:text-sm font-bold tracking-[0.16em] uppercase text-white">
+                  {cluster.label}
+                </span>
+              </div>
+              <div class="mt-0.5 font-mono text-[9px] tracking-[0.2em] uppercase text-slate-400 group-hover:text-slate-200">
+                {cluster.subLabel}
+              </div>
+              <div class="mt-0.5 font-mono text-[9px] text-slate-400">
+                {metric.talksCount} signals · {metric.countriesCount} countries
+              </div>
+            </div>
+            <!-- Thin vertical leader line connecting label to 3D energy sphere -->
+            <div
+              class="w-[1px] h-7 opacity-75 group-hover:h-9 transition-all"
+              style={`background: linear-gradient(to bottom, ${cluster.color}, transparent);`}
+            />
+          </button>
+        </div>
+      );
+    })
+  }
+</div>
+
+<!-- Floating Hover Tooltip for Individual 3D Talk Nodes -->
+<div
+  id="orbit-node-tooltip"
+  role="status"
+  aria-live="polite"
+  class="fixed top-0 left-0 z-30 hidden pointer-events-none -translate-x-1/2 -translate-y-[120%] rounded-xl px-3.5 py-2.5 bg-slate-950/90 backdrop-blur-md border border-white/20 shadow-2xl max-w-xs"
+>
+  <p id="tooltip-date" class="font-mono text-[10px] tracking-widest uppercase text-[#38BDF8]"></p>
+  <p id="tooltip-event" class="text-xs font-bold text-white mt-0.5 truncate"></p>
+  <p id="tooltip-title" class="text-[11px] text-slate-300 mt-0.5 line-clamp-2"></p>
+  <p id="tooltip-location" class="text-[10px] text-slate-400 mt-1"></p>
+</div>
+
+<!-- Bottom Floating Explore Control Dock (Visible in Explore & Cluster-Lock Modes) -->
+<section
+  id="explore-control-dock"
+  data-testid="explore-control-dock"
+  aria-label="Network Exploration Controls"
+  class="fixed bottom-5 inset-x-0 z-20 hidden px-4 sm:px-8 pointer-events-none"
+>
+  <div
+    class="max-w-5xl mx-auto flex flex-col gap-2.5 rounded-2xl p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xl border border-white/15 shadow-[0_16px_48px_rgba(0,0,0,0.65)] pointer-events-auto"
+  >
+    <!-- Top Row inside Dock: Active Cluster Telemetry Banner & Search Trigger -->
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+      <div
+        id="cluster-status-banner"
+        data-testid="cluster-status-banner"
+        class="font-mono text-xs tracking-wider uppercase text-slate-200 flex items-center gap-2"
+      >
+        <span class="h-2 w-2 rounded-full bg-[#38BDF8]" id="cluster-status-dot"></span>
+        <span id="cluster-status-text">
+          ALL CLUSTERS: {telemetry.totalTalks} Sessions across {telemetry.uniqueCountries} Countries
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          data-action="open-archive"
+          data-testid="dock-search-btn"
+          class="inline-flex items-center gap-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 px-3 py-1.5 text-xs text-slate-200 transition-colors cursor-pointer"
+        >
+          <span>Search Matrix</span>
+          <kbd class="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-slate-300">
+            ⌘K
+          </kbd>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Row inside Dock: Cluster Filter Pills + Country & Year Dropdowns -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <!-- Cluster Filter Pills -->
+      <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Cluster Filter Pills">
+        <button
+          type="button"
+          data-cluster-pill="all"
+          data-testid="cluster-pill-all"
+          aria-pressed="true"
+          class="cluster-pill active inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium bg-[#38BDF8]/20 text-white border border-[#38BDF8]/60 transition-all cursor-pointer"
+        >
+          <span>All Signals</span>
+          <span class="font-mono text-[10px] opacity-80">({telemetry.totalTalks})</span>
+        </button>
+
+        {
+          clusters.map((cluster) => {
+            const info = clusterPillLabels[cluster.id] ?? {
+              label: cluster.label,
+              dotColor: cluster.color,
+            };
+            const count = telemetry.clusterCounts[cluster.id];
+            return (
+              <button
+                type="button"
+                data-cluster-pill={cluster.id}
+                data-testid={`cluster-pill-${cluster.id}`}
+                aria-pressed="false"
+                class="cluster-pill inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium bg-white/[0.05] hover:bg-white/[0.12] text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+              >
+                <span
+                  class="h-2 w-2 rounded-full"
+                  style={`background-color: ${info.dotColor};`}
+                />
+                <span>{info.label}</span>
+                <span class="font-mono text-[10px] opacity-75">({count})</span>
+              </button>
+            );
+          })
+        }
+      </div>
+
+      <!-- Country & Year Quick Filter Dropdowns -->
+      <div class="flex items-center gap-2">
+        <label for="explore-country-filter" class="sr-only">Filter by Country</label>
+        <select
+          id="explore-country-filter"
+          data-testid="explore-country-filter"
+          class="rounded-lg bg-slate-900/90 border border-white/15 px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#38BDF8]"
+        >
+          <option value="all">All Countries ({telemetry.uniqueCountries})</option>
+          {
+            telemetry.countries.map((c) => (
+              <option value={c.code}>
+                {c.name} ({c.count})
+              </option>
+            ))
+          }
+        </select>
+
+        <label for="explore-year-filter" class="sr-only">Filter by Year</label>
+        <select
+          id="explore-year-filter"
+          data-testid="explore-year-filter"
+          class="rounded-lg bg-slate-900/90 border border-white/15 px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#38BDF8]"
+        >
+          <option value="all">All Years</option>
+          {
+            telemetry.years.map((y) => (
+              <option value={y}>{y}</option>
+            ))
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+</section>

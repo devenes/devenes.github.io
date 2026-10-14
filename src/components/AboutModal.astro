@@ -1,0 +1,109 @@
+---
+import type { OrbitArchive } from '../schemas/talkSchema';
+import type { OrbitTelemetry } from '../utils/metrics';
+
+interface Props {
+  speaker: OrbitArchive['speaker'];
+  telemetry: OrbitTelemetry;
+}
+
+const { speaker, telemetry } = Astro.props;
+---
+
+<div
+  id="about-modal"
+  data-testid="about-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="true"
+  aria-labelledby="about-modal-title"
+  class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-xl"
+>
+  <div
+    class="relative w-full max-w-2xl rounded-2xl bg-[#070D1D] border border-white/15 p-6 sm:p-8 shadow-2xl overflow-y-auto max-h-[90vh]"
+  >
+    <div class="flex items-center justify-between pb-4 border-b border-white/10">
+      <div class="flex items-center gap-2.5">
+        <span class="h-2.5 w-2.5 rounded-full bg-[#38BDF8] shadow-[0_0_10px_#38BDF8]"></span>
+        <span class="font-mono text-xs tracking-[0.22em] uppercase text-[#38BDF8]">
+          SPEAKER DOSSIER
+        </span>
+      </div>
+      <button
+        type="button"
+        data-action="close-about"
+        data-testid="close-about-btn"
+        aria-label="Close Speaker Profile"
+        class="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer text-lg"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="mt-5">
+      <h2 id="about-modal-title" class="font-display text-2xl sm:text-3xl font-bold text-white">
+        {speaker.name}
+      </h2>
+      <p class="mt-1 font-mono text-xs tracking-[0.2em] uppercase text-[#38BDF8]">
+        {speaker.role} · Cloud · Kubernetes · AI
+      </p>
+
+      <p class="mt-4 text-sm text-slate-300 leading-relaxed">
+        Ahmed Enes Turan is a Google Developer Expert (GDE) in Google Cloud, Kubernetes, and AI
+        Agents. Based in {speaker.baseCity}, he partners with engineering organizations and
+        developer communities across Europe, Central Asia, the Middle East, and North Africa to
+        architect production-grade cloud-native platforms and autonomous multi-agent systems.
+      </p>
+
+      <div class="mt-6 grid grid-cols-3 gap-3 rounded-xl bg-slate-900/70 border border-white/10 p-4 text-center">
+        <div>
+          <div class="font-display text-2xl font-bold text-white">{telemetry.displayTalks}</div>
+          <div class="font-mono text-[10px] tracking-widest uppercase text-slate-400 mt-0.5">
+            TALKS DELIVERED
+          </div>
+        </div>
+        <div>
+          <div class="font-display text-2xl font-bold text-white">
+            {telemetry.displayCountries}
+          </div>
+          <div class="font-mono text-[10px] tracking-widest uppercase text-slate-400 mt-0.5">
+            COUNTRIES REACHED
+          </div>
+        </div>
+        <div>
+          <div class="font-display text-2xl font-bold text-white">{telemetry.displayCities}</div>
+          <div class="font-mono text-[10px] tracking-widest uppercase text-slate-400 mt-0.5">
+            CITIES VISITED
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a
+          href="https://www.linkedin.com/in/devenes/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-lg bg-[#38BDF8]/20 hover:bg-[#38BDF8]/30 border border-[#38BDF8]/50 px-4 py-2 text-xs font-semibold text-white transition-colors"
+        >
+          Connect on LinkedIn ↗
+        </a>
+        <a
+          href="https://github.com/devenes"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 px-4 py-2 text-xs font-semibold text-slate-200 transition-colors"
+        >
+          GitHub (@devenes) ↗
+        </a>
+        <a
+          href="https://speakerdeck.com/devenes"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 px-4 py-2 text-xs font-semibold text-slate-200 transition-colors"
+        >
+          Speaker Deck Slides ↗
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

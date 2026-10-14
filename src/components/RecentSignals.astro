@@ -1,0 +1,98 @@
+---
+import type { Talk } from '../schemas/talkSchema';
+import { formatSignalDate, withBase } from '../utils/paths';
+
+interface Props {
+  signals: Talk[];
+  totalTalks: number;
+}
+
+const { signals, totalTalks } = Astro.props;
+---
+
+<section
+  id="recent-signals-strip"
+  data-testid="recent-signals-strip"
+  aria-label="Recent Speaking Signals"
+  class="fixed bottom-0 inset-x-0 z-20 px-6 md:px-12 pb-5 pt-3 bg-gradient-to-t from-[#050811] via-[#050811]/85 to-transparent pointer-events-none transition-all duration-500"
+>
+  <div class="max-w-[1440px] mx-auto pointer-events-auto">
+    <!-- Strip Header Row -->
+    <div class="flex items-center justify-between gap-4 mb-3">
+      <div class="flex items-center gap-4 flex-1">
+        <h2
+          class="font-mono text-[11px] font-semibold tracking-[0.26em] uppercase text-slate-300 whitespace-nowrap"
+        >
+          RECENT SIGNALS
+        </h2>
+        <div class="h-[1px] flex-1 max-w-xs bg-gradient-to-r from-white/20 to-transparent"></div>
+      </div>
+
+      <button
+        type="button"
+        data-action="open-archive"
+        data-testid="view-all-talks-btn"
+        class="inline-flex items-center gap-2 font-mono text-[11px] font-semibold tracking-[0.2em] uppercase text-slate-300 hover:text-[#38BDF8] transition-colors cursor-pointer"
+      >
+        <span>VIEW ALL TALKS</span>
+        <span class="text-slate-500">({totalTalks})</span>
+        <span aria-hidden="true">→</span>
+      </button>
+    </div>
+
+    <!-- 3-Column Glassmorphic Signal Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+      {
+        signals.map((talk) => (
+          <article
+            data-signal-card
+            data-talk-id={talk.id}
+            data-testid={`signal-card-${talk.id}`}
+            tabindex="0"
+            role="button"
+            aria-label={`${talk.event}: ${talk.title} in ${talk.city}, ${talk.country}`}
+            class="group relative flex items-center gap-3.5 rounded-xl p-3 bg-[rgba(15,23,42,0.55)] hover:bg-[rgba(15,23,42,0.82)] backdrop-blur-[12px] border border-white/10 hover:border-[#38BDF8]/45 transition-all cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-[#38BDF8]/60"
+          >
+            <!-- Left: Stage photo thumbnail (16:10 aspect ratio) -->
+            <div class="relative w-28 sm:w-32 aspect-[16/10] shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-950">
+              <img
+                src={withBase(talk.image)}
+                alt={`${talk.event} stage in ${talk.city}`}
+                loading="eager"
+                decoding="async"
+                class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+
+            <!-- Middle: Date, Event Name, Talk Title, Location -->
+            <div class="min-w-0 flex-1">
+              <p class="font-mono text-[10px] tracking-[0.18em] uppercase text-[#38BDF8] truncate">
+                {formatSignalDate(talk.date)}
+              </p>
+              <h3 class="mt-0.5 text-sm sm:text-[15px] font-bold text-[#F8FAFC] truncate group-hover:text-white">
+                {talk.event}
+              </h3>
+              <p class="text-xs text-[#94A3B8] truncate mt-0.5">{talk.title}</p>
+              <p class="mt-1 text-[11px] text-slate-400 flex items-center gap-1 truncate">
+                <span aria-hidden="true">📍</span>
+                <span>
+                  {talk.city}, {talk.country}
+                </span>
+              </p>
+            </div>
+
+            <!-- Right: Circular arrow button -->
+            <div
+              class="shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] group-hover:bg-[#38BDF8]/20 border border-white/15 group-hover:border-[#38BDF8]/60 text-slate-300 group-hover:text-white transition-all"
+              aria-hidden="true"
+            >
+              <span class="text-xs transform group-hover:translate-x-0.5 transition-transform">
+                →
+              </span>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

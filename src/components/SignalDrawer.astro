@@ -1,0 +1,162 @@
+---
+import type { Talk } from '../schemas/talkSchema';
+import { formatSignalDate, withBase } from '../utils/paths';
+
+interface Props {
+  initialTalk: Talk;
+}
+
+const { initialTalk } = Astro.props;
+---
+
+<!-- Slide-Over Backdrop -->
+<div
+  id="signal-drawer-backdrop"
+  data-testid="signal-drawer-backdrop"
+  data-action="close-drawer"
+  aria-hidden="true"
+  class="fixed inset-0 z-40 hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+>
+</div>
+
+<!-- Right-Hand Slide-Over Digital Speaker Badge / Signal Drawer -->
+<aside
+  id="signal-drawer"
+  data-testid="signal-drawer"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="true"
+  aria-labelledby="signal-drawer-title"
+  class="fixed top-0 right-0 bottom-0 z-50 hidden w-full max-w-lg bg-[#070C1A]/95 backdrop-blur-2xl border-l border-white/15 shadow-[-24px_0_64px_rgba(0,0,0,0.8)] overflow-y-auto transition-transform duration-300"
+>
+  <div class="p-6 sm:p-8 flex flex-col min-h-full">
+    <!-- Top Lanyard Slot & Close Action -->
+    <div class="flex items-center justify-between pb-4 border-b border-white/10">
+      <div class="flex items-center gap-2.5">
+        <span class="h-2.5 w-2.5 rounded-full bg-[#38BDF8] shadow-[0_0_10px_#38BDF8]" id="drawer-badge-dot"></span>
+        <span class="font-mono text-[11px] font-semibold tracking-[0.22em] uppercase text-slate-300">
+          DIGITAL SPEAKER BADGE
+        </span>
+      </div>
+      <button
+        type="button"
+        data-action="close-drawer"
+        data-testid="close-drawer-btn"
+        aria-label="Close Signal Drawer"
+        class="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer text-lg leading-none"
+      >
+        ×
+      </button>
+    </div>
+
+    <!-- Digital Conference Badge Metadata Grid -->
+    <div class="mt-4 grid grid-cols-2 gap-2.5 rounded-xl p-3.5 bg-slate-900/70 border border-white/10 font-mono text-[11px]">
+      <div>
+        <span class="text-slate-500 block text-[9px] tracking-widest uppercase">ROLE</span>
+        <span class="text-slate-100 font-semibold">GDE SPEAKER</span>
+      </div>
+      <div>
+        <span class="text-slate-500 block text-[9px] tracking-widest uppercase">TYPE</span>
+        <span id="drawer-type" class="text-[#38BDF8] font-semibold uppercase">
+          {initialTalk.type}
+        </span>
+      </div>
+      <div>
+        <span class="text-slate-500 block text-[9px] tracking-widest uppercase">DATE</span>
+        <span id="drawer-date" class="text-slate-200">
+          {formatSignalDate(initialTalk.date)}
+        </span>
+      </div>
+      <div>
+        <span class="text-slate-500 block text-[9px] tracking-widest uppercase">LOCATION</span>
+        <span id="drawer-location" class="text-slate-200">
+          {initialTalk.city}, {initialTalk.country}
+        </span>
+      </div>
+    </div>
+
+    <!-- Stage Photograph -->
+    <div class="mt-5 relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-white/15 bg-slate-950 shadow-lg">
+      <img
+        id="drawer-image"
+        src={withBase(initialTalk.image)}
+        alt={`${initialTalk.event} stage`}
+        class="h-full w-full object-cover"
+      />
+    </div>
+
+    <!-- Event Name & Full Talk Title -->
+    <div class="mt-5">
+      <p
+        id="drawer-event"
+        class="font-mono text-xs font-semibold tracking-[0.2em] uppercase text-[#38BDF8]"
+      >
+        {initialTalk.event}
+      </p>
+      <h2
+        id="signal-drawer-title"
+        data-testid="signal-drawer-title"
+        class="mt-1.5 font-display text-2xl sm:text-3xl font-bold tracking-tight text-white leading-snug"
+      >
+        {initialTalk.title}
+      </h2>
+    </div>
+
+    <!-- Topic Cluster Badges -->
+    <div id="drawer-clusters" class="mt-4 flex flex-wrap gap-2">
+      {
+        initialTalk.topics.map((topic) => (
+          <span class="rounded-full px-3 py-1 font-mono text-[10px] tracking-wider uppercase bg-white/10 text-slate-200 border border-white/15">
+            {topic}
+          </span>
+        ))
+      }
+    </div>
+
+    <!-- Abstract / Summary -->
+    <div class="mt-5">
+      <h3 class="font-mono text-[10px] tracking-[0.2em] uppercase text-slate-400 mb-2">
+        SESSION ABSTRACT
+      </h3>
+      <p id="drawer-summary" class="text-sm text-slate-300 leading-relaxed">
+        {initialTalk.summary}
+      </p>
+    </div>
+
+    <!-- Conditional Action Buttons (Event Website, Slides, Recording) -->
+    <div id="drawer-links" class="mt-6 flex flex-wrap gap-2.5">
+      {
+        initialTalk.links.event && (
+          <a
+            href={initialTalk.links.event}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-[#38BDF8]/15 hover:bg-[#38BDF8]/25 border border-[#38BDF8]/40 px-3.5 py-2 text-xs font-medium text-white transition-colors"
+          >
+            <span>Event Website ↗</span>
+          </a>
+        )
+      }
+      {
+        initialTalk.links.slides && (
+          <a
+            href={initialTalk.links.slides}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 px-3.5 py-2 text-xs font-medium text-slate-200 transition-colors"
+          >
+            <span>View Slides ↗</span>
+          </a>
+        )
+      }
+    </div>
+
+    <!-- Connected Signals (Same Country or Technology Cluster) -->
+    <div class="mt-8 pt-5 border-t border-white/10">
+      <h3 class="font-mono text-[10px] tracking-[0.22em] uppercase text-slate-400 mb-3">
+        CONNECTED SIGNALS IN NETWORK
+      </h3>
+      <div id="drawer-connected" class="flex flex-col gap-2"></div>
+    </div>
+  </div>
+</aside>

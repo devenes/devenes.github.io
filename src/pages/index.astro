@@ -1,0 +1,146 @@
+---
+import rawArchive from '../data/talks.json';
+import { getOrbitTelemetry, validateArchive } from '../utils/metrics';
+import { withBase } from '../utils/paths';
+import TopNav from '../components/TopNav.astro';
+import HeroOverview from '../components/HeroOverview.astro';
+import RecentSignals from '../components/RecentSignals.astro';
+import ExploreDock from '../components/ExploreDock.astro';
+import SignalDrawer from '../components/SignalDrawer.astro';
+import ArchiveMatrix from '../components/ArchiveMatrix.astro';
+import AboutModal from '../components/AboutModal.astro';
+
+const archive = validateArchive(rawArchive);
+const telemetry = getOrbitTelemetry(archive);
+const initialTalk = telemetry.recentSignals[0] ?? telemetry.sortedTalks[0];
+---
+
+<!doctype html>
+<html lang="en" class="dark bg-[#050811] text-[#F8FAFC] antialiased selection:bg-[#38BDF8]/30 selection:text-white">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{archive.speaker.name} — ORBIT | Google Developer Expert Speaker Network</title>
+    <meta
+      name="description"
+      content={`${archive.speaker.name} (${archive.speaker.role}) — Interactive 3D speaker portfolio across ${telemetry.displayTalks} talks, ${telemetry.displayCountries} countries, and ${telemetry.displayCities} cities in Cloud, Kubernetes, and AI.`}
+    />
+    <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
+    <style is:global>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background-color: #050811;
+        color: #f8fafc;
+        overflow-x: hidden;
+      }
+      /* Custom subtle scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #050811;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.25);
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(56, 189, 248, 0.5);
+      }
+    </style>
+  </head>
+
+  <body
+    id="top"
+    data-mode="overview"
+    data-cluster="all"
+    class="relative min-h-screen w-full bg-[#050811] text-[#F8FAFC] overflow-x-hidden"
+  >
+    <!-- Deep Cosmic Obsidian-to-Navy Radial Atmospheric Glow -->
+    <div
+      class="fixed inset-0 z-0 pointer-events-none"
+      style="background: radial-gradient(circle at 72% 44%, #0A1633 0%, #0A1124 38%, #050811 82%);"
+      aria-hidden="true"
+    >
+      <!-- Subtle cosmic starfield & topographic wave CSS fallback glow -->
+      <div
+        class="absolute inset-0 opacity-45"
+        style="background-image: radial-gradient(rgba(56, 189, 248, 0.16) 1px, transparent 1px), radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 48px 48px, 96px 96px; background-position: 0 0, 24px 24px;"
+      >
+      </div>
+    </div>
+
+    <!-- 3D WebGL ORBIT Network Canvas Viewport -->
+    <div
+      id="orbit-canvas-container"
+      data-testid="orbit-canvas-container"
+      class="fixed inset-0 z-[1]"
+      aria-label="Interactive 3D Speaker Constellation Network"
+    >
+    </div>
+
+    <!-- Fixed Glassmorphic Top Navigation Bar -->
+    <TopNav speaker={archive.speaker} telemetry={telemetry} />
+
+    <!-- Main Left Editorial Column (Zero-Click Overview Telemetry) -->
+    <main class="relative z-20">
+      <HeroOverview speaker={archive.speaker} telemetry={telemetry} />
+    </main>
+
+    <!-- 2D Projected Cluster Labels & Explore Control Dock -->
+    <ExploreDock clusters={archive.clusters} telemetry={telemetry} />
+
+    <!-- Bottom RECENT SIGNALS Strip -->
+    <RecentSignals signals={telemetry.recentSignals} totalTalks={telemetry.totalTalks} />
+
+    <!-- Slide-Over Digital Speaker Badge / Signal Detail Drawer -->
+    <SignalDrawer initialTalk={initialTalk} />
+
+    <!-- Full Searchable & Filterable Archive Matrix Modal -->
+    <ArchiveMatrix
+      talks={telemetry.sortedTalks}
+      clusters={archive.clusters}
+      telemetry={telemetry}
+    />
+
+    <!-- Speaker Bio / Dossier Modal -->
+    <AboutModal speaker={archive.speaker} telemetry={telemetry} />
+
+    <!-- Serialized Build-Time Validated Archive Payload -->
+    <script
+      id="orbit-archive-data"
+      type="application/json"
+      set:html={JSON.stringify(archive)}
+    />
+
+    <!-- Client-Side 3D Scene & 5-Mode Interactive State Machine Initialization -->
+    <script>
+      import { initOrbitApp } from '../scripts/stateController';
+      import type { OrbitArchive } from '../schemas/talkSchema';
+
+      function bootstrap() {
+        const dataEl = document.getElementById('orbit-archive-data');
+        if (!dataEl || !dataEl.textContent) return;
+        try {
+          const archive = JSON.parse(dataEl.textContent) as OrbitArchive;
+          initOrbitApp(archive);
+        } catch (err) {
+          console.error('Failed to initialize ORBIT archive:', err);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrap);
+      } else {
+        bootstrap();
+      }
+    </script>
+  </body>
+</html>
