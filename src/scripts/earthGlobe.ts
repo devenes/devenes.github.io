@@ -26,15 +26,28 @@ const ATMOSPHERE_VERTEX_SHADER = /* glsl */ `
   }
 `;
 
-const ATMOSPHERE_FRAGMENT_SHADER = /* glsl */ `
+const ATMOSPHERE_LIMB_FRAGMENT_SHADER = /* glsl */ `
   varying vec3 vNormal;
   varying vec3 vPositionWorld;
 
   void main() {
     vec3 viewDirection = normalize(cameraPosition - vPositionWorld);
-    float fresnel = pow(1.0 - max(0.0, dot(vNormal, viewDirection)), 4.2);
-    vec3 rimColor = mix(vec3(0.08, 0.45, 0.95), vec3(0.28, 0.82, 1.0), fresnel);
-    gl_FragColor = vec4(rimColor, fresnel * 0.48);
+    float ndotv = max(0.0, dot(vNormal, viewDirection));
+    float fresnel = pow(1.0 - ndotv, 5.8);
+    vec3 rimColor = mix(vec3(0.08, 0.42, 0.96), vec3(0.35, 0.85, 1.0), fresnel);
+    gl_FragColor = vec4(rimColor, fresnel * 0.62);
+  }
+`;
+
+const ATMOSPHERE_HALO_FRAGMENT_SHADER = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vPositionWorld;
+
+  void main() {
+    vec3 viewDirection = normalize(cameraPosition - vPositionWorld);
+    float intensity = pow(max(0.0, 0.52 - dot(-vNormal, viewDirection)), 3.0);
+    vec3 haloColor = vec3(0.14, 0.56, 0.98);
+    gl_FragColor = vec4(haloColor, intensity * 0.42);
   }
 `;
 
@@ -46,10 +59,10 @@ function createMarkerGlowTexture(): THREE.CanvasTexture | null {
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
-  const grad = ctx.createRadialGradient(48, 48, 2, 48, 48, 48);
+  const grad = ctx.createRadialGradient(48, 48, 1.5, 48, 48, 46);
   grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  grad.addColorStop(0.3, 'rgba(56, 189, 248, 0.75)');
-  grad.addColorStop(0.65, 'rgba(14, 165, 233, 0.22)');
+  grad.addColorStop(0.22, 'rgba(253, 224, 71, 0.85)');
+  grad.addColorStop(0.55, 'rgba(56, 189, 248, 0.28)');
   grad.addColorStop(1, 'rgba(14, 165, 233, 0)');
 
   ctx.fillStyle = grad;
@@ -101,6 +114,8 @@ export class EarthGlobeController {
   private isWebGLAvailable = false;
   private rafId: number | null = null;
   private startTime = performance.now();
+  private boundResizeHandler = () => this.handleResize();
+  private boundPageHideHandler = () => this.dispose();
 
   constructor(
     container: HTMLElement,
@@ -130,9 +145,12 @@ export class EarthGlobeController {
       const width = this.container.clientWidth || window.innerWidth || 1280;
       const height = this.container.clientHeight || window.innerHeight || 800;
 
-      const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 120);
-      // Position camera facing ~34°N, 42°E (centering Europe, Türkiye, MENA, and Central Asia)
-      const initialCamPos = latLonToVector3(34, 42, 8.2);
+      const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 120);
+      if (width >= 1024) {
+        camera.setViewOffset(width, height, -Math.round(width * 0.022), 0, width, height);
+      }
+      // Position camera facing ~33°N, 40°E (centering Europe, Türkiye, MENA, and Central Asia)
+      const initialCamPos = latLonToVector3(33, 40, 9.6);
       camera.position.set(...initialCamPos);
 
       const renderer = new THREE.WebGLRenderer({
@@ -150,8 +168,8 @@ export class EarthGlobeController {
       controls.enableDamping = true;
       controls.dampingFactor = 0.06;
       controls.enablePan = false;
-      controls.minDistance = 4.1;
-      controls.maxDistance = 12.5;
+      controls.minDistance = 4.2;
+      controls.maxDistance = 13.5;
       controls.rotateSpeed = 0.65;
       controls.zoomSpeed = 0.85;
       controls.target.set(0, 0, 0);
@@ -160,17 +178,14 @@ export class EarthGlobeController {
       const globeGroup = new THREE.Group();
       scene.add(globeGroup);
 
-      // Lighting for realistic 3D spherical shading with high-contrast night lights
-      const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.85);
+      // Subtle lighting: let the emissive satellite/night-lights texture carry full contrast
+      // without washing out the dark oceans on the left hemisphere
+      const ambientLight = new THREE.AmbientLight(0x93c5fd, 0.12);
       scene.add(ambientLight);
 
-      const sunLight = new THREE.DirectionalLight(0x93c5fd, 1.35);
-      sunLight.position.set(-8, 6, 8);
+      const sunLight = new THREE.DirectionalLight(0x60a5fa, 0.18);
+      sunLight.position.set(6, 5, 8);
       scene.add(sunLight);
-
-      const warmRimLight = new THREE.DirectionalLight(0xfbbf24, 0.65);
-      warmRimLight.position.set(9, -4, 5);
-      scene.add(warmRimLight);
 
       this.scene = scene;
       this.camera = camera;
@@ -200,7 +215,8 @@ export class EarthGlobeController {
         this.handlePointerMove(e);
       });
 
-      window.addEventListener('resize', () => this.handleResize());
+      window.addEventListener('resize', this.boundResizeHandler);
+      window.addEventListener('pagehide', this.boundPageHideHandler);
       this.projectCityLabels();
       this.startLoop();
     } catch {
@@ -210,7 +226,7 @@ export class EarthGlobeController {
   }
 
   private buildStarfield(scene: THREE.Scene): void {
-    const starCount = 1400;
+    const starCount = 1200;
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
 
@@ -236,10 +252,10 @@ export class EarthGlobeController {
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const mat = new THREE.PointsMaterial({
-      size: 0.08,
+      size: 0.075,
       vertexColors: true,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.48,
       depthWrite: false,
     });
     scene.add(new THREE.Points(geo, mat));
@@ -248,11 +264,11 @@ export class EarthGlobeController {
   private buildEarthSphere(globeGroup: THREE.Group): void {
     const sphereGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 96, 96);
     const earthMat = new THREE.MeshPhongMaterial({
-      color: new THREE.Color('#dbeafe'),
-      emissive: new THREE.Color('#09152B'),
-      emissiveIntensity: 0.78,
-      specular: new THREE.Color('#1E3A8A'),
-      shininess: 16,
+      color: new THREE.Color('#0A1222'),
+      emissive: new THREE.Color('#050C1A'),
+      emissiveIntensity: 1.0,
+      specular: new THREE.Color('#060D1A'),
+      shininess: 6,
     });
 
     const loader = new THREE.TextureLoader();
@@ -264,7 +280,7 @@ export class EarthGlobeController {
         earthMat.map = tex;
         earthMat.emissiveMap = tex;
         earthMat.emissive = new THREE.Color('#ffffff');
-        earthMat.emissiveIntensity = 0.82;
+        earthMat.emissiveIntensity = 1.05;
         earthMat.needsUpdate = true;
       },
       undefined,
@@ -275,7 +291,7 @@ export class EarthGlobeController {
           earthMat.map = pngTex;
           earthMat.emissiveMap = pngTex;
           earthMat.emissive = new THREE.Color('#ffffff');
-          earthMat.emissiveIntensity = 0.82;
+          earthMat.emissiveIntensity = 1.05;
           earthMat.needsUpdate = true;
         });
       }
@@ -284,17 +300,28 @@ export class EarthGlobeController {
     const earthMesh = new THREE.Mesh(sphereGeo, earthMat);
     globeGroup.add(earthMesh);
 
-    // Subtle atmospheric Fresnel glow shell
-    const atmosGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.045, 64, 64);
-    const atmosMat = new THREE.ShaderMaterial({
+    // 1. Limb-only atmospheric horizon rim (zero center washout)
+    const limbGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.006, 64, 64);
+    const limbMat = new THREE.ShaderMaterial({
       vertexShader: ATMOSPHERE_VERTEX_SHADER,
-      fragmentShader: ATMOSPHERE_FRAGMENT_SHADER,
+      fragmentShader: ATMOSPHERE_LIMB_FRAGMENT_SHADER,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
-    const atmosMesh = new THREE.Mesh(atmosGeo, atmosMat);
-    globeGroup.add(atmosMesh);
+    globeGroup.add(new THREE.Mesh(limbGeo, limbMat));
+
+    // 2. Outer planetary corona halo rendered on BackSide
+    const haloGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.038, 64, 64);
+    const haloMat = new THREE.ShaderMaterial({
+      vertexShader: ATMOSPHERE_VERTEX_SHADER,
+      fragmentShader: ATMOSPHERE_HALO_FRAGMENT_SHADER,
+      side: THREE.BackSide,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    globeGroup.add(new THREE.Mesh(haloGeo, haloMat));
   }
 
   /**
@@ -316,12 +343,12 @@ export class EarthGlobeController {
     const lineMat = new THREE.LineBasicMaterial({
       color: new THREE.Color('#38BDF8'),
       transparent: true,
-      opacity: 0.32,
+      opacity: 0.22,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
 
-    const r = GLOBE_RADIUS * 1.002;
+    const r = GLOBE_RADIUS * 1.0015;
 
     const addRing = (ring: number[][]) => {
       if (ring.length < 3) return;
@@ -353,14 +380,14 @@ export class EarthGlobeController {
   }
 
   /**
-   * Places clickable 3D markers and surface rings at all 23 verified physical speaking cities.
+   * Places clickable 3D pinpoint markers and delicate surface rings at all 23 verified physical speaking cities.
    */
   private buildCityMarkers(globeGroup: THREE.Group): void {
     const glowTex = createMarkerGlowTexture();
-    const markerGeo = new THREE.SphereGeometry(1, 18, 18);
+    const markerGeo = new THREE.SphereGeometry(1, 16, 16);
 
     for (const city of this.atlas.cities) {
-      const [x, y, z] = latLonToVector3(city.lat, city.lon, GLOBE_RADIUS * 1.006);
+      const [x, y, z] = latLonToVector3(city.lat, city.lon, GLOBE_RADIUS * 1.004);
       const isHub = city.isBaseHub || city.eventsCount >= 2;
       const colorHex = city.isBaseHub
         ? '#38BDF8'
@@ -369,11 +396,11 @@ export class EarthGlobeController {
           : '#60A5FA';
 
       const radius = city.isBaseHub
-        ? 0.048
-        : Math.min(0.042, 0.024 + city.eventsCount * 0.005);
+        ? 0.026
+        : Math.min(0.022, 0.014 + city.eventsCount * 0.0025);
 
       const mat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(colorHex),
+        color: new THREE.Color('#FFFBEB'),
         transparent: true,
         opacity: 0.98,
       });
@@ -385,13 +412,13 @@ export class EarthGlobeController {
       globeGroup.add(mesh);
       this.cityMeshes.set(city.id, mesh);
 
-      // Surface tangent halo ring
-      const ringGeo = new THREE.RingGeometry(radius * 1.45, radius * 2.1, 32);
+      // Delicate surface tangent ring
+      const ringGeo = new THREE.RingGeometry(radius * 1.35, radius * 1.85, 28);
       const ringMat = new THREE.MeshBasicMaterial({
         color: new THREE.Color(colorHex),
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: isHub ? 0.78 : 0.45,
+        opacity: isHub ? 0.65 : 0.38,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
@@ -406,13 +433,13 @@ export class EarthGlobeController {
           map: glowTex,
           color: new THREE.Color(colorHex),
           transparent: true,
-          opacity: isHub ? 0.9 : 0.68,
+          opacity: isHub ? 0.85 : 0.6,
           blending: THREE.AdditiveBlending,
           depthWrite: false,
         });
         const sprite = new THREE.Sprite(spriteMat);
         sprite.position.set(x, y, z);
-        const s = radius * 6.5;
+        const s = radius * 4.2;
         sprite.scale.set(s, s, 1);
         globeGroup.add(sprite);
         this.citySprites.set(city.id, sprite);
@@ -424,12 +451,12 @@ export class EarthGlobeController {
    * Builds luminous great-circle travel routes and animated traveling light packets.
    */
   private buildTravelRoutes(globeGroup: THREE.Group): void {
-    const pulseGeo = new THREE.SphereGeometry(0.018, 10, 10);
+    const pulseGeo = new THREE.SphereGeometry(0.014, 10, 10);
 
     this.atlas.routes.forEach((route, idx) => {
       const vecPoints = route.points3D.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
       const lineGeo = new THREE.BufferGeometry().setFromPoints(vecPoints);
-      const baseOpacity = route.kind === 'hub' ? 0.52 : 0.32;
+      const baseOpacity = route.kind === 'hub' ? 0.64 : 0.42;
 
       const lineMat = new THREE.LineBasicMaterial({
         color: new THREE.Color(route.color),
@@ -444,7 +471,7 @@ export class EarthGlobeController {
       const pulseMat = new THREE.MeshBasicMaterial({
         color: new THREE.Color('#FEF08A'),
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.95,
       });
       const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
       if (vecPoints.length > 0) {
@@ -478,7 +505,7 @@ export class EarthGlobeController {
     }
 
     if (!cityId) {
-      const defaultPos = latLonToVector3(34, 42, 8.2);
+      const defaultPos = latLonToVector3(33, 40, 9.6);
       gsap.to(this.camera.position, {
         x: defaultPos[0],
         y: defaultPos[1],
@@ -492,7 +519,7 @@ export class EarthGlobeController {
     const city = this.atlas.cities.find((c) => c.id === cityId);
     if (!city) return;
 
-    const targetCamPos = latLonToVector3(city.lat, city.lon, 5.8);
+    const targetCamPos = latLonToVector3(city.lat, city.lon, 7.0);
     gsap.to(this.camera.position, {
       x: targetCamPos[0],
       y: targetCamPos[1],
@@ -515,10 +542,10 @@ export class EarthGlobeController {
     // If a region is selected, smoothly rotate globe toward that region's center
     if (options.region && options.region !== 'all' && this.camera) {
       const regionCenters: Record<string, [number, number, number]> = {
-        turkiye: [39.5, 31.5, 6.2],
-        'central-asia': [44.5, 76.0, 6.6],
-        mena: [29.5, 31.0, 6.8],
-        'balkans-caucasus': [42.2, 29.0, 6.5],
+        turkiye: [39.5, 31.5, 7.2],
+        'central-asia': [44.5, 76.0, 7.6],
+        mena: [29.5, 31.0, 7.8],
+        'balkans-caucasus': [42.2, 29.0, 7.4],
       };
       const target = regionCenters[options.region];
       if (target) {
@@ -561,12 +588,12 @@ export class EarthGlobeController {
         mat.opacity = isSelected ? 1.0 : isMatch ? 0.95 : 0.18;
       }
       if (sprite) {
-        sprite.material.opacity = isSelected ? 1.0 : isMatch ? 0.82 : 0.1;
+        sprite.material.opacity = isSelected ? 1.0 : isMatch ? 0.8 : 0.1;
       }
       if (ring) {
         const rMat = ring.material as THREE.MeshBasicMaterial;
-        rMat.opacity = isSelected ? 1.0 : isMatch ? 0.68 : 0.1;
-        ring.scale.setScalar(isSelected ? 1.55 : 1.0);
+        rMat.opacity = isSelected ? 0.95 : isMatch ? 0.58 : 0.1;
+        ring.scale.setScalar(isSelected ? 1.35 : 1.0);
       }
     }
 
@@ -581,7 +608,7 @@ export class EarthGlobeController {
       const visible = touchesSelected && endpointsMatch;
       route.material.opacity = visible
         ? this.selectedCityId
-          ? 0.85
+          ? 0.88
           : route.baseOpacity
         : 0.05;
       route.pulseMesh.visible = visible && !this.isMotionReduced;
@@ -593,7 +620,7 @@ export class EarthGlobeController {
   public zoomBy(deltaFactor: number): void {
     if (!this.camera) return;
     const len = this.camera.position.length();
-    const targetLen = Math.min(12.0, Math.max(4.3, len * deltaFactor));
+    const targetLen = Math.min(12.5, Math.max(4.5, len * deltaFactor));
     const scale = targetLen / (len || 1);
     gsap.to(this.camera.position, {
       x: this.camera.position.x * scale,
@@ -710,7 +737,7 @@ export class EarthGlobeController {
 
       // Hide markers on the back side of the Earth
       const facingDot = normalVec.dot(camDir);
-      if (facingDot < 0.25) {
+      if (facingDot < 0.26) {
         el.style.opacity = '0';
         el.style.pointerEvents = 'none';
         continue;
@@ -721,7 +748,7 @@ export class EarthGlobeController {
       const y = (-projected.y * 0.5 + 0.5) * height;
 
       // On desktop, clip labels outside the central globe column so they never overlap left/right panels
-      if (width >= 1024 && (x < 380 || x > width - 405 || y < 72 || y > height - 185)) {
+      if (width >= 1024 && (x < 405 || x > width - 415 || y < 72 || y > height - 190)) {
         el.style.opacity = '0';
         el.style.pointerEvents = 'none';
         continue;
@@ -731,8 +758,7 @@ export class EarthGlobeController {
       const isMatched = this.doesCityMatchFilters(city);
 
       // Avoid label overlap for tightly clustered cities
-      const camDist = this.camera.position.length();
-      const minSepPx = camDist < 6.0 ? 44 : 52;
+      const minSepPx = 62;
       const collides =
         !isSelected &&
         placedBoxes.some((b) => Math.hypot(b.x - x, b.y - y) < minSepPx);
@@ -807,8 +833,53 @@ export class EarthGlobeController {
     const width = this.container.clientWidth || window.innerWidth || 1280;
     const height = this.container.clientHeight || window.innerHeight || 800;
     this.camera.aspect = width / height;
+    if (width >= 1024) {
+      this.camera.setViewOffset(width, height, -Math.round(width * 0.022), 0, width, height);
+    } else {
+      this.camera.clearViewOffset();
+    }
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
     this.projectCityLabels();
+  }
+
+  /**
+   * Disposes all Three.js geometries, materials, textures, controls, and event listeners.
+   */
+  public dispose(): void {
+    this.setPaused(true);
+    window.removeEventListener('resize', this.boundResizeHandler);
+    window.removeEventListener('pagehide', this.boundPageHideHandler);
+
+    if (this.controls) {
+      this.controls.dispose();
+      this.controls = null;
+    }
+
+    if (this.scene) {
+      this.scene.traverse((obj) => {
+        const mesh = obj as THREE.Mesh;
+        if (mesh.geometry) {
+          mesh.geometry.dispose();
+        }
+        if (mesh.material) {
+          const materials = Array.isArray(mesh.material)
+            ? mesh.material
+            : [mesh.material];
+          for (const mat of materials) {
+            const m = mat as THREE.MeshPhongMaterial;
+            if (m.map) m.map.dispose();
+            if (m.emissiveMap) m.emissiveMap.dispose();
+            mat.dispose();
+          }
+        }
+      });
+      this.scene = null;
+    }
+
+    if (this.renderer) {
+      this.renderer.dispose();
+      this.renderer = null;
+    }
   }
 }

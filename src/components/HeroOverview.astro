@@ -18,17 +18,17 @@ const { metrics } = atlas;
   <div class="pointer-events-auto">
     <!-- Eyebrow -->
     <p
-      class="font-mono text-[11px] sm:text-xs font-medium tracking-[0.28em] uppercase text-slate-300/90 mb-3"
+      class="font-mono text-[11px] sm:text-xs font-medium tracking-[0.26em] uppercase text-slate-300/90 mb-2.5"
     >
       PEOPLE &nbsp;/&nbsp; PLATFORMS &nbsp;/&nbsp; POSSIBILITIES
     </p>
 
-    <!-- Primary Editorial Headline matching Reference Image -->
+    <!-- Primary Editorial Headline matching Reference Image (2 crisp lines) -->
     <h1
-      class="font-display text-4xl sm:text-5xl xl:text-[54px] font-bold tracking-[-0.03em] leading-[1.05] text-[#F8FAFC] drop-shadow-[0_4px_24px_rgba(0,0,0,0.75)]"
+      class="font-display text-3xl sm:text-4xl xl:text-[42px] font-bold tracking-[-0.03em] leading-[1.08] text-[#F8FAFC] drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
     >
-      <span class="block">Ideas travel.</span>
-      <span class="block mt-1">
+      <span class="block whitespace-nowrap">Ideas travel.</span>
+      <span class="block mt-1 whitespace-nowrap">
         Technology{' '}
         <span
           class="bg-gradient-to-r from-[#60A5FA] via-[#38BDF8] to-[#93C5FD] bg-clip-text text-transparent"
@@ -39,15 +39,15 @@ const { metrics } = atlas;
     </h1>
 
     <!-- Supporting Identity -->
-    <p class="mt-4 text-sm sm:text-[15px] font-medium text-slate-300 tracking-wide">
+    <p class="mt-3.5 text-sm sm:text-[15px] font-medium text-slate-300 tracking-wide">
       <strong class="font-semibold text-white">Ahmed Enes Turan</strong>
       <span class="mx-2 text-slate-500">—</span>
       <span class="text-slate-300">Cloud &nbsp;·&nbsp; Kubernetes &nbsp;·&nbsp; AI</span>
     </p>
 
-    <!-- Three Prominent Real Data-Driven Metrics (Available immediately in SSR HTML) -->
+    <!-- Three Prominent Real Data-Driven Metrics (Open Editorial Layout with Vertical Hairline Dividers) -->
     <div
-      class="mt-6 grid grid-cols-3 max-w-md py-3.5 border-y border-white/[0.12] bg-[#040917]/55 backdrop-blur-md rounded-xl px-4"
+      class="mt-5 grid grid-cols-3 max-w-[360px] py-2"
       role="region"
       aria-label="Verified Speaking Statistics"
     >
@@ -57,58 +57,58 @@ const { metrics } = atlas;
           data-testid="metric-talks"
           data-physical={metrics.physicalTalks}
           data-online={metrics.onlineTalks}
-          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white"
+          class="font-display text-3xl sm:text-[40px] leading-none font-bold tracking-tight text-white"
         >
           {metrics.totalTalks}
         </div>
         <div
-          class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
+          class="mt-1.5 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
         >
           TALKS
         </div>
       </div>
 
-      <div class="px-4 border-l border-white/[0.14]">
+      <div class="px-5 border-l border-white/[0.16]">
         <div
           data-testid="metric-countries"
-          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white"
+          class="font-display text-3xl sm:text-[40px] leading-none font-bold tracking-tight text-white"
         >
           {metrics.uniqueCountries}
         </div>
         <div
-          class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
+          class="mt-1.5 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
         >
           COUNTRIES
         </div>
       </div>
 
-      <div class="pl-4 border-l border-white/[0.14]">
+      <div class="pl-5 border-l border-white/[0.16]">
         <div
           data-testid="metric-cities"
-          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white"
+          class="font-display text-3xl sm:text-[40px] leading-none font-bold tracking-tight text-white"
         >
           {metrics.uniqueCities}
         </div>
         <div
-          class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
+          class="mt-1.5 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
         >
           CITIES
         </div>
       </div>
     </div>
 
-    <p class="mt-2 font-mono text-[10px] tracking-wider text-slate-400">
+    <p class="mt-1 font-mono text-[10px] tracking-wider text-slate-400/90">
       {metrics.physicalTalks} in-person sessions across {metrics.uniqueCities} physical cities +{' '}
       {metrics.onlineTalks} global online broadcasts
     </p>
 
-    <!-- Session Formats Row with Vector Icons -->
+    <!-- Session Formats Row with Vector Icons (Single Line on Desktop) -->
     <div
-      class="mt-4 flex flex-wrap items-center gap-5 font-mono text-[11px] tracking-[0.18em] uppercase text-slate-300"
+      class="mt-4 flex flex-wrap lg:flex-nowrap items-center gap-4 font-mono text-[10px] xl:text-[11px] tracking-[0.15em] uppercase text-slate-300 whitespace-nowrap"
     >
-      <span class="inline-flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5">
         <svg
-          class="w-3.5 h-3.5 text-[#38BDF8]"
+          class="w-3.5 h-3.5 text-[#38BDF8] shrink-0"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -122,9 +122,9 @@ const { metrics } = atlas;
         <span>KEYNOTES ({metrics.keynotesCount})</span>
       </span>
 
-      <span class="inline-flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5">
         <svg
-          class="w-3.5 h-3.5 text-[#38BDF8]"
+          class="w-3.5 h-3.5 text-[#38BDF8] shrink-0"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -138,9 +138,9 @@ const { metrics } = atlas;
         <span>CONFERENCES ({metrics.conferencesCount})</span>
       </span>
 
-      <span class="inline-flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5">
         <svg
-          class="w-3.5 h-3.5 text-[#38BDF8]"
+          class="w-3.5 h-3.5 text-[#38BDF8] shrink-0"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -157,7 +157,7 @@ const { metrics } = atlas;
     </div>
 
     <!-- Primary Direct Action Buttons matching Reference Image -->
-    <div class="mt-6 flex flex-wrap items-center gap-3.5">
+    <div class="mt-5 flex flex-wrap items-center gap-3">
       <button
         type="button"
         data-action="explore-world"
