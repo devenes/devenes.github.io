@@ -1,29 +1,13 @@
 ---
-import type { Cluster, Talk } from '../schemas/talkSchema';
-import type { OrbitTelemetry } from '../utils/metrics';
+import type { SpeakingAtlasData } from '../utils/geography';
 import { formatSignalDate } from '../utils/paths';
 
 interface Props {
-  talks: Talk[];
-  clusters: Cluster[];
-  telemetry: OrbitTelemetry;
+  atlas: SpeakingAtlasData;
 }
 
-const { talks, clusters, telemetry } = Astro.props;
-
-const clusterBadgeStyles: Record<string, string> = {
-  ai: 'bg-[#38BDF8]/15 text-[#38BDF8] border-[#38BDF8]/35',
-  k8s: 'bg-[#F59E0B]/15 text-[#FBBF24] border-[#F59E0B]/35',
-  cloud: 'bg-[#FACC15]/15 text-[#FACC15] border-[#FACC15]/35',
-  workshops: 'bg-[#10B981]/15 text-[#34D399] border-[#10B981]/35',
-};
-
-const clusterLabels: Record<string, string> = {
-  ai: 'AI Agents',
-  k8s: 'Kubernetes',
-  cloud: 'Google Cloud',
-  workshops: 'Workshops',
-};
+const { atlas } = Astro.props;
+const { events, cities, topics, years, metrics } = atlas;
 ---
 
 <div
@@ -33,22 +17,22 @@ const clusterLabels: Record<string, string> = {
   aria-modal="true"
   aria-hidden="true"
   aria-labelledby="archive-matrix-title"
-  class="fixed inset-0 z-50 hidden flex-col bg-[#050811]/90 backdrop-blur-2xl overflow-hidden"
+  class="fixed inset-0 z-50 hidden flex-col bg-[#030712]/92 backdrop-blur-2xl overflow-hidden"
 >
   <!-- Modal Header -->
-  <div class="px-6 md:px-12 py-5 border-b border-white/10 flex flex-wrap items-center justify-between gap-4 bg-slate-950/60">
+  <div class="px-6 md:px-12 py-5 border-b border-white/10 flex flex-wrap items-center justify-between gap-4 bg-slate-950/70">
     <div>
       <div class="flex items-center gap-2.5">
         <span class="h-2 w-2 rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8]"></span>
         <span class="font-mono text-[10px] tracking-[0.24em] uppercase text-[#38BDF8]">
-          ORBIT TELEMETRY ARCHIVE
+          COMPLETE CHRONOLOGICAL SPEAKING ARCHIVE
         </span>
       </div>
       <h2
         id="archive-matrix-title"
         class="mt-1 font-display text-2xl sm:text-3xl font-bold text-white tracking-tight"
       >
-        Global Speaking Matrix
+        All Speaking Engagements ({metrics.totalTalks})
       </h2>
     </div>
 
@@ -58,7 +42,8 @@ const clusterLabels: Record<string, string> = {
         data-testid="archive-result-counter"
         class="font-mono text-xs text-slate-300"
       >
-        Showing {talks.length} of {talks.length} talks across {telemetry.uniqueCountries} countries
+        Showing {events.length} of {events.length} talks ({metrics.uniqueCities} physical cities across{' '}
+        {metrics.uniqueCountries} countries + {metrics.onlineTalks} online)
       </p>
 
       <button
@@ -74,12 +59,12 @@ const clusterLabels: Record<string, string> = {
   </div>
 
   <!-- Search & Multi-Facet Filter Bar -->
-  <div class="px-6 md:px-12 py-4 border-b border-white/10 bg-slate-900/45 flex flex-col gap-3">
+  <div class="px-6 md:px-12 py-4 border-b border-white/10 bg-slate-900/50 flex flex-col gap-3">
     <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
       <!-- Instant Search Input -->
-      <div class="md:col-span-5 relative">
+      <div class="md:col-span-4 relative">
         <label for="archive-search-input" class="sr-only">
-          Search talks by title, event, city, country, or topics
+          Search talks by title, event, city, country, or topic
         </label>
         <input
           id="archive-search-input"
@@ -91,18 +76,20 @@ const clusterLabels: Record<string, string> = {
         />
       </div>
 
-      <!-- Topic Cluster Dropdown -->
-      <div class="md:col-span-2">
-        <label for="archive-cluster-select" class="sr-only">Topic Cluster</label>
+      <!-- Technical Domain Dropdown -->
+      <div class="md:col-span-3">
+        <label for="archive-cluster-select" class="sr-only">Technical Domain</label>
         <select
           id="archive-cluster-select"
           data-testid="archive-cluster-select"
           class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-2.5 text-xs text-slate-200 focus:outline-none"
         >
-          <option value="all">All Clusters</option>
+          <option value="all">All Technical Domains</option>
           {
-            clusters.map((c) => (
-              <option value={c.id}>{c.label}</option>
+            topics.map((t) => (
+              <option value={t.id}>
+                {t.label} ({t.talksCount})
+              </option>
             ))
           }
         </select>
@@ -110,16 +97,16 @@ const clusterLabels: Record<string, string> = {
 
       <!-- Session Type Dropdown -->
       <div class="md:col-span-2">
-        <label for="archive-type-select" class="sr-only">Session Type</label>
+        <label for="archive-type-select" class="sr-only">Session Format</label>
         <select
           id="archive-type-select"
           data-testid="archive-type-select"
           class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-2.5 text-xs text-slate-200 focus:outline-none"
         >
-          <option value="all">All Session Types</option>
-          <option value="keynote">Keynote</option>
-          <option value="conference">Conference</option>
-          <option value="workshop">Workshop</option>
+          <option value="all">All Session Formats</option>
+          <option value="keynote">Keynote ({metrics.keynotesCount})</option>
+          <option value="conference">Conference ({metrics.conferencesCount})</option>
+          <option value="workshop">Workshop ({metrics.workshopsCount})</option>
         </select>
       </div>
 
@@ -133,32 +120,37 @@ const clusterLabels: Record<string, string> = {
         >
           <option value="all">All Years</option>
           {
-            telemetry.years.map((y) => (
-              <option value={y}>{y}</option>
+            years.map((y) => (
+              <option value={y.year}>
+                {y.year} ({y.talksCount})
+              </option>
             ))
           }
         </select>
       </div>
 
-      <!-- Country Dropdown -->
+      <!-- City / Destination Dropdown -->
       <div class="md:col-span-2">
-        <label for="archive-country-select" class="sr-only">Country</label>
+        <label for="archive-city-select" class="sr-only">Destination City</label>
         <select
-          id="archive-country-select"
-          data-testid="archive-country-select"
+          id="archive-city-select"
+          data-testid="archive-city-select"
           class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-2.5 text-xs text-slate-200 focus:outline-none"
         >
-          <option value="all">All Countries</option>
+          <option value="all">All Destinations ({metrics.uniqueCities} + Online)</option>
           {
-            telemetry.countries.map((c) => (
-              <option value={c.code}>{c.name}</option>
+            cities.map((c) => (
+              <option value={c.id}>
+                {c.city}, {c.country} ({c.eventsCount})
+              </option>
             ))
           }
+          <option value="online">Online ({metrics.onlineTalks})</option>
         </select>
       </div>
     </div>
 
-    <!-- Quick Filter Pill Row for Session Types & Clusters -->
+    <!-- Quick Filter Pill Row for Session Formats -->
     <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
       <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Session Type Quick Filters">
         <span class="font-mono text-[10px] tracking-widest uppercase text-slate-400 mr-1">
@@ -195,30 +187,30 @@ const clusterLabels: Record<string, string> = {
 
   <!-- Scrollable Table Container -->
   <div class="flex-1 overflow-y-auto px-6 md:px-12 py-6">
-    <div class="max-w-7xl mx-auto overflow-x-auto rounded-2xl border border-white/10 bg-slate-950/65">
+    <div class="max-w-7xl mx-auto overflow-x-auto rounded-2xl border border-white/10 bg-slate-950/70">
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-white/10 font-mono text-[10px] tracking-[0.2em] uppercase text-slate-400 bg-slate-900/60">
             <th class="py-3.5 px-4">Date</th>
             <th class="py-3.5 px-4">Event</th>
             <th class="py-3.5 px-4">Talk Title</th>
-            <th class="py-3.5 px-4">Location</th>
-            <th class="py-3.5 px-4">Clusters</th>
-            <th class="py-3.5 px-4 text-right">Type</th>
+            <th class="py-3.5 px-4">Destination</th>
+            <th class="py-3.5 px-4">Topics</th>
+            <th class="py-3.5 px-4 text-right">Format</th>
           </tr>
         </thead>
         <tbody id="archive-rows-container" class="divide-y divide-white/[0.06] text-sm">
           {
-            talks.map((talk) => {
-              const allClusters = Array.from(new Set([talk.primaryCluster, ...talk.topics]));
+            events.map((ev) => {
               const searchBlob = [
-                talk.title,
-                talk.event,
-                talk.city,
-                talk.country,
-                talk.countryCode,
-                talk.type,
-                ...allClusters.map((c) => clusterLabels[c] ?? c),
+                ev.talk,
+                ev.event,
+                ev.city,
+                ev.cityName,
+                ev.countryName,
+                ev.description,
+                ev.sessionType,
+                ...ev.topics,
               ]
                 .join(' ')
                 .toLowerCase();
@@ -227,38 +219,33 @@ const clusterLabels: Record<string, string> = {
                 <tr
                   data-archive-row
                   data-testid="archive-row"
-                  data-talk-id={talk.id}
-                  data-type={talk.type}
-                  data-clusters={allClusters.join(',')}
-                  data-year={talk.date.slice(0, 4)}
-                  data-country={talk.countryCode.toUpperCase()}
+                  data-event-id={ev.id}
+                  data-city-id={ev.isOnline ? 'online' : (ev.locationId ?? '')}
+                  data-type={ev.sessionType}
+                  data-clusters={ev.topicCategories.join(',')}
+                  data-year={ev.year}
+                  data-country={ev.countryCode}
                   data-search={searchBlob}
                   tabindex="0"
                   role="button"
-                  aria-label={`${talk.title} at ${talk.event}`}
+                  aria-label={`${ev.talk} at ${ev.event} (${ev.city})`}
                   class="group hover:bg-white/[0.05] transition-colors cursor-pointer"
                 >
                   <td class="py-3.5 px-4 font-mono text-xs text-slate-400 whitespace-nowrap">
-                    {formatSignalDate(talk.date)}
+                    {formatSignalDate(ev.date)}
                   </td>
-                  <td class="py-3.5 px-4 font-semibold text-white whitespace-nowrap group-hover:text-[#38BDF8] transition-colors">
-                    {talk.event}
+                  <td class="py-3.5 px-4 font-semibold text-white group-hover:text-[#38BDF8] transition-colors max-w-xs">
+                    {ev.event}
                   </td>
-                  <td class="py-3.5 px-4 text-slate-200 max-w-md">
-                    {talk.title}
-                  </td>
+                  <td class="py-3.5 px-4 text-slate-200 max-w-md">{ev.talk}</td>
                   <td class="py-3.5 px-4 text-xs text-slate-300 whitespace-nowrap">
-                    📍 {talk.city}, {talk.country}
+                    {ev.flag} {ev.city}
                   </td>
                   <td class="py-3.5 px-4">
                     <div class="flex flex-wrap gap-1">
-                      {allClusters.map((cid) => (
-                        <span
-                          class={`rounded-full px-2 py-0.5 font-mono text-[10px] border ${
-                            clusterBadgeStyles[cid] ?? 'bg-white/10 text-slate-200 border-white/20'
-                          }`}
-                        >
-                          {clusterLabels[cid] ?? cid}
+                      {ev.topics.slice(0, 3).map((topic) => (
+                        <span class="rounded-full px-2 py-0.5 font-mono text-[10px] bg-white/[0.06] text-slate-300 border border-white/10">
+                          {topic}
                         </span>
                       ))}
                     </div>
@@ -268,7 +255,7 @@ const clusterLabels: Record<string, string> = {
                       data-testid="archive-row-type"
                       class="inline-block rounded-md px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider bg-white/[0.06] text-slate-200 border border-white/15"
                     >
-                      {talk.type}
+                      {ev.sessionType}
                     </span>
                   </td>
                 </tr>
@@ -278,12 +265,11 @@ const clusterLabels: Record<string, string> = {
         </tbody>
       </table>
 
-      <!-- Empty State -->
       <div
         id="archive-empty-state"
         class="hidden py-12 text-center font-mono text-sm text-slate-400"
       >
-        No matching speaking signals found for the current filters.
+        No speaking engagements match the active search or filter criteria.
       </div>
     </div>
   </div>

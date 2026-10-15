@@ -1,168 +1,160 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('ORBIT — The Speaker Network E2E Suite', () => {
-  test('1. Zero-Click Overview & Telemetry Render', async ({ page }) => {
+test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
+  test('1. Initial Overview Metrics, 3D Earth Presence & Online Event Exclusion', async ({
+    page,
+  }) => {
     const pageErrors: string[] = [];
-    const consoleErrors: string[] = [];
-
     page.on('pageerror', (err) => pageErrors.push(err.message));
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text());
-      }
-    });
 
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    // Assert initial mode is overview
-    await expect(page.locator('body')).toHaveAttribute('data-mode', 'overview');
-
-    // Assert header & editorial headlines are immediately visible
+    // Verify immediate identity and headline without user interaction
     await expect(page.getByText('GOOGLE DEVELOPER EXPERT').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Ideas travel\./i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /Technology connects\./i })).toBeVisible();
 
-    // Assert telemetry counters display non-zero numeric values
-    const talksCounter = page.getByTestId('metric-talks');
-    const countriesCounter = page.getByTestId('metric-countries');
-    const citiesCounter = page.getByTestId('metric-cities');
+    // Verify exact data-driven metrics from data/events.json (44 talks, 12 countries, 23 physical cities)
+    await expect(page.getByTestId('metric-talks')).toHaveText('44');
+    await expect(page.getByTestId('metric-countries')).toHaveText('12');
+    await expect(page.getByTestId('metric-cities')).toHaveText('23');
 
-    await expect(talksCounter).toBeVisible();
-    await expect(countriesCounter).toBeVisible();
-    await expect(citiesCounter).toBeVisible();
+    // Verify Online events are NOT plotted as physical destinations on the globe
+    const globeLabels = page.locator('[data-globe-city-label]');
+    await expect(globeLabels).toHaveCount(23);
+    await expect(page.locator('[data-globe-city-label="online"]')).toHaveCount(0);
 
-    const talksValue = parseInt((await talksCounter.innerText()).replace(/\D/g, ''), 10);
-    const countriesValue = parseInt(
-      (await countriesCounter.innerText()).replace(/\D/g, ''),
-      10
-    );
-    const citiesValue = parseInt((await citiesCounter.innerText()).replace(/\D/g, ''), 10);
-
-    expect(talksValue).toBeGreaterThan(0);
-    expect(countriesValue).toBeGreaterThanOrEqual(18);
-    expect(citiesValue).toBeGreaterThan(0);
-
-    // Assert all 3 RECENT SIGNALS cards are visible with titles, locations, and dates
-    const recentStrip = page.getByTestId('recent-signals-strip');
-    await expect(recentStrip).toBeVisible();
-
-    await expect(recentStrip.getByText('DevFest Almaty')).toBeVisible();
-    await expect(recentStrip.getByText('AI Agents in the Cloud Native Era')).toBeVisible();
-    await expect(recentStrip.getByText('Almaty, Kazakhstan')).toBeVisible();
-    await expect(recentStrip.getByText('MAR 15, 2025')).toBeVisible();
-
-    await expect(recentStrip.getByText('KCD Istanbul')).toBeVisible();
-    await expect(recentStrip.getByText('Platform Engineering with Kubernetes')).toBeVisible();
-    await expect(recentStrip.getByText('Istanbul, Türkiye')).toBeVisible();
-    await expect(recentStrip.getByText('FEB 8, 2025')).toBeVisible();
-
-    await expect(recentStrip.getByText('Build with AI')).toBeVisible();
-    await expect(recentStrip.getByText('From LLMs to Real-World Agents')).toBeVisible();
-    await expect(recentStrip.getByText('Pristina, Kosovo')).toBeVisible();
-    await expect(recentStrip.getByText('JAN 25, 2025')).toBeVisible();
+    // Verify default destination overview panel is visible before selecting any city
+    await expect(page.getByTestId('city-overview-state')).toBeVisible();
 
     expect(pageErrors).toEqual([]);
-    expect(consoleErrors).toEqual([]);
   });
 
-  test('2. Overview → Explore Mode & Cluster Filtering', async ({ page }) => {
+  test('2. Selecting Real Cities Displays Accurate Associated Events & Resets Cleanly', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    const exploreBtn = page.getByTestId('explore-network-btn');
-    await expect(exploreBtn).toBeVisible();
-    await exploreBtn.click();
+    // Select Istanbul via prominent destination chip
+    await page.getByTestId('prominent-city-istanbul-tr').click();
 
-    // Assert body transitions to explore mode
-    await expect(page.locator('body')).toHaveAttribute('data-mode', 'explore');
+    await expect(page.locator('body')).toHaveAttribute('data-selected-city', 'istanbul-tr');
+    const cityPanel = page.getByTestId('selected-city-panel');
+    await expect(cityPanel).toBeVisible();
+    await expect(page.getByTestId('selected-city-name')).toHaveText('Istanbul');
+    await expect(cityPanel).toContainText('7 TALKS');
 
-    // Assert compact Telemetry HUD Pill and Explore Control Dock become visible
-    await expect(page.getByTestId('telemetry-hud-pill')).toBeVisible();
-    const dock = page.getByTestId('explore-control-dock');
-    await expect(dock).toBeVisible();
+    const istanbulEvents = page
+      .getByTestId('selected-city-events-list')
+      .locator('[data-city-event-id]');
+    await expect(istanbulEvents).toHaveCount(7);
 
-    await expect(page.getByTestId('cluster-pill-ai')).toBeVisible();
-    await expect(page.getByTestId('cluster-pill-k8s')).toBeVisible();
-    await expect(page.getByTestId('cluster-pill-cloud')).toBeVisible();
-    await expect(page.getByTestId('cluster-pill-workshops')).toBeVisible();
+    // Select Almaty via dropdown selector
+    await page.getByTestId('reset-city-btn').click();
+    await expect(page.locator('body')).toHaveAttribute('data-selected-city', '');
+    await expect(page.getByTestId('city-overview-state')).toBeVisible();
 
-    // Click Kubernetes cluster filter pill
-    await page.getByTestId('cluster-pill-k8s').click();
-
-    await expect(page.locator('body')).toHaveAttribute('data-cluster', 'k8s');
-    await expect(page.getByTestId('cluster-pill-k8s')).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
-    await expect(page.getByTestId('cluster-status-banner')).toContainText(
-      /KUBERNETES CLUSTER:\s*\d+\s*Sessions across\s*\d+\s*Countries/i
-    );
+    await page.getByTestId('city-selector-dropdown').selectOption('almaty-kz');
+    await expect(page.locator('body')).toHaveAttribute('data-selected-city', 'almaty-kz');
+    await expect(page.getByTestId('selected-city-name')).toHaveText('Almaty');
+    await expect(cityPanel).toContainText('2 TALKS');
+    await expect(cityPanel).toContainText('DevFest Almaty 2025');
   });
 
-  test('3. Signal Detail Drawer Interaction', async ({ page }) => {
+  test('3. Discovery Modes (Globe · Regions · Timeline · Topics) & Year/Topic Filtering', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    const almatyCard = page.getByTestId('signal-card-devfest-almaty-2025-keynote');
-    await expect(almatyCard).toBeVisible();
-    await almatyCard.click();
+    // Switch to Regions mode
+    await page.getByTestId('mode-btn-regions').click();
+    await expect(page.locator('body')).toHaveAttribute('data-view-mode', 'regions');
+    await expect(page.getByTestId('view-panel-regions')).toBeVisible();
+    await expect(page.getByTestId('view-panel-regions')).toContainText('Central Asia');
+    await expect(page.getByTestId('view-panel-regions')).toContainText(
+      'Online & Global Broadcasts'
+    );
+
+    // Switch to Topics mode and filter by Kubernetes & Platform Engineering
+    await page.getByTestId('mode-btn-topics').click();
+    await expect(page.getByTestId('view-panel-topics')).toBeVisible();
+    await page.getByTestId('topic-card-kubernetes').click();
+    await expect(page.locator('body')).toHaveAttribute('data-topic', 'kubernetes');
+
+    // Filter bottom timeline by Year 2025
+    await page.getByTestId('timeline-year-2025').click();
+    await expect(page.locator('body')).toHaveAttribute('data-year', '2025');
+
+    const visibleTimelineCards = page.locator('[data-timeline-card]:not(.hidden)');
+    const count = await visibleTimelineCards.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      await expect(visibleTimelineCards.nth(i)).toHaveAttribute('data-year', '2025');
+    }
+  });
+
+  test('4. Event Dossier Drawer, Full Archive Matrix & Responsive Viewports (Desktop, Tablet, Mobile)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    // Open an event dossier from the timeline strip
+    const dubaiCard = page.getByTestId('timeline-card-devfest-dubai-2026');
+    await expect(dubaiCard).toBeVisible();
+    await dubaiCard.click();
 
     const drawer = page.getByTestId('signal-drawer');
     await expect(drawer).toBeVisible();
     await expect(drawer).toHaveAttribute('aria-hidden', 'false');
-    await expect(page.getByTestId('signal-drawer-title')).toHaveText(
-      'AI Agents in the Cloud Native Era'
-    );
-    await expect(drawer).toContainText('Almaty, Kazakhstan');
+    await expect(page.getByTestId('signal-drawer-title')).toHaveText('Kubernetes for AI');
+    await expect(drawer).toContainText('Dubai, UAE');
 
-    // Press Escape and assert drawer closes cleanly
+    // Close drawer via Escape
     await page.keyboard.press('Escape');
-    await expect(drawer).toHaveAttribute('aria-hidden', 'true');
     await expect(drawer).toBeHidden();
-  });
 
-  test('4. Full Archive Matrix Search & Filtering', async ({ page }) => {
-    await page.goto('/');
-
-    const viewAllBtn = page.getByTestId('view-all-talks-btn');
-    await viewAllBtn.click();
-
+    // Open Full Archive directly via "Browse all talks" without touching the globe
+    await page.getByTestId('browse-all-talks-btn').click();
     const archiveModal = page.getByTestId('archive-matrix-modal');
     await expect(archiveModal).toBeVisible();
-    await expect(archiveModal).toHaveAttribute('aria-hidden', 'false');
-
-    // Verify 3D loop is paused while archive modal is open
-    const isPaused = await page.evaluate(() => window.__orbitScene?.isRenderPaused());
-    expect(isPaused).toBe(true);
 
     const visibleRows = archiveModal.locator('tbody tr:not(.hidden)');
-    const initialCount = await visibleRows.count();
-    expect(initialCount).toBeGreaterThanOrEqual(36);
+    await expect(visibleRows).toHaveCount(44);
 
-    // Search for "Almaty"
+    // Search for "Almaty" in Archive
     const searchInput = page.getByTestId('archive-search-input');
     await searchInput.fill('Almaty');
-
     const almatyRows = await visibleRows.count();
-    expect(almatyRows).toBeGreaterThan(0);
-    expect(almatyRows).toBeLessThan(initialCount);
+    expect(almatyRows).toBe(3);
 
-    for (let i = 0; i < almatyRows; i++) {
-      await expect(visibleRows.nth(i)).toContainText('Almaty');
+    // Reset filters and filter by workshop session format
+    await page.getByTestId('archive-reset-filters-btn').click();
+    await expect(visibleRows).toHaveCount(44);
+
+    await page.getByTestId('archive-type-select').selectOption('workshop');
+    const workshopCount = await visibleRows.count();
+    expect(workshopCount).toBeGreaterThan(0);
+    for (let i = 0; i < workshopCount; i++) {
+      await expect(visibleRows.nth(i).getByTestId('archive-row-type')).toHaveText(
+        /workshop/i
+      );
     }
 
-    // Clear search and filter by Session Type "workshop"
-    await searchInput.fill('');
-    await expect(visibleRows).toHaveCount(initialCount);
+    await page.getByTestId('close-archive-btn').click();
+    await expect(archiveModal).toBeHidden();
 
-    const typeSelect = page.getByTestId('archive-type-select');
-    await typeSelect.selectOption('workshop');
+    // Tablet viewport check (820x1180)
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await expect(page.getByTestId('metric-talks')).toBeVisible();
+    await expect(page.getByTestId('destination-panel')).toBeVisible();
 
-    const workshopRowsCount = await visibleRows.count();
-    expect(workshopRowsCount).toBeGreaterThan(0);
-    expect(workshopRowsCount).toBeLessThan(initialCount);
-
-    for (let i = 0; i < workshopRowsCount; i++) {
-      const badge = visibleRows.nth(i).getByTestId('archive-row-type');
-      await expect(badge).toHaveText(/workshop/i);
-    }
+    // Mobile viewport check (390x844)
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.getByTestId('metric-talks')).toBeVisible();
+    await expect(page.getByTestId('browse-all-talks-btn')).toBeVisible();
   });
 });

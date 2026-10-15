@@ -1,97 +1,173 @@
 ---
-import type { Talk } from '../schemas/talkSchema';
+import type { SpeakingAtlasData } from '../utils/geography';
 import { formatSignalDate, withBase } from '../utils/paths';
 
 interface Props {
-  signals: Talk[];
-  totalTalks: number;
+  atlas: SpeakingAtlasData;
 }
 
-const { signals, totalTalks } = Astro.props;
+const { atlas } = Astro.props;
+const { events, years, metrics } = atlas;
 ---
 
 <section
   id="recent-signals-strip"
   data-testid="recent-signals-strip"
-  aria-label="Recent Speaking Signals"
-  class="fixed bottom-0 inset-x-0 z-20 px-6 md:px-12 pb-5 pt-3 bg-gradient-to-t from-[#050811] via-[#050811]/85 to-transparent pointer-events-none transition-all duration-500"
+  aria-label="Chronological Speaking Timeline and Recent Talks"
+  class="relative z-20 px-5 lg:px-10 pb-5 pt-2 bg-gradient-to-t from-[#030712] via-[#030712]/90 to-transparent pointer-events-auto"
 >
-  <div class="max-w-[1440px] mx-auto pointer-events-auto">
-    <!-- Strip Header Row -->
-    <div class="flex items-center justify-between gap-4 mb-3">
-      <div class="flex items-center gap-4 flex-1">
-        <h2
-          class="font-mono text-[11px] font-semibold tracking-[0.26em] uppercase text-slate-300 whitespace-nowrap"
+  <div class="max-w-[1600px] mx-auto">
+    <!-- Top Row: Year Selector Bar + Active Filter Status + View All Talks Button -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+      <!-- Compact Year Selector matching Reference Image (← All · 2023 · 2024 · 2025 · 2026 →) -->
+      <div
+        class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1"
+        role="group"
+        aria-label="Filter Timeline by Year"
+      >
+        <button
+          type="button"
+          data-action="select-year"
+          data-year="all"
+          data-testid="timeline-year-all"
+          aria-pressed="true"
+          class="year-filter-pill rounded-full px-3.5 py-1 font-mono text-xs font-semibold bg-[#1D4ED8]/55 text-white border border-[#38BDF8]/70 shadow-[0_0_16px_rgba(56,189,248,0.3)] transition-all cursor-pointer"
         >
-          RECENT SIGNALS
-        </h2>
-        <div class="h-[1px] flex-1 max-w-xs bg-gradient-to-r from-white/20 to-transparent"></div>
+          All ({metrics.totalTalks})
+        </button>
+
+        {
+          [...years].reverse().map((y) => (
+            <button
+              type="button"
+              data-action="select-year"
+              data-year={y.year}
+              data-testid={`timeline-year-${y.year}`}
+              aria-pressed="false"
+              class="year-filter-pill rounded-full px-3.5 py-1 font-mono text-xs font-medium bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+            >
+              {y.year}
+            </button>
+          ))
+        }
       </div>
 
-      <button
-        type="button"
-        data-action="open-archive"
-        data-testid="view-all-talks-btn"
-        class="inline-flex items-center gap-2 font-mono text-[11px] font-semibold tracking-[0.2em] uppercase text-slate-300 hover:text-[#38BDF8] transition-colors cursor-pointer"
-      >
-        <span>VIEW ALL TALKS</span>
-        <span class="text-slate-500">({totalTalks})</span>
-        <span aria-hidden="true">→</span>
-      </button>
+      <!-- Right Controls: Carousel Scroll Buttons + Browse Full Archive -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-1.5">
+          <button
+            type="button"
+            id="timeline-scroll-prev"
+            aria-label="Scroll timeline left"
+            class="h-7 w-7 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.14] border border-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer text-xs"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            id="timeline-scroll-next"
+            aria-label="Scroll timeline right"
+            class="h-7 w-7 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.14] border border-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer text-xs"
+          >
+            →
+          </button>
+        </div>
+
+        <button
+          type="button"
+          data-action="open-archive"
+          data-testid="view-all-talks-btn"
+          class="inline-flex items-center gap-2 font-mono text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-200 hover:text-[#38BDF8] transition-colors cursor-pointer"
+        >
+          <span>VIEW ALL TALKS ({metrics.totalTalks})</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
     </div>
 
-    <!-- 3-Column Glassmorphic Signal Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+    <!-- Horizontal Chronological Event Cards Strip -->
+    <div
+      id="timeline-cards-track"
+      data-testid="timeline-cards-track"
+      class="flex items-stretch gap-3.5 overflow-x-auto pb-1 scroll-smooth"
+    >
       {
-        signals.map((talk) => (
-          <article
-            data-signal-card
-            data-talk-id={talk.id}
-            data-testid={`signal-card-${talk.id}`}
-            tabindex="0"
-            role="button"
-            aria-label={`${talk.event}: ${talk.title} in ${talk.city}, ${talk.country}`}
-            class="group relative flex items-center gap-3.5 rounded-xl p-3 bg-[rgba(15,23,42,0.55)] hover:bg-[rgba(15,23,42,0.82)] backdrop-blur-[12px] border border-white/10 hover:border-[#38BDF8]/45 transition-all cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-[#38BDF8]/60"
-          >
-            <!-- Left: Stage photo thumbnail (16:10 aspect ratio) -->
-            <div class="relative w-28 sm:w-32 aspect-[16/10] shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-950">
-              <img
-                src={withBase(talk.image)}
-                alt={`${talk.event} stage in ${talk.city}`}
-                loading="eager"
-                decoding="async"
-                class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-
-            <!-- Middle: Date, Event Name, Talk Title, Location -->
-            <div class="min-w-0 flex-1">
-              <p class="font-mono text-[10px] tracking-[0.18em] uppercase text-[#38BDF8] truncate">
-                {formatSignalDate(talk.date)}
-              </p>
-              <h3 class="mt-0.5 text-sm sm:text-[15px] font-bold text-[#F8FAFC] truncate group-hover:text-white">
-                {talk.event}
-              </h3>
-              <p class="text-xs text-[#94A3B8] truncate mt-0.5">{talk.title}</p>
-              <p class="mt-1 text-[11px] text-slate-400 flex items-center gap-1 truncate">
-                <span aria-hidden="true">📍</span>
-                <span>
-                  {talk.city}, {talk.country}
-                </span>
-              </p>
-            </div>
-
-            <!-- Right: Circular arrow button -->
-            <div
-              class="shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] group-hover:bg-[#38BDF8]/20 border border-white/15 group-hover:border-[#38BDF8]/60 text-slate-300 group-hover:text-white transition-all"
-              aria-hidden="true"
+        events.map((ev) => {
+          const hasAuthenticPhoto = Array.isArray(ev.photos) && ev.photos.length > 0;
+          return (
+            <article
+              data-timeline-card
+              data-event-id={ev.id}
+              data-city-id={ev.locationId ?? ''}
+              data-year={ev.year}
+              data-topics={ev.topicCategories.join(',')}
+              data-testid={`timeline-card-${ev.id}`}
+              tabindex="0"
+              role="button"
+              aria-label={`${ev.event} in ${ev.city}: ${ev.talk}`}
+              class="group shrink-0 w-[305px] sm:w-[340px] flex items-center gap-3 rounded-2xl p-3 bg-[#081024]/80 hover:bg-[#0D1A38]/95 backdrop-blur-xl border border-white/12 hover:border-[#38BDF8]/55 transition-all cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.55)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
             >
-              <span class="text-xs transform group-hover:translate-x-0.5 transition-transform">
+              <!-- Left: Authentic Event Photo if available, or Geographic Coordinate Blueprint -->
+              <div class="relative w-24 h-20 shrink-0 rounded-xl overflow-hidden border border-white/15 bg-[#040917] flex flex-col items-center justify-center p-2 text-center">
+                {hasAuthenticPhoto ? (
+                  <img
+                    src={withBase(ev.photos[0])}
+                    alt={`${ev.event} in ${ev.city}`}
+                    loading="lazy"
+                    class="w-full h-full object-cover"
+                  />
+                ) : (
+                  <>
+                    <div
+                      class="absolute inset-0 opacity-35"
+                      style="background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.35), transparent 75%);"
+                    />
+                    <span class="relative z-10 text-lg leading-none">{ev.flag}</span>
+                    <span class="relative z-10 mt-1 font-mono text-[9px] uppercase tracking-wider text-[#38BDF8] font-semibold">
+                      {ev.sessionType}
+                    </span>
+                    <span class="relative z-10 mt-0.5 font-mono text-[8px] text-slate-400">
+                      {ev.lat !== null && ev.lon !== null
+                        ? `${ev.lat.toFixed(1)}°N ${ev.lon.toFixed(1)}°E`
+                        : 'ONLINE'}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              <!-- Middle: City & Country, Date, Event Name, Talk Title -->
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 text-xs font-semibold text-white truncate">
+                  <span>{ev.flag}</span>
+                  <span class="truncate">{ev.cityName}</span>
+                  {!ev.isOnline && (
+                    <span class="text-[10px] font-normal text-slate-400 truncate">
+                      · {ev.countryName}
+                    </span>
+                  )}
+                </div>
+
+                <p class="mt-0.5 font-mono text-[10px] tracking-[0.14em] uppercase text-[#38BDF8]">
+                  {formatSignalDate(ev.date)}
+                </p>
+
+                <h3 class="mt-0.5 text-xs sm:text-[13px] font-bold text-[#F8FAFC] truncate group-hover:text-white">
+                  {ev.event}
+                </h3>
+
+                <p class="text-[11px] text-slate-400 truncate mt-0.5">{ev.talk}</p>
+              </div>
+
+              <!-- Right: Inspect Arrow -->
+              <div
+                class="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.05] group-hover:bg-[#38BDF8]/20 border border-white/10 group-hover:border-[#38BDF8]/50 text-slate-400 group-hover:text-white transition-all text-xs"
+                aria-hidden="true"
+              >
                 →
-              </span>
-            </div>
-          </article>
-        ))
+              </div>
+            </article>
+          );
+        })
       }
     </div>
   </div>

@@ -1,29 +1,33 @@
 ---
-import rawArchive from '../data/talks.json';
-import { getOrbitTelemetry, validateArchive } from '../utils/metrics';
+import rawEvents from '../../data/events.json';
+import rawLocations from '../../data/locations.json';
+import rawLand from '../../data/land.json';
+import { buildSpeakingAtlas } from '../utils/geography';
 import { withBase } from '../utils/paths';
 import TopNav from '../components/TopNav.astro';
 import HeroOverview from '../components/HeroOverview.astro';
+import DestinationPanel from '../components/DestinationPanel.astro';
 import RecentSignals from '../components/RecentSignals.astro';
-import ExploreDock from '../components/ExploreDock.astro';
 import SignalDrawer from '../components/SignalDrawer.astro';
 import ArchiveMatrix from '../components/ArchiveMatrix.astro';
 import AboutModal from '../components/AboutModal.astro';
 
-const archive = validateArchive(rawArchive);
-const telemetry = getOrbitTelemetry(archive);
-const initialTalk = telemetry.recentSignals[0] ?? telemetry.sortedTalks[0];
+const atlas = buildSpeakingAtlas(rawEvents, rawLocations);
+const initialEvent = atlas.events[0];
 ---
 
 <!doctype html>
-<html lang="en" class="dark bg-[#050811] text-[#F8FAFC] antialiased selection:bg-[#38BDF8]/30 selection:text-white">
+<html
+  lang="en"
+  class="dark bg-[#030712] text-[#F8FAFC] antialiased selection:bg-[#38BDF8]/30 selection:text-white"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{archive.speaker.name} — ORBIT | Google Developer Expert Speaker Network</title>
+    <title>Ahmed Enes Turan — Global Speaking Atlas | Google Developer Expert</title>
     <meta
       name="description"
-      content={`${archive.speaker.name} (${archive.speaker.role}) — Interactive 3D speaker portfolio across ${telemetry.displayTalks} talks, ${telemetry.displayCountries} countries, and ${telemetry.displayCities} cities in Cloud, Kubernetes, and AI.`}
+      content={`Ahmed Enes Turan (Google Developer Expert) — Interactive Global Speaking Atlas across ${atlas.metrics.totalTalks} conference talks, ${atlas.metrics.uniqueCountries} countries, and ${atlas.metrics.uniqueCities} physical cities in Cloud, Kubernetes, and AI.`}
     />
     <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
     <style is:global>
@@ -35,104 +39,116 @@ const initialTalk = telemetry.recentSignals[0] ?? telemetry.sortedTalks[0];
         margin: 0;
         padding: 0;
         min-height: 100%;
-        background-color: #050811;
+        background-color: #030712;
         color: #f8fafc;
         overflow-x: hidden;
       }
-      /* Custom subtle scrollbar */
       ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
       }
       ::-webkit-scrollbar-track {
-        background: #050811;
+        background: #030712;
       }
       ::-webkit-scrollbar-thumb {
         background: rgba(148, 163, 184, 0.25);
         border-radius: 9999px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: rgba(56, 189, 248, 0.5);
+        background: rgba(56, 189, 248, 0.55);
       }
     </style>
   </head>
 
   <body
     id="top"
-    data-mode="overview"
-    data-cluster="all"
-    class="relative min-h-screen w-full bg-[#050811] text-[#F8FAFC] overflow-x-hidden"
+    data-view-mode="globe"
+    data-selected-city=""
+    data-year="all"
+    data-topic="all"
+    class="relative min-h-screen w-full bg-[#030712] text-[#F8FAFC] flex flex-col justify-between overflow-x-hidden"
   >
-    <!-- Deep Cosmic Obsidian-to-Navy Radial Atmospheric Glow -->
+    <!-- Deep Space & Planetary Atmospheric Backdrop -->
     <div
       class="fixed inset-0 z-0 pointer-events-none"
-      style="background: radial-gradient(circle at 72% 44%, #0A1633 0%, #0A1124 38%, #050811 82%);"
+      style="background: radial-gradient(circle at 50% 45%, #0B1D42 0%, #061026 38%, #030712 80%);"
       aria-hidden="true"
     >
-      <!-- Subtle cosmic starfield & topographic wave CSS fallback glow -->
       <div
-        class="absolute inset-0 opacity-45"
-        style="background-image: radial-gradient(rgba(56, 189, 248, 0.16) 1px, transparent 1px), radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 48px 48px, 96px 96px; background-position: 0 0, 24px 24px;"
+        class="absolute inset-0 opacity-35"
+        style="background-image: radial-gradient(rgba(56, 189, 248, 0.16) 1px, transparent 1px), radial-gradient(rgba(253, 224, 71, 0.1) 1px, transparent 1px); background-size: 56px 56px, 112px 112px; background-position: 0 0, 28px 28px;"
       >
       </div>
     </div>
 
-    <!-- 3D WebGL ORBIT Network Canvas Viewport -->
+    <!-- Center Interactive 3D Earth Viewport (Full-screen interactive WebGL layer) -->
     <div
       id="orbit-canvas-container"
       data-testid="orbit-canvas-container"
       class="fixed inset-0 z-[1]"
-      aria-label="Interactive 3D Speaker Constellation Network"
+      aria-label="Interactive 3D Earth Speaking Atlas"
     >
     </div>
 
     <!-- Fixed Glassmorphic Top Navigation Bar -->
-    <TopNav speaker={archive.speaker} telemetry={telemetry} />
+    <TopNav totalTalks={atlas.metrics.totalTalks} />
 
-    <!-- Main Left Editorial Column (Zero-Click Overview Telemetry) -->
-    <main class="relative z-20">
-      <HeroOverview speaker={archive.speaker} telemetry={telemetry} />
+    <!-- First-Viewport Three-Column Hero Composition (Left Identity · Center 3D Earth · Right Destination Panel) -->
+    <main
+      class="relative z-20 flex-1 w-full max-w-[1600px] mx-auto pt-16 pb-2 px-5 lg:px-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pointer-events-none"
+    >
+      <!-- Left Column: Identity, Real Metrics & Primary Actions -->
+      <div class="w-full lg:w-[390px] xl:w-[430px] shrink-0">
+        <HeroOverview atlas={atlas} />
+      </div>
+
+      <!-- Center Column: Spacer for the 3D Earth on Desktop -->
+      <div class="hidden lg:block flex-1 min-h-[380px] pointer-events-none" aria-hidden="true">
+      </div>
+
+      <!-- Right Column: 4-Mode View Selector + Contextual Destination Panel + Speaking Impact Card -->
+      <DestinationPanel atlas={atlas} />
     </main>
 
-    <!-- 2D Projected Cluster Labels & Explore Control Dock -->
-    <ExploreDock clusters={archive.clusters} telemetry={telemetry} />
+    <!-- Bottom Chronological Speaking Timeline Strip & Year Selector -->
+    <RecentSignals atlas={atlas} />
 
-    <!-- Bottom RECENT SIGNALS Strip -->
-    <RecentSignals signals={telemetry.recentSignals} totalTalks={telemetry.totalTalks} />
+    <!-- Slide-Over Event Detail Dossier Drawer -->
+    <SignalDrawer initialEvent={initialEvent} />
 
-    <!-- Slide-Over Digital Speaker Badge / Signal Detail Drawer -->
-    <SignalDrawer initialTalk={initialTalk} />
-
-    <!-- Full Searchable & Filterable Archive Matrix Modal -->
-    <ArchiveMatrix
-      talks={telemetry.sortedTalks}
-      clusters={archive.clusters}
-      telemetry={telemetry}
-    />
+    <!-- Full Searchable & Filterable Speaking Archive Modal -->
+    <ArchiveMatrix atlas={atlas} />
 
     <!-- Speaker Bio / Dossier Modal -->
-    <AboutModal speaker={archive.speaker} telemetry={telemetry} />
+    <AboutModal atlas={atlas} />
 
-    <!-- Serialized Build-Time Validated Archive Payload -->
+    <!-- Serialized Build-Time Verified Atlas & Land Geometry Payloads -->
     <script
-      id="orbit-archive-data"
+      id="speaking-atlas-data"
       type="application/json"
-      set:html={JSON.stringify(archive)}
+      set:html={JSON.stringify(atlas)}
+    />
+    <script
+      id="earth-land-data"
+      type="application/json"
+      set:html={JSON.stringify(rawLand)}
     />
 
-    <!-- Client-Side 3D Scene & 5-Mode Interactive State Machine Initialization -->
+    <!-- Client-Side 3D Earth & Atlas State Initialization -->
     <script>
-      import { initOrbitApp } from '../scripts/stateController';
-      import type { OrbitArchive } from '../schemas/talkSchema';
+      import { initSpeakingAtlasApp } from '../scripts/atlasController';
+      import type { SpeakingAtlasData } from '../utils/geography';
 
       function bootstrap() {
-        const dataEl = document.getElementById('orbit-archive-data');
-        if (!dataEl || !dataEl.textContent) return;
+        const atlasEl = document.getElementById('speaking-atlas-data');
+        const landEl = document.getElementById('earth-land-data');
+        if (!atlasEl?.textContent) return;
         try {
-          const archive = JSON.parse(dataEl.textContent) as OrbitArchive;
-          initOrbitApp(archive);
+          const atlas = JSON.parse(atlasEl.textContent) as SpeakingAtlasData;
+          const land = landEl?.textContent ? JSON.parse(landEl.textContent) : null;
+          initSpeakingAtlasApp(atlas, land);
         } catch (err) {
-          console.error('Failed to initialize ORBIT archive:', err);
+          console.error('Failed to initialize Global Speaking Atlas:', err);
         }
       }
 

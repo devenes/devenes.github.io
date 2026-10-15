@@ -1,0 +1,632 @@
+---
+import type { SpeakingAtlasData } from '../utils/geography';
+import { formatSignalDate } from '../utils/paths';
+
+interface Props {
+  atlas: SpeakingAtlasData;
+}
+
+const { atlas } = Astro.props;
+const { metrics, cities, regions, topics, years, events } = atlas;
+const prominentCities = cities.slice(0, 8);
+const recentThree = events.slice(0, 2);
+---
+
+<!-- 2D Projected City Marker Badges on the 3D Earth (Only Physical Verified Locations) -->
+<div
+  id="globe-city-labels"
+  class="fixed inset-0 z-10 pointer-events-none overflow-hidden"
+  aria-label="Interactive 3D Earth Speaking Destinations"
+>
+  {
+    cities.map((city) => (
+      <div
+        data-globe-city-label={city.id}
+        style="transform: translate3d(-9999px, -9999px, 0); opacity: 0;"
+        class="absolute top-0 left-0 transition-opacity duration-200"
+      >
+        <button
+          type="button"
+          data-action="select-city"
+          data-city-id={city.id}
+          data-testid={`globe-city-${city.id}`}
+          aria-label={`Select ${city.city}, ${city.country} (${city.eventsCount} ${city.eventsCount === 1 ? 'talk' : 'talks'})`}
+          class={`group -translate-x-1/2 -translate-y-full -mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur-md border transition-all cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.75)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+            city.isBaseHub
+              ? 'bg-[#1D4ED8]/85 text-white border-[#60A5FA] shadow-[0_0_20px_rgba(56,189,248,0.45)]'
+              : 'bg-[#060D1F]/85 hover:bg-[#0F1E3D] text-slate-100 border-white/20 hover:border-[#38BDF8]/70'
+          }`}
+        >
+          <span
+            class={`h-1.5 w-1.5 rounded-full ${
+              city.isBaseHub
+                ? 'bg-white shadow-[0_0_6px_#fff]'
+                : city.eventsCount >= 2
+                  ? 'bg-[#FDE047]'
+                  : 'bg-[#38BDF8]'
+            }`}
+          />
+          <span class="font-sans font-semibold tracking-tight whitespace-nowrap">
+            {city.city}
+          </span>
+          {city.eventsCount > 1 && (
+            <span class="font-mono text-[9px] text-[#93C5FD] opacity-90">
+              {city.eventsCount}
+            </span>
+          )}
+        </button>
+      </div>
+    ))
+  }
+</div>
+
+<!-- Accessible Floating Globe Camera & Motion Controls (Bottom-Center / Left of Globe) -->
+<div
+  class="fixed bottom-[198px] left-1/2 -translate-x-1/2 z-20 hidden lg:flex items-center gap-1.5 rounded-full px-3 py-1 bg-[#050B1A]/85 backdrop-blur-md border border-white/15 shadow-xl pointer-events-auto"
+  role="toolbar"
+  aria-label="3D Globe Camera and Motion Controls"
+>
+  <button
+    type="button"
+    data-action="globe-zoom-in"
+    data-testid="globe-zoom-in"
+    aria-label="Zoom in on globe"
+    class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-mono text-slate-200 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+  >
+    +
+  </button>
+  <button
+    type="button"
+    data-action="globe-zoom-out"
+    data-testid="globe-zoom-out"
+    aria-label="Zoom out on globe"
+    class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-mono text-slate-200 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+  >
+    −
+  </button>
+  <div class="h-3.5 w-[1px] bg-white/15 mx-0.5" aria-hidden="true"></div>
+  <button
+    type="button"
+    data-action="reset-city"
+    data-testid="globe-reset-view"
+    class="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+  >
+    View all destinations
+  </button>
+  <div class="h-3.5 w-[1px] bg-white/15 mx-0.5" aria-hidden="true"></div>
+  <button
+    type="button"
+    id="toggle-motion-btn"
+    data-action="toggle-motion"
+    data-testid="toggle-motion-btn"
+    aria-pressed="false"
+    class="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+  >
+    Pause motion
+  </button>
+</div>
+
+<!-- Right Column: 4-Mode View Selector + Contextual Destination Panel + Speaking Impact Card -->
+<aside
+  aria-label="Geographic Discovery and Selected Destination Details"
+  class="relative z-20 flex flex-col gap-2.5 w-full lg:w-[370px] xl:w-[390px] shrink-0 pointer-events-auto"
+>
+  <!-- Compact 4-Mode View Selector matching Reference Image (Globe · Regions · Timeline · Topics) -->
+  <div
+    class="grid grid-cols-4 gap-1 rounded-xl p-1 bg-[#060C1D]/85 backdrop-blur-xl border border-white/15 shadow-lg"
+    role="tablist"
+    aria-label="Discovery View Modes"
+  >
+    <button
+      type="button"
+      role="tab"
+      aria-selected="true"
+      data-view-mode="globe"
+      data-testid="mode-btn-globe"
+      class="view-mode-btn inline-flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 font-mono text-[10px] font-semibold tracking-wider uppercase bg-[#1D4ED8]/45 text-white border border-[#38BDF8]/50 transition-all cursor-pointer"
+    >
+      <span aria-hidden="true">🌐</span>
+      <span>GLOBE</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      aria-selected="false"
+      data-view-mode="regions"
+      data-testid="mode-btn-regions"
+      class="view-mode-btn inline-flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 font-mono text-[10px] font-semibold tracking-wider uppercase text-slate-300 hover:text-white border border-transparent transition-all cursor-pointer"
+    >
+      <span aria-hidden="true">📊</span>
+      <span>REGIONS</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      aria-selected="false"
+      data-view-mode="timeline"
+      data-testid="mode-btn-timeline"
+      class="view-mode-btn inline-flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 font-mono text-[10px] font-semibold tracking-wider uppercase text-slate-300 hover:text-white border border-transparent transition-all cursor-pointer"
+    >
+      <span aria-hidden="true">📅</span>
+      <span>TIMELINE</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      aria-selected="false"
+      data-view-mode="topics"
+      data-testid="mode-btn-topics"
+      class="view-mode-btn inline-flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 font-mono text-[10px] font-semibold tracking-wider uppercase text-slate-300 hover:text-white border border-transparent transition-all cursor-pointer"
+    >
+      <span aria-hidden="true">⊞</span>
+      <span>TOPICS</span>
+    </button>
+  </div>
+
+  <!-- Main Contextual Card Container -->
+  <div
+    id="destination-panel"
+    data-testid="destination-panel"
+    aria-live="polite"
+    class="rounded-2xl bg-[#070E20]/88 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.75)] overflow-hidden"
+  >
+    <!-- 1. DEFAULT STATE (When no city is selected in Globe Mode) -->
+    <div id="city-overview-state" data-testid="city-overview-state" class="p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <span class="font-mono text-[10px] font-semibold tracking-[0.22em] uppercase text-[#38BDF8]">
+          GLOBAL SPEAKING ATLAS
+        </span>
+        <span class="font-mono text-[10px] text-slate-400">
+          {metrics.uniqueCities} Physical Cities
+        </span>
+      </div>
+
+      <h2 class="mt-0.5 font-display text-base font-bold text-white">
+        International Speaking Destinations
+      </h2>
+      <p class="mt-0.5 text-[11px] text-slate-300 leading-snug">
+        Select any illuminated marker on the 3D Earth or choose a verified destination below to
+        inspect conferences, abstracts, and session history.
+      </p>
+
+      <!-- Keyboard-Accessible Quick Destination Selector -->
+      <div class="mt-2.5">
+        <label for="city-selector-dropdown" class="sr-only">
+          Select a speaking destination city
+        </label>
+        <select
+          id="city-selector-dropdown"
+          data-testid="city-selector-dropdown"
+          class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-1.5 text-xs text-slate-100 focus:outline-none"
+        >
+          <option value="">Jump to any of the {metrics.uniqueCities} physical cities...</option>
+          {
+            cities.map((c) => (
+              <option value={c.id}>
+                {c.flag} {c.city}, {c.country} ({c.eventsCount}{' '}
+                {c.eventsCount === 1 ? 'talk' : 'talks'})
+              </option>
+            ))
+          }
+        </select>
+      </div>
+
+      <!-- Prominent Real Destinations Chips -->
+      <div class="mt-2.5">
+        <div class="font-mono text-[9px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">
+          PROMINENT DESTINATIONS
+        </div>
+        <div class="flex flex-wrap gap-1.5">
+          {
+            prominentCities.map((c) => (
+              <button
+                type="button"
+                data-action="select-city"
+                data-city-id={c.id}
+                data-testid={`prominent-city-${c.id}`}
+                class="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[11px] bg-white/[0.05] hover:bg-[#38BDF8]/20 text-slate-200 hover:text-white border border-white/10 hover:border-[#38BDF8]/50 transition-all cursor-pointer"
+              >
+                <span>{c.flag}</span>
+                <span class="font-medium">{c.city}</span>
+                <span class="font-mono text-[9px] text-[#38BDF8]">{c.eventsCount}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <!-- Latest Featured Appearances List -->
+      <div class="mt-3 pt-2.5 border-t border-white/10">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="font-mono text-[9px] tracking-[0.18em] uppercase text-slate-400">
+            LATEST APPEARANCES
+          </span>
+          <button
+            type="button"
+            data-action="open-archive"
+            class="font-mono text-[10px] text-[#38BDF8] hover:underline cursor-pointer"
+          >
+            Full Archive →
+          </button>
+        </div>
+        <div class="space-y-1.5">
+          {
+            recentThree.map((ev) => (
+              <button
+                type="button"
+                data-action="open-event"
+                data-event-id={ev.id}
+                class="w-full flex items-center justify-between gap-2 rounded-xl p-2 bg-slate-900/65 hover:bg-slate-900 border border-white/10 hover:border-[#38BDF8]/40 text-left transition-all cursor-pointer"
+              >
+                <div class="min-w-0">
+                  <div class="font-mono text-[9px] text-[#38BDF8] uppercase">
+                    {formatSignalDate(ev.date)} · {ev.flag} {ev.cityName}
+                  </div>
+                  <div class="text-xs font-semibold text-white truncate">
+                    {ev.event}
+                  </div>
+                  <div class="text-[11px] text-slate-400 truncate">{ev.talk}</div>
+                </div>
+                <span class="text-slate-400 text-xs shrink-0">→</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SELECTED CITY CONTEXTUAL PANEL (Matches Right Panel of Reference Image) -->
+    <div
+      id="selected-city-panel"
+      data-testid="selected-city-panel"
+      class="hidden flex-col"
+    >
+      <!-- Panoramic Architectural / Geographic City Header Banner -->
+      <div
+        class="relative h-28 w-full overflow-hidden border-b border-white/10"
+        style="background: radial-gradient(circle at 75% 25%, rgba(245, 158, 11, 0.28), rgba(29, 78, 216, 0.35) 55%, #050B1A 100%);"
+      >
+        <!-- Stylized Geographic Horizon Grid & Coordinate Telemetry -->
+        <svg
+          class="absolute inset-0 w-full h-full opacity-35"
+          viewBox="0 0 400 120"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M0 95 L60 85 L85 62 L110 85 L145 70 L170 42 L195 72 L240 65 L275 48 L305 74 L355 68 L400 82 L400 120 L0 120 Z"
+            fill="#0F172A"
+            stroke="#38BDF8"
+            stroke-width="1"
+          ></path>
+          <line x1="0" y1="95" x2="400" y2="95" stroke="#38BDF8" stroke-opacity="0.4"></line>
+        </svg>
+
+        <div class="absolute top-3 left-4 right-12 flex items-center gap-2">
+          <span
+            id="selected-city-region-badge"
+            class="rounded-full px-2.5 py-0.5 font-mono text-[9px] tracking-widest uppercase bg-black/50 text-[#38BDF8] border border-[#38BDF8]/40 backdrop-blur-sm"
+          >
+            TÜRKIYE
+          </span>
+          <span
+            id="selected-city-coords"
+            class="font-mono text-[9px] text-slate-300 bg-black/40 px-2 py-0.5 rounded-full"
+          >
+            41.01°N, 28.98°E
+          </span>
+        </div>
+
+        <!-- Close / Reset City Button -->
+        <button
+          type="button"
+          data-action="reset-city"
+          data-testid="reset-city-btn"
+          aria-label="Close city panel and view all destinations"
+          class="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 hover:bg-black/85 border border-white/20 text-slate-200 hover:text-white transition-colors cursor-pointer text-sm leading-none"
+        >
+          ×
+        </button>
+
+        <div class="absolute bottom-2.5 left-4 right-4">
+          <h2
+            id="selected-city-name"
+            data-testid="selected-city-name"
+            class="font-display text-2xl font-bold text-white leading-tight drop-shadow"
+          >
+            Istanbul
+          </h2>
+          <p
+            id="selected-city-country"
+            data-testid="selected-city-country"
+            class="text-xs text-slate-200 flex items-center gap-1.5 mt-0.5"
+          >
+            <span>🇹🇷</span>
+            <span>Türkiye</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Sub-Navigation Tabs inside City Panel: N TALKS | PHOTOS | ABOUT -->
+      <div
+        class="grid grid-cols-3 border-b border-white/10 bg-slate-950/60 font-mono text-[10px] tracking-[0.18em] uppercase"
+      >
+        <button
+          type="button"
+          data-city-tab="talks"
+          id="city-tab-btn-talks"
+          class="py-2.5 text-center font-semibold text-white border-b-2 border-[#38BDF8] cursor-pointer"
+        >
+          <span id="selected-city-talks-count">7 TALKS</span>
+        </button>
+        <button
+          type="button"
+          data-city-tab="photos"
+          id="city-tab-btn-photos"
+          class="py-2.5 text-center font-semibold text-slate-400 hover:text-slate-200 border-b-2 border-transparent cursor-pointer"
+        >
+          PHOTOS
+        </button>
+        <button
+          type="button"
+          data-city-tab="about"
+          id="city-tab-btn-about"
+          class="py-2.5 text-center font-semibold text-slate-400 hover:text-slate-200 border-b-2 border-transparent cursor-pointer"
+        >
+          ABOUT
+        </button>
+      </div>
+
+      <!-- City Tab Content: TALKS List -->
+      <div
+        id="city-tab-content-talks"
+        class="p-4 space-y-2.5 max-h-[260px] overflow-y-auto"
+      >
+        <div id="selected-city-events-list" data-testid="selected-city-events-list" class="space-y-2">
+        </div>
+      </div>
+
+      <!-- City Tab Content: PHOTOS (Authentic repository photos only) -->
+      <div id="city-tab-content-photos" class="hidden p-4 max-h-[260px] overflow-y-auto">
+        <div id="selected-city-photos-content" class="text-xs text-slate-300"></div>
+      </div>
+
+      <!-- City Tab Content: ABOUT (Geographic metadata & regional notes) -->
+      <div id="city-tab-content-about" class="hidden p-4 max-h-[260px] overflow-y-auto">
+        <div id="selected-city-about-content" class="text-xs text-slate-300 space-y-2"></div>
+      </div>
+
+      <!-- Footer Action: View all talks in City -->
+      <div class="p-3.5 pt-2 border-t border-white/10 bg-slate-950/40">
+        <button
+          type="button"
+          id="selected-city-archive-btn"
+          data-testid="selected-city-archive-btn"
+          class="w-full rounded-full py-2 px-4 text-xs font-medium text-slate-200 hover:text-white bg-white/[0.05] hover:bg-[#38BDF8]/20 border border-white/15 hover:border-[#38BDF8]/50 transition-all cursor-pointer"
+        >
+          View all talks in Istanbul →
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. REGIONS DISCOVERY PANEL -->
+    <div
+      id="view-panel-regions"
+      data-testid="view-panel-regions"
+      class="hidden p-4 sm:p-5 space-y-3 max-h-[380px] overflow-y-auto"
+    >
+      <div class="flex items-center justify-between">
+        <span class="font-mono text-[10px] font-semibold tracking-[0.2em] uppercase text-[#38BDF8]">
+          REGIONAL REACH
+        </span>
+        <span class="font-mono text-[10px] text-slate-400">
+          {metrics.uniqueCountries} Countries · {metrics.uniqueCities} Cities
+        </span>
+      </div>
+      <div class="space-y-2.5">
+        {
+          regions.map((reg) => (
+            <div class="rounded-xl p-3 bg-slate-900/70 border border-white/10">
+              <div class="flex items-center justify-between">
+                <button
+                  type="button"
+                  data-action="filter-region"
+                  data-region-id={reg.id}
+                  class="text-left font-display text-sm font-bold text-white hover:text-[#38BDF8] transition-colors cursor-pointer flex items-center gap-2"
+                >
+                  <span
+                    class="h-2 w-2 rounded-full"
+                    style={`background-color: ${reg.color};`}
+                  />
+                  <span>{reg.name}</span>
+                </button>
+                <span class="font-mono text-[11px] text-slate-300">
+                  {reg.talksCount} talks · {reg.citiesCount} cities
+                </span>
+              </div>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                {reg.cities.map((c) => (
+                  <button
+                    type="button"
+                    data-action="select-city"
+                    data-city-id={c.id}
+                    class="rounded-md px-2 py-0.5 text-[11px] bg-white/[0.06] hover:bg-[#38BDF8]/20 text-slate-200 border border-white/10 cursor-pointer"
+                  >
+                    {c.flag} {c.city} ({c.eventsCount})
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+
+        <!-- Online & Global Virtual Sessions Summary (Not plotted as physical city) -->
+        <div class="rounded-xl p-3 bg-slate-900/50 border border-emerald-500/25">
+          <div class="flex items-center justify-between">
+            <span class="font-display text-sm font-bold text-emerald-300 flex items-center gap-2">
+              <span>🌐</span>
+              <span>Online & Global Broadcasts</span>
+            </span>
+            <span class="font-mono text-[11px] text-emerald-300">
+              {metrics.onlineTalks} talks
+            </span>
+          </div>
+          <p class="mt-1 text-[11px] text-slate-400">
+            Virtual keynotes, YouTube Live streams, and online campus sessions are counted in total
+            talks ({metrics.totalTalks}) but excluded from physical city/country coordinates.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. TIMELINE DISCOVERY PANEL -->
+    <div
+      id="view-panel-timeline"
+      data-testid="view-panel-timeline"
+      class="hidden p-4 sm:p-5 space-y-3 max-h-[380px] overflow-y-auto"
+    >
+      <div class="flex items-center justify-between">
+        <span class="font-mono text-[10px] font-semibold tracking-[0.2em] uppercase text-[#38BDF8]">
+          CHRONOLOGICAL TIMELINE
+        </span>
+        <span class="font-mono text-[10px] text-slate-400">2023 – 2026</span>
+      </div>
+      <div class="flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          data-action="select-year"
+          data-year="all"
+          class="year-filter-pill rounded-lg px-2.5 py-1 font-mono text-xs bg-[#38BDF8]/20 text-white border border-[#38BDF8]/50 cursor-pointer"
+        >
+          All ({metrics.totalTalks})
+        </button>
+        {
+          years.map((y) => (
+            <button
+              type="button"
+              data-action="select-year"
+              data-year={y.year}
+              class="year-filter-pill rounded-lg px-2.5 py-1 font-mono text-xs bg-white/[0.05] text-slate-300 border border-white/10 hover:text-white cursor-pointer"
+            >
+              {y.year} ({y.talksCount})
+            </button>
+          ))
+        }
+      </div>
+      <p id="timeline-era-narrative" class="text-xs text-slate-300 leading-relaxed">
+        Tracing {metrics.totalTalks} speaking engagements across 4 years: from enterprise
+        Kubernetes and cloud architectures to autonomous AI agents and global reliability.
+      </p>
+    </div>
+
+    <!-- 5. TOPICS DISCOVERY PANEL -->
+    <div
+      id="view-panel-topics"
+      data-testid="view-panel-topics"
+      class="hidden p-4 sm:p-5 space-y-3 max-h-[380px] overflow-y-auto"
+    >
+      <div class="flex items-center justify-between">
+        <span class="font-mono text-[10px] font-semibold tracking-[0.2em] uppercase text-[#38BDF8]">
+          TECHNICAL DOMAINS
+        </span>
+        <button
+          type="button"
+          data-action="select-topic"
+          data-topic="all"
+          class="font-mono text-[10px] text-[#38BDF8] hover:underline cursor-pointer"
+        >
+          Reset Topic Filter
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-400 leading-snug">
+        Select a domain to filter the globe and archive. Because multi-disciplinary talks span
+        several domains (e.g., <em>Kubernetes for AI</em>), topic counts overlap.
+      </p>
+      <div class="space-y-2">
+        {
+          topics.map((t) => (
+            <button
+              type="button"
+              data-action="select-topic"
+              data-topic={t.id}
+              data-testid={`topic-card-${t.id}`}
+              class="w-full rounded-xl p-3 bg-slate-900/70 hover:bg-slate-900 border border-white/10 hover:border-[#38BDF8]/50 text-left transition-all cursor-pointer"
+            >
+              <div class="flex items-center justify-between">
+                <span class="font-display text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                  <span
+                    class="h-2 w-2 rounded-full"
+                    style={`background-color: ${t.color};`}
+                  />
+                  <span>{t.label}</span>
+                </span>
+                <span class="font-mono text-xs font-semibold text-[#38BDF8]">
+                  {t.talksCount} talks
+                </span>
+              </div>
+              <div class="mt-1 font-mono text-[10px] text-slate-400">
+                {t.subLabel} · {t.citiesCount} cities
+              </div>
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom-Right Card: SPEAKING IMPACT Summary Card matching Reference Image -->
+  <div
+    class="rounded-2xl p-4 bg-[#060C1D]/85 backdrop-blur-xl border border-white/15 shadow-lg"
+    aria-label="Global Speaking Impact Summary"
+  >
+    <div class="font-mono text-[10px] font-semibold tracking-[0.22em] uppercase text-slate-300 mb-2.5">
+      SPEAKING IMPACT
+    </div>
+    <div class="grid grid-cols-12 gap-3 items-center">
+      <!-- Mini Dot-Matrix World Map Silhouette with Real Speaking Coordinates -->
+      <div class="col-span-6 relative aspect-[2/1] rounded-lg bg-[#030712]/90 border border-white/10 overflow-hidden p-1">
+        <svg viewBox="0 0 200 100" class="w-full h-full">
+          <!-- Simplified Eurasia/Africa/Americas continental backdrop -->
+          <path
+            d="M15,25 Q35,18 48,35 L42,52 L55,65 L48,88 L38,82 L35,60 L15,40 Z M82,18 Q115,12 165,22 L175,45 L150,58 L128,48 L112,55 L92,42 Z M88,45 L112,48 L118,75 L102,86 L90,68 Z"
+            fill="#14233C"
+          ></path>
+          {
+            cities.map((c) => {
+              const cx = ((c.lon + 180) / 360) * 200;
+              const cy = ((90 - c.lat) / 180) * 100;
+              return (
+                <circle
+                  cx={cx.toFixed(1)}
+                  cy={cy.toFixed(1)}
+                  r={c.isBaseHub ? '2.8' : '1.8'}
+                  fill={c.isBaseHub ? '#FDE047' : '#38BDF8'}
+                />
+              );
+            })
+          }
+        </svg>
+      </div>
+
+      <!-- 4 Impact Metrics -->
+      <div class="col-span-6 space-y-1.5 font-mono text-[11px]">
+        <div class="flex items-center justify-between text-slate-300">
+          <span class="text-slate-400">🌐 Countries</span>
+          <strong class="text-white">{metrics.uniqueCountries}</strong>
+        </div>
+        <div class="flex items-center justify-between text-slate-300">
+          <span class="text-slate-400">📍 Cities</span>
+          <strong class="text-white">{metrics.uniqueCities}</strong>
+        </div>
+        <div class="flex items-center justify-between text-slate-300">
+          <span class="text-slate-400">🎙️ Talks</span>
+          <strong class="text-white">{metrics.totalTalks}</strong>
+        </div>
+        <div class="flex items-center justify-between text-slate-300">
+          <span class="text-slate-400">🧭 Regions</span>
+          <strong class="text-white">{metrics.uniqueRegions}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>

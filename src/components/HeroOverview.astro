@@ -1,143 +1,195 @@
 ---
-import type { OrbitArchive } from '../schemas/talkSchema';
-import type { OrbitTelemetry } from '../utils/metrics';
+import type { SpeakingAtlasData } from '../utils/geography';
 
 interface Props {
-  speaker: OrbitArchive['speaker'];
-  telemetry: OrbitTelemetry;
+  atlas: SpeakingAtlasData;
 }
 
-const { speaker, telemetry } = Astro.props;
+const { atlas } = Astro.props;
+const { metrics } = atlas;
 ---
 
-<!-- Compact Top-Left Telemetry HUD Pill (Visible in Explore / Cluster-Lock Modes) -->
-<div
-  id="telemetry-hud-pill"
-  data-testid="telemetry-hud-pill"
-  class="fixed top-24 left-6 md:left-12 z-20 hidden items-center gap-3 rounded-full px-4 py-2 bg-slate-900/80 backdrop-blur-md border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.45)] pointer-events-auto transition-all duration-300"
->
-  <span class="h-2 w-2 rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8]"></span>
-  <span class="font-mono text-xs tracking-wider text-slate-200">
-    <strong class="text-white">{telemetry.displayTalks}</strong> Talks
-    <span class="mx-1.5 text-slate-500">·</span>
-    <strong class="text-white">{telemetry.displayCountries}</strong> Countries
-    <span class="mx-1.5 text-slate-500">·</span>
-    <strong class="text-white">{telemetry.displayCities}</strong> Cities
-  </span>
-  <button
-    type="button"
-    data-action="exit-explore"
-    data-testid="back-to-overview-btn"
-    class="ml-2 inline-flex items-center gap-1 rounded-full bg-white/10 hover:bg-[#38BDF8]/20 border border-white/15 hover:border-[#38BDF8]/50 px-3 py-1 text-[11px] font-medium text-slate-100 transition-colors cursor-pointer"
-  >
-    <span>← Back to Overview</span>
-  </button>
-</div>
-
-<!-- Left Editorial Hero Column (Default Overview Mode) -->
 <section
   id="hero-overview-panel"
   data-testid="hero-overview-panel"
-  aria-label="Speaker Overview & Career Telemetry"
-  class="relative z-20 pt-24 md:pt-28 pb-6 px-6 md:px-12 max-w-2xl pointer-events-none select-none transition-all duration-500"
+  aria-label="Speaker Identity & Global Speaking Statistics"
+  class="relative z-20 flex flex-col justify-center pointer-events-none select-none"
 >
   <div class="pointer-events-auto">
     <!-- Eyebrow -->
     <p
-      class="font-mono text-[11px] sm:text-xs font-medium tracking-[0.28em] uppercase text-[#38BDF8]/90 mb-3"
+      class="font-mono text-[11px] sm:text-xs font-medium tracking-[0.28em] uppercase text-slate-300/90 mb-3"
     >
-      PEOPLE / PLATFORMS / POSSIBILITIES
+      PEOPLE &nbsp;/&nbsp; PLATFORMS &nbsp;/&nbsp; POSSIBILITIES
     </p>
 
-    <!-- Main Editorial Headline -->
+    <!-- Primary Editorial Headline matching Reference Image -->
     <h1
-      class="font-display text-4xl sm:text-5xl lg:text-[56px] font-bold tracking-[-0.03em] leading-[1.06] text-[#F8FAFC] drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+      class="font-display text-4xl sm:text-5xl xl:text-[54px] font-bold tracking-[-0.03em] leading-[1.05] text-[#F8FAFC] drop-shadow-[0_4px_24px_rgba(0,0,0,0.75)]"
     >
       <span class="block">Ideas travel.</span>
-      <span class="block text-slate-100">Technology connects.</span>
+      <span class="block mt-1">
+        Technology{' '}
+        <span
+          class="bg-gradient-to-r from-[#60A5FA] via-[#38BDF8] to-[#93C5FD] bg-clip-text text-transparent"
+        >
+          connects.
+        </span>
+      </span>
     </h1>
 
-    <!-- Speaker Identity & Subtitle -->
-    <div class="mt-4 flex flex-wrap items-center gap-3">
-      <span class="text-sm sm:text-base font-medium text-slate-200">
-        {speaker.name}
-      </span>
-      <span class="text-slate-600" aria-hidden="true">—</span>
-      <p class="text-sm sm:text-base font-medium tracking-wide text-[#94A3B8]">
-        Cloud &nbsp;·&nbsp; Kubernetes &nbsp;·&nbsp; AI
-      </p>
-    </div>
+    <!-- Supporting Identity -->
+    <p class="mt-4 text-sm sm:text-[15px] font-medium text-slate-300 tracking-wide">
+      <strong class="font-semibold text-white">Ahmed Enes Turan</strong>
+      <span class="mx-2 text-slate-500">—</span>
+      <span class="text-slate-300">Cloud &nbsp;·&nbsp; Kubernetes &nbsp;·&nbsp; AI</span>
+    </p>
 
-    <!-- Primary Telemetry Counter Row -->
+    <!-- Three Prominent Real Data-Driven Metrics (Available immediately in SSR HTML) -->
     <div
-      class="mt-7 grid grid-cols-3 max-w-md py-4 border-y border-white/[0.1] bg-[#050811]/35 backdrop-blur-sm rounded-xl px-4"
+      class="mt-6 grid grid-cols-3 max-w-md py-3.5 border-y border-white/[0.12] bg-[#040917]/55 backdrop-blur-md rounded-xl px-4"
       role="region"
-      aria-label="Global Speaking Metrics"
+      aria-label="Verified Speaking Statistics"
     >
       <div class="pr-4">
         <div
+          id="hero-talk-count"
           data-testid="metric-talks"
-          data-exact={telemetry.totalTalks}
-          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#F8FAFC]"
+          data-physical={metrics.physicalTalks}
+          data-online={metrics.onlineTalks}
+          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white"
         >
-          {telemetry.displayTalks}
+          {metrics.totalTalks}
         </div>
-        <div class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-[#94A3B8]">
+        <div
+          class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
+        >
           TALKS
         </div>
       </div>
 
-      <div class="px-4 border-l border-white/[0.12]">
+      <div class="px-4 border-l border-white/[0.14]">
         <div
           data-testid="metric-countries"
-          data-exact={telemetry.uniqueCountries}
-          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#F8FAFC]"
+          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white"
         >
-          {telemetry.displayCountries}
+          {metrics.uniqueCountries}
         </div>
-        <div class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-[#94A3B8]">
+        <div
+          class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
+        >
           COUNTRIES
         </div>
       </div>
 
-      <div class="pl-4 border-l border-white/[0.12]">
+      <div class="pl-4 border-l border-white/[0.14]">
         <div
           data-testid="metric-cities"
-          data-exact={telemetry.uniqueCities}
-          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#F8FAFC]"
+          class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white"
         >
-          {telemetry.displayCities}
+          {metrics.uniqueCities}
         </div>
-        <div class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-[#94A3B8]">
+        <div
+          class="mt-1 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
+        >
           CITIES
         </div>
       </div>
     </div>
 
-    <!-- Session Format Row -->
-    <p
-      class="mt-4 font-mono text-[11px] tracking-[0.24em] uppercase text-slate-400"
-    >
-      KEYNOTES &nbsp;&nbsp;·&nbsp;&nbsp; CONFERENCES &nbsp;&nbsp;·&nbsp;&nbsp; WORKSHOPS
+    <p class="mt-2 font-mono text-[10px] tracking-wider text-slate-400">
+      {metrics.physicalTalks} in-person sessions across {metrics.uniqueCities} physical cities +{' '}
+      {metrics.onlineTalks} global online broadcasts
     </p>
 
-    <!-- Primary Interactive Trigger -->
-    <div class="mt-6 flex items-center gap-4">
-      <button
-        type="button"
-        data-action="enter-explore"
-        data-testid="explore-network-btn"
-        class="group inline-flex items-center gap-3.5 text-left focus:outline-none cursor-pointer"
-      >
-        <span
-          class="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900/75 border border-white/20 group-hover:border-[#38BDF8] group-hover:bg-[#38BDF8]/15 text-slate-200 group-hover:text-white transition-all shadow-[0_0_24px_rgba(56,189,248,0.18)]"
+    <!-- Session Formats Row with Vector Icons -->
+    <div
+      class="mt-4 flex flex-wrap items-center gap-5 font-mono text-[11px] tracking-[0.18em] uppercase text-slate-300"
+    >
+      <span class="inline-flex items-center gap-2">
+        <svg
+          class="w-3.5 h-3.5 text-[#38BDF8]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
           aria-hidden="true"
         >
-          <span class="text-base transform group-hover:translate-y-0.5 transition-transform">↓</span>
-        </span>
-        <span class="text-sm font-medium tracking-wide text-slate-200 group-hover:text-white transition-colors">
-          Explore the network
-        </span>
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" x2="12" y1="19" y2="22"></line>
+        </svg>
+        <span>KEYNOTES ({metrics.keynotesCount})</span>
+      </span>
+
+      <span class="inline-flex items-center gap-2">
+        <svg
+          class="w-3.5 h-3.5 text-[#38BDF8]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <rect width="20" height="14" x="2" y="3" rx="2"></rect>
+          <line x1="8" x2="16" y1="21" y2="21"></line>
+          <line x1="12" x2="12" y1="17" y2="21"></line>
+        </svg>
+        <span>CONFERENCES ({metrics.conferencesCount})</span>
+      </span>
+
+      <span class="inline-flex items-center gap-2">
+        <svg
+          class="w-3.5 h-3.5 text-[#38BDF8]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>WORKSHOPS ({metrics.workshopsCount})</span>
+      </span>
+    </div>
+
+    <!-- Primary Direct Action Buttons matching Reference Image -->
+    <div class="mt-6 flex flex-wrap items-center gap-3.5">
+      <button
+        type="button"
+        data-action="explore-world"
+        data-testid="explore-world-btn"
+        class="inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#1D4ED8] to-[#2563EB] hover:from-[#2563EB] hover:to-[#3B82F6] border border-[#60A5FA]/50 shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+      >
+        <span>Explore the world</span>
+        <span aria-hidden="true">→</span>
+      </button>
+
+      <button
+        type="button"
+        data-action="open-archive"
+        data-testid="browse-all-talks-btn"
+        class="inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-200 hover:text-white bg-[#070E20]/80 hover:bg-[#0D1833] border border-white/15 hover:border-[#38BDF8]/50 backdrop-blur-md transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+      >
+        <svg
+          class="w-4 h-4 text-[#38BDF8]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <line x1="8" x2="21" y1="6" y2="6"></line>
+          <line x1="8" x2="21" y1="12" y2="12"></line>
+          <line x1="8" x2="21" y1="18" y2="18"></line>
+          <line x1="3" x2="3.01" y1="6" y2="6"></line>
+          <line x1="3" x2="3.01" y1="12" y2="12"></line>
+          <line x1="3" x2="3.01" y1="18" y2="18"></line>
+        </svg>
+        <span>Browse all talks</span>
       </button>
     </div>
   </div>

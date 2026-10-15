@@ -13,6 +13,14 @@
     "noEmit": true,
     "types": ["astro/client", "node"]
   },
-  "include": [".astro/types.d.ts", "src/**/*", "tests/**/*", "astro.config.mjs", "vitest.config.ts", "playwright.config.ts"],
+  "include": [
+    ".astro/types.d.ts",
+    "src/**/*",
+    "data/**/*",
+    "tests/**/*",
+    "astro.config.mjs",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
