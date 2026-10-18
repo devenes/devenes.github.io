@@ -49,3 +49,19 @@ export function formatSignalDate(isoDate: string): string {
   const monthLabel = MONTHS_SHORT[monthIdx] ?? 'JAN';
   return `${monthLabel} ${day}, ${year}`;
 }
+
+/**
+ * Formats geographic latitude and longitude with accurate N/S and E/W hemisphere suffixes
+ * (e.g., Agadir 30.4278, -9.5981 -> "30.43°N, 9.60°W" instead of "-9.60°E").
+ */
+export function formatCoordinates(
+  lat: number,
+  lon: number,
+  decimals = 2,
+  separator = ', '
+): string {
+  const latHemisphere = lat >= 0 ? 'N' : 'S';
+  const lonHemisphere = lon >= 0 ? 'E' : 'W';
+  return `${Math.abs(lat).toFixed(decimals)}°${latHemisphere}${separator}${Math.abs(lon).toFixed(decimals)}°${lonHemisphere}`;
+}
+

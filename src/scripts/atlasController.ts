@@ -4,7 +4,7 @@ import type {
   SpeakingAtlasData,
   TopicCategoryId,
 } from '../utils/geography';
-import { formatSignalDate, withBase } from '../utils/paths';
+import { formatCoordinates, formatSignalDate, withBase } from '../utils/paths';
 import { EarthGlobeController } from './earthGlobe';
 
 export type AtlasViewMode = 'globe' | 'regions' | 'timeline' | 'topics';
@@ -112,10 +112,12 @@ export class SpeakingAtlasController {
     if (!cityId) {
       this.selectedCityId = null;
       this.activeRegion = 'all';
+      this.syncRegionCards();
       const dropdown = document.getElementById(
         'city-selector-dropdown'
       ) as HTMLSelectElement | null;
       if (dropdown) dropdown.value = '';
+      this.globe.applyFilters({ region: 'all' });
       this.globe.focusOnCity(null);
       this.setViewMode('globe');
       return;
@@ -125,6 +127,12 @@ export class SpeakingAtlasController {
     if (!city) return;
 
     this.selectedCityId = city.id;
+    if (this.activeRegion !== 'all' && this.activeRegion !== city.regionId) {
+      this.activeRegion = 'all';
+      this.syncRegionCards();
+      this.globe.applyFilters({ region: 'all' });
+    }
+
     const dropdown = document.getElementById(
       'city-selector-dropdown'
     ) as HTMLSelectElement | null;
@@ -135,6 +143,37 @@ export class SpeakingAtlasController {
     this.setViewMode('globe');
     this.globe.focusOnCity(city.id);
     this.syncBodyAttributes();
+  }
+
+  public selectRegion(regionId: string): void {
+    const nextRegion =
+      this.activeRegion === regionId && regionId !== 'all' ? 'all' : regionId;
+    this.activeRegion = nextRegion;
+    this.syncRegionCards();
+    this.globe.applyFilters({ region: nextRegion });
+    this.syncBodyAttributes();
+  }
+
+  private syncRegionCards(): void {
+    document
+      .querySelectorAll<HTMLElement>('[data-action="filter-region"]')
+      .forEach((btn) => {
+        const regId = btn.dataset.regionId ?? 'all';
+        const isSelected = regId === this.activeRegion && this.activeRegion !== 'all';
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+      });
+
+    document.querySelectorAll<HTMLElement>('[data-region-card]').forEach((card) => {
+      const regId = card.dataset.regionCard ?? '';
+      const isSelected = regId === this.activeRegion && this.activeRegion !== 'all';
+      if (isSelected) {
+        card.classList.add('border-[#38BDF8]/60', 'bg-[#1D4ED8]/20');
+        card.classList.remove('border-white/10', 'bg-slate-900/70');
+      } else {
+        card.classList.remove('border-[#38BDF8]/60', 'bg-[#1D4ED8]/20');
+        card.classList.add('border-white/10', 'bg-slate-900/70');
+      }
+    });
   }
 
   private populateSelectedCityPanel(city: CityDestination): void {
@@ -154,7 +193,7 @@ export class SpeakingAtlasController {
     }
     if (regionBadgeEl) regionBadgeEl.textContent = city.regionName.toUpperCase();
     if (coordsEl) {
-      coordsEl.textContent = `${city.lat.toFixed(2)}°N, ${city.lon.toFixed(2)}°E`;
+      coordsEl.textContent = formatCoordinates(city.lat, city.lon, 2);
     }
     if (countEl) {
       countEl.textContent = `${city.eventsCount} ${city.eventsCount === 1 ? 'TALK' : 'TALKS'}`;
@@ -241,7 +280,7 @@ export class SpeakingAtlasController {
           </div>
           <div class="flex justify-between">
             <span class="text-slate-400">Coordinates:</span>
-            <strong class="font-mono text-white">${city.lat.toFixed(4)}°N, ${city.lon.toFixed(4)}°E</strong>
+            <strong class="font-mono text-white">${formatCoordinates(city.lat, city.lon, 4)}</strong>
           </div>
           <div class="flex justify-between">
             <span class="text-slate-400">Active Years:</span>
@@ -274,7 +313,9 @@ export class SpeakingAtlasController {
     tabs.forEach((t) => {
       const btn = document.getElementById(`city-tab-btn-${t}`);
       const content = document.getElementById(`city-tab-content-${t}`);
-      if (t === tab) {
+      const isSelected = t === tab;
+      btn?.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+      if (isSelected) {
         btn?.classList.add('text-white', 'border-[#38BDF8]');
         btn?.classList.remove('text-slate-400', 'border-transparent');
         content?.classList.remove('hidden');
@@ -284,6 +325,7 @@ export class SpeakingAtlasController {
         content?.classList.add('hidden');
       }
     });
+    this.syncBodyAttributes();
   }
 
   public selectYear(year: string): void {
@@ -300,7 +342,12 @@ export class SpeakingAtlasController {
           'border-[#38BDF8]/70',
           'font-semibold'
         );
-        btn.classList.remove('bg-white/[0.04]', 'text-slate-300', 'border-white/10');
+        btn.classList.remove(
+          'bg-white/[0.04]',
+          'bg-white/[0.05]',
+          'text-slate-300',
+          'border-white/10'
+        );
       } else {
         btn.classList.remove(
           'bg-[#1D4ED8]/55',
@@ -322,12 +369,15 @@ export class SpeakingAtlasController {
   }
 
   public selectTopic(topic: TopicCategoryId | 'all'): void {
-    this.activeTopic = topic;
-    this.globe.applyFilters({ topic });
+    const nextTopic =
+      this.activeTopic === topic && topic !== 'all' ? 'all' : topic;
+    this.activeTopic = nextTopic;
+    this.globe.applyFilters({ topic: nextTopic });
 
     document.querySelectorAll<HTMLElement>('[data-action="select-topic"]').forEach((btn) => {
-      const isSelected = btn.dataset.topic === topic && topic !== 'all';
+      const isSelected = btn.dataset.topic === nextTopic && nextTopic !== 'all';
       if (btn.dataset.topic !== 'all') {
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         if (isSelected) {
           btn.classList.add('border-[#38BDF8]', 'bg-[#1D4ED8]/25');
           btn.classList.remove('border-white/10', 'bg-slate-900/70');
@@ -357,6 +407,26 @@ export class SpeakingAtlasController {
         card.classList.add('hidden');
       }
     });
+
+    const panelItems = document.querySelectorAll<HTMLElement>('[data-timeline-panel-item]');
+    panelItems.forEach((item) => {
+      const itemYear = item.dataset.year ?? '';
+      const itemTopics = (item.dataset.topics ?? '').split(',');
+      const yearMatch = this.activeYear === 'all' || itemYear === this.activeYear;
+      const topicMatch =
+        this.activeTopic === 'all' || itemTopics.includes(this.activeTopic);
+
+      if (yearMatch && topicMatch) {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+
+    const track = document.getElementById('timeline-cards-track');
+    if (track) {
+      track.scrollLeft = 0;
+    }
   }
 
   public openEventDrawer(eventId: string): void {
@@ -400,7 +470,7 @@ export class SpeakingAtlasController {
     if (coordsEl) {
       coordsEl.textContent =
         ev.lat !== null && ev.lon !== null
-          ? `${ev.lat.toFixed(4)}°N, ${ev.lon.toFixed(4)}°E`
+          ? formatCoordinates(ev.lat, ev.lon, 4)
           : 'Online Broadcast';
     }
     if (eventEl) eventEl.textContent = ev.event;
@@ -522,21 +592,36 @@ export class SpeakingAtlasController {
     this.closeEventDrawer();
     this.closeAboutModal();
 
-    if (options?.cityId) {
-      this.archiveCity = options.cityId;
-      const citySelect = document.getElementById(
-        'archive-city-select'
-      ) as HTMLSelectElement | null;
-      if (citySelect) citySelect.value = options.cityId;
-    }
+    this.archiveQuery = '';
+    const searchInput = document.getElementById(
+      'archive-search-input'
+    ) as HTMLInputElement | null;
+    if (searchInput) searchInput.value = '';
 
-    if (options?.topicId) {
-      this.archiveCluster = options.topicId;
-      const clusterSelect = document.getElementById(
-        'archive-cluster-select'
-      ) as HTMLSelectElement | null;
-      if (clusterSelect) clusterSelect.value = options.topicId;
-    }
+    this.archiveType = 'all';
+    const typeSelect = document.getElementById(
+      'archive-type-select'
+    ) as HTMLSelectElement | null;
+    if (typeSelect) typeSelect.value = 'all';
+    this.syncArchiveTypeButtons('all');
+
+    this.archiveYear = 'all';
+    const yearSelect = document.getElementById(
+      'archive-year-select'
+    ) as HTMLSelectElement | null;
+    if (yearSelect) yearSelect.value = 'all';
+
+    this.archiveCity = options?.cityId ?? 'all';
+    const citySelect = document.getElementById(
+      'archive-city-select'
+    ) as HTMLSelectElement | null;
+    if (citySelect) citySelect.value = this.archiveCity;
+
+    this.archiveCluster = options?.topicId ?? 'all';
+    const clusterSelect = document.getElementById(
+      'archive-cluster-select'
+    ) as HTMLSelectElement | null;
+    if (clusterSelect) clusterSelect.value = this.archiveCluster;
 
     this.filterArchiveMatrix();
 
@@ -547,9 +632,6 @@ export class SpeakingAtlasController {
 
     this.globe.setPaused(true);
 
-    const searchInput = document.getElementById(
-      'archive-search-input'
-    ) as HTMLInputElement | null;
     searchInput?.focus();
   }
 
@@ -586,7 +668,9 @@ export class SpeakingAtlasController {
 
     const q = this.archiveQuery.trim().toLowerCase();
     let visibleCount = 0;
+    let visibleOnlineCount = 0;
     const visibleCities = new Set<string>();
+    const visibleCountries = new Set<string>();
 
     rows.forEach((row) => {
       const searchBlob = (row.dataset.search ?? '').toLowerCase();
@@ -594,6 +678,7 @@ export class SpeakingAtlasController {
       const rowClusters = (row.dataset.clusters ?? '').split(',');
       const rowYear = row.dataset.year ?? '';
       const rowCityId = row.dataset.cityId ?? '';
+      const rowCountry = row.dataset.country ?? '';
 
       const matchesSearch = !q || searchBlob.includes(q);
       const matchesCluster =
@@ -616,14 +701,25 @@ export class SpeakingAtlasController {
       if (isVisible) {
         row.classList.remove('hidden');
         visibleCount += 1;
-        if (rowCityId && rowCityId !== 'online') visibleCities.add(rowCityId);
+        if (rowCityId === 'online') {
+          visibleOnlineCount += 1;
+        } else if (rowCityId) {
+          visibleCities.add(rowCityId);
+          if (rowCountry && rowCountry !== 'ONLINE') {
+            visibleCountries.add(rowCountry);
+          }
+        }
       } else {
         row.classList.add('hidden');
       }
     });
 
     if (counterEl) {
-      counterEl.textContent = `Showing ${visibleCount} of ${this.atlas.events.length} talks (${visibleCities.size} physical cities matched)`;
+      const cityLabel = visibleCities.size === 1 ? 'city' : 'cities';
+      const countryLabel = visibleCountries.size === 1 ? 'country' : 'countries';
+      const onlineSuffix =
+        visibleOnlineCount > 0 ? ` + ${visibleOnlineCount} online` : '';
+      counterEl.textContent = `Showing ${visibleCount} of ${this.atlas.events.length} talks (${visibleCities.size} physical ${cityLabel} across ${visibleCountries.size} ${countryLabel}${onlineSuffix})`;
     }
 
     if (emptyEl) {
@@ -649,12 +745,49 @@ export class SpeakingAtlasController {
     });
   }
 
+  private bindAccessibleButtonRow(
+    el: HTMLElement,
+    onActivate: () => void
+  ): void {
+    el.addEventListener('click', onActivate);
+    // Per WAI-ARIA button pattern: Enter activates on keydown; Space prevents page scroll on keydown and activates on keyup
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onActivate();
+      } else if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+      }
+    });
+    el.addEventListener('keyup', (e) => {
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        onActivate();
+      }
+    });
+  }
+
   private bindEvents(): void {
     // 4-Mode View Selector Tabs (Globe · Regions · Timeline · Topics)
-    document.querySelectorAll<HTMLButtonElement>('[data-view-mode]').forEach((btn) => {
+    const viewModeButtons = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('[data-view-mode]')
+    );
+    viewModeButtons.forEach((btn, idx) => {
       btn.addEventListener('click', () => {
         const mode = (btn.dataset.viewMode ?? 'globe') as AtlasViewMode;
         this.setViewMode(mode);
+      });
+      btn.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const dir = e.key === 'ArrowRight' ? 1 : -1;
+          const nextIdx =
+            (idx + dir + viewModeButtons.length) % viewModeButtons.length;
+          const nextBtn = viewModeButtons[nextIdx];
+          nextBtn?.focus();
+          const mode = (nextBtn?.dataset.viewMode ?? 'globe') as AtlasViewMode;
+          this.setViewMode(mode);
+        }
       });
     });
 
@@ -694,10 +827,28 @@ export class SpeakingAtlasController {
     });
 
     // City Panel Sub-Tabs (TALKS | PHOTOS | ABOUT)
-    document.querySelectorAll<HTMLButtonElement>('[data-city-tab]').forEach((btn) => {
+    const cityTabButtons = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('[data-city-tab]')
+    );
+    cityTabButtons.forEach((btn, idx) => {
       btn.addEventListener('click', () => {
         const tab = (btn.dataset.cityTab ?? 'talks') as 'talks' | 'photos' | 'about';
         this.setCityTab(tab);
+      });
+      btn.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const dir = e.key === 'ArrowRight' ? 1 : -1;
+          const nextIdx =
+            (idx + dir + cityTabButtons.length) % cityTabButtons.length;
+          const nextBtn = cityTabButtons[nextIdx];
+          nextBtn?.focus();
+          const tab = (nextBtn?.dataset.cityTab ?? 'talks') as
+            | 'talks'
+            | 'photos'
+            | 'about';
+          this.setCityTab(tab);
+        }
       });
     });
 
@@ -737,24 +888,23 @@ export class SpeakingAtlasController {
     document.querySelectorAll<HTMLElement>('[data-action="filter-region"]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const regId = btn.dataset.regionId ?? 'all';
-        this.activeRegion = regId;
-        this.globe.applyFilters({ region: regId });
+        this.selectRegion(regId);
       });
     });
 
     // Timeline cards & overview recent event triggers
     document.querySelectorAll<HTMLElement>('[data-timeline-card], [data-action="open-event"]').forEach((card) => {
-      card.addEventListener('click', () => {
-        const evId = card.dataset.eventId;
-        if (evId) this.openEventDrawer(evId);
-      });
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
+      if (card.tagName === 'BUTTON') {
+        card.addEventListener('click', () => {
           const evId = card.dataset.eventId;
           if (evId) this.openEventDrawer(evId);
-        }
-      });
+        });
+      } else {
+        this.bindAccessibleButtonRow(card, () => {
+          const evId = card.dataset.eventId;
+          if (evId) this.openEventDrawer(evId);
+        });
+      }
     });
 
     // Timeline horizontal scroll arrows
@@ -854,16 +1004,9 @@ export class SpeakingAtlasController {
     });
 
     document.querySelectorAll<HTMLElement>('[data-archive-row]').forEach((row) => {
-      row.addEventListener('click', () => {
+      this.bindAccessibleButtonRow(row, () => {
         const evId = row.dataset.eventId;
         if (evId) this.openEventDrawer(evId);
-      });
-      row.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          const evId = row.dataset.eventId;
-          if (evId) this.openEventDrawer(evId);
-        }
       });
     });
 

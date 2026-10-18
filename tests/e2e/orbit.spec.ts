@@ -157,4 +157,52 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
     await expect(page.getByTestId('metric-talks')).toBeVisible();
     await expect(page.getByTestId('browse-all-talks-btn')).toBeVisible();
   });
+
+  test('5. Orbit World View Geometry, Western Coordinates, Archive Filter Reset & Non-Occluding Labels', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    // Ensure 4-mode view selector tablist sits completely below the 80px desktop header
+    const tablistBox = await page.locator('#view-mode-tablist').boundingBox();
+    expect(tablistBox).not.toBeNull();
+    expect(tablistBox!.y).toBeGreaterThanOrEqual(80);
+
+    // Select Agadir (Morocco, -9.5981 longitude) and verify Western coordinate formatting (W, not -E)
+    await page.getByTestId('city-selector-dropdown').selectOption('agadir-ma');
+    await expect(page.getByTestId('selected-city-name')).toHaveText('Agadir');
+    await expect(page.locator('#selected-city-coords')).toHaveText('30.43°N, 9.60°W');
+
+    // Open city-scoped archive ("View all talks in Agadir →") -> 1 talk
+    await page.locator('#selected-city-archive-btn').click();
+    const archiveModal = page.getByTestId('archive-matrix-modal');
+    await expect(archiveModal).toBeVisible();
+    const visibleRows = archiveModal.locator('tbody tr:not(.hidden)');
+    await expect(visibleRows).toHaveCount(1);
+    await page.getByTestId('close-archive-btn').click();
+
+    // Now click global "Browse all talks" and verify archive resets city filter back to all 44 talks
+    await page.getByTestId('browse-all-talks-btn').click();
+    await expect(visibleRows).toHaveCount(44);
+    await page.getByTestId('close-archive-btn').click();
+
+    // Verify visible 2D globe city labels never overlap the right-hand destination panel
+    const panelBox = await page.getByTestId('destination-panel').boundingBox();
+    expect(panelBox).not.toBeNull();
+    const visibleLabels = page.locator('[data-globe-city-label][data-visible="true"]');
+    const visibleCount = await visibleLabels.count();
+    for (let i = 0; i < visibleCount; i++) {
+      const box = await visibleLabels.nth(i).boundingBox();
+      if (box) {
+        const overlapsPanel =
+          box.x + box.width > panelBox!.x &&
+          box.x < panelBox!.x + panelBox!.width &&
+          box.y + box.height > panelBox!.y &&
+          box.y < panelBox!.y + panelBox!.height;
+        expect(overlapsPanel).toBe(false);
+      }
+    }
+  });
 });
+

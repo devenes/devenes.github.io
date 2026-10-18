@@ -1,6 +1,6 @@
 ---
 import type { EnrichedSpeakingEvent } from '../utils/geography';
-import { formatSignalDate } from '../utils/paths';
+import { formatCoordinates, formatSignalDate } from '../utils/paths';
 
 interface Props {
   initialEvent: EnrichedSpeakingEvent;
@@ -74,7 +74,7 @@ const { initialEvent } = Astro.props;
         <span id="drawer-coords" class="text-slate-300">
           {
             initialEvent.lat !== null && initialEvent.lon !== null
-              ? `${initialEvent.lat.toFixed(4)}°N, ${initialEvent.lon.toFixed(4)}°E`
+              ? formatCoordinates(initialEvent.lat, initialEvent.lon, 4)
               : 'Online Broadcast'
           }
         </span>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatSignalDate, withBase } from '../../src/utils/paths';
+import { formatCoordinates, formatSignalDate, withBase } from '../../src/utils/paths';
 
 describe('ORBIT Path & Signal Date Utilities', () => {
   it('resolves relative paths against root and subpath BASE_URL values', () => {
@@ -19,4 +19,11 @@ describe('ORBIT Path & Signal Date Utilities', () => {
     expect(formatSignalDate('2025-02-08')).toBe('FEB 8, 2025');
     expect(formatSignalDate('2025-01-25')).toBe('JAN 25, 2025');
   });
+
+  it('formats geographic coordinates with accurate N/S and E/W hemisphere labels', () => {
+    expect(formatCoordinates(41.0082, 28.9784, 2)).toBe('41.01°N, 28.98°E');
+    expect(formatCoordinates(30.4278, -9.5981, 2)).toBe('30.43°N, 9.60°W');
+    expect(formatCoordinates(30.4278, -9.5981, 1, ' ')).toBe('30.4°N 9.6°W');
+  });
 });
+

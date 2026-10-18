@@ -1,6 +1,6 @@
 ---
 import type { SpeakingAtlasData } from '../utils/geography';
-import { formatSignalDate, withBase } from '../utils/paths';
+import { formatCoordinates, formatSignalDate, withBase } from '../utils/paths';
 
 interface Props {
   atlas: SpeakingAtlasData;
@@ -128,7 +128,7 @@ const { events, years, metrics } = atlas;
                     </span>
                     <span class="relative z-10 mt-0.5 font-mono text-[8px] text-slate-400">
                       {ev.lat !== null && ev.lon !== null
-                        ? `${ev.lat.toFixed(1)}°N ${ev.lon.toFixed(1)}°E`
+                        ? formatCoordinates(ev.lat, ev.lon, 1, ' ')
                         : 'ONLINE'}
                     </span>
                   </>

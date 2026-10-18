@@ -85,12 +85,14 @@ export class EarthGlobeController {
   private globeGroup: THREE.Group | null = null;
 
   private cityMeshes = new Map<string, THREE.Mesh>();
+  private cityHitMeshes = new Map<string, THREE.Mesh>();
   private citySprites = new Map<string, THREE.Sprite>();
   private cityRings = new Map<string, THREE.Mesh>();
   private routeLines: Array<{
     id: string;
     fromCityId: string;
     toCityId: string;
+    kind: 'hub' | 'chronological';
     year: string;
     line: THREE.Line;
     material: THREE.LineBasicMaterial;
@@ -105,14 +107,17 @@ export class EarthGlobeController {
   private pointer = new THREE.Vector2(-999, -999);
 
   private selectedCityId: string | null = null;
+  private hoveredCityId: string | null = null;
   private activeYear = 'all';
   private activeTopic: TopicCategoryId | 'all' = 'all';
   private activeRegion = 'all';
 
   private isPaused = false;
   private isMotionReduced = false;
+  private isUserInteracting = false;
   private isWebGLAvailable = false;
   private rafId: number | null = null;
+  private cameraTween: gsap.core.Tween | null = null;
   private startTime = performance.now();
   private boundResizeHandler = () => this.handleResize();
   private boundPageHideHandler = () => this.dispose();
@@ -139,6 +144,37 @@ export class EarthGlobeController {
     this.init();
   }
 
+  private applyCameraViewportOffset(
+    camera: THREE.PerspectiveCamera,
+    width: number,
+    height: number
+  ): void {
+    if (width >= 1024) {
+      // Center globe horizontally between the left hero column and right destination panel,
+      // and slightly above the bottom timeline strip
+      camera.setViewOffset(
+        width,
+        height,
+        -Math.round(width * 0.018),
+        Math.round(height * 0.035),
+        width,
+        height
+      );
+    } else {
+      // On mobile/tablet (< 1024px), shift the optical center downward so the Istanbul hub
+      // and Eurasia/MENA speaking cluster sit inside #mobile-globe-viewport below the hero overview card
+      camera.setViewOffset(
+        width,
+        height,
+        0,
+        -Math.round(height * 0.145),
+        width,
+        height
+      );
+    }
+    camera.updateProjectionMatrix();
+  }
+
   private init(): void {
     try {
       const scene = new THREE.Scene();
@@ -146,11 +182,11 @@ export class EarthGlobeController {
       const height = this.container.clientHeight || window.innerHeight || 800;
 
       const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 120);
-      if (width >= 1024) {
-        camera.setViewOffset(width, height, -Math.round(width * 0.022), 0, width, height);
-      }
-      // Position camera facing ~33°N, 40°E (centering Europe, Türkiye, MENA, and Central Asia)
-      const initialCamPos = latLonToVector3(33, 40, 9.6);
+      this.applyCameraViewportOffset(camera, width, height);
+
+      // Position camera facing ~34°N, 38°E (centering Europe, Türkiye, MENA, and Central Asia)
+      const initialDist = width < 640 ? 10.8 : 9.6;
+      const initialCamPos = latLonToVector3(34, 38, initialDist);
       camera.position.set(...initialCamPos);
 
       const renderer = new THREE.WebGLRenderer({
@@ -175,15 +211,22 @@ export class EarthGlobeController {
       controls.target.set(0, 0, 0);
       controls.update();
 
+      controls.addEventListener('start', () => {
+        this.isUserInteracting = true;
+        this.killCameraTween();
+      });
+      controls.addEventListener('end', () => {
+        this.isUserInteracting = false;
+      });
+
       const globeGroup = new THREE.Group();
       scene.add(globeGroup);
 
       // Subtle lighting: let the emissive satellite/night-lights texture carry full contrast
-      // without washing out the dark oceans on the left hemisphere
-      const ambientLight = new THREE.AmbientLight(0x93c5fd, 0.12);
+      const ambientLight = new THREE.AmbientLight(0x93c5fd, 0.14);
       scene.add(ambientLight);
 
-      const sunLight = new THREE.DirectionalLight(0x60a5fa, 0.18);
+      const sunLight = new THREE.DirectionalLight(0x60a5fa, 0.2);
       sunLight.position.set(6, 5, 8);
       scene.add(sunLight);
 
@@ -214,6 +257,12 @@ export class EarthGlobeController {
       renderer.domElement.addEventListener('pointermove', (e) => {
         this.handlePointerMove(e);
       });
+      renderer.domElement.addEventListener('pointerleave', () => {
+        if (this.hoveredCityId !== null) {
+          this.hoveredCityId = null;
+          this.updateVisualHighlightState();
+        }
+      });
 
       window.addEventListener('resize', this.boundResizeHandler);
       window.addEventListener('pagehide', this.boundPageHideHandler);
@@ -223,6 +272,58 @@ export class EarthGlobeController {
       this.isWebGLAvailable = false;
       this.projectFallbackCityLabels();
     }
+  }
+
+  private killCameraTween(): void {
+    if (this.cameraTween) {
+      this.cameraTween.kill();
+      this.cameraTween = null;
+    }
+  }
+
+  private animateCameraToLatLon(
+    lat: number,
+    lon: number,
+    targetDist: number,
+    duration: number
+  ): void {
+    if (!this.camera) return;
+    this.killCameraTween();
+
+    if (this.isMotionReduced || duration <= 0) {
+      const pos = latLonToVector3(lat, lon, targetDist);
+      this.camera.position.set(pos[0], pos[1], pos[2]);
+      this.controls?.update();
+      this.projectCityLabels();
+      return;
+    }
+
+    const startDir = this.camera.position.clone().normalize();
+    const startDist = this.camera.position.length() || 9.6;
+    const targetDir = new THREE.Vector3(...latLonToVector3(lat, lon, 1)).normalize();
+
+    // Use spherical interpolation (SLERP via quaternion) so the camera orbits smoothly
+    // around the outside of the planet and never cuts through the Earth sphere
+    const qStart = new THREE.Quaternion();
+    const qEnd = new THREE.Quaternion().setFromUnitVectors(startDir, targetDir);
+    const qCurrent = new THREE.Quaternion();
+    const proxy = { t: 0 };
+
+    this.cameraTween = gsap.to(proxy, {
+      t: 1,
+      duration,
+      ease: 'power3.out',
+      onUpdate: () => {
+        if (!this.camera) return;
+        qCurrent.slerpQuaternions(qStart, qEnd, proxy.t);
+        const dir = startDir.clone().applyQuaternion(qCurrent).normalize();
+        const dist = startDist + (targetDist - startDist) * proxy.t;
+        this.camera.position.copy(dir.multiplyScalar(dist));
+      },
+      onComplete: () => {
+        this.cameraTween = null;
+      },
+    });
   }
 
   private buildStarfield(scene: THREE.Scene): void {
@@ -298,6 +399,9 @@ export class EarthGlobeController {
     );
 
     const earthMesh = new THREE.Mesh(sphereGeo, earthMat);
+    // Align Three.js SphereGeometry equirectangular UV mapping (u=0.5 at +X)
+    // with latLonToVector3 (lon=0 at +Z, lon=90E at +X) via -90° Y rotation
+    earthMesh.rotation.y = -Math.PI / 2;
     globeGroup.add(earthMesh);
 
     // 1. Limb-only atmospheric horizon rim (zero center washout)
@@ -326,7 +430,8 @@ export class EarthGlobeController {
 
   /**
    * Draws 3D vector coastlines directly from data/land.json on the sphere surface
-   * so continent outlines remain crisp at any zoom level.
+   * with spherical subdivision so long segments never dip beneath the sphere surface,
+   * batched into a single LineSegments draw call.
    */
   private buildCoastlineVectors(globeGroup: THREE.Group): void {
     const fc = this.landGeoJson as {
@@ -343,23 +448,38 @@ export class EarthGlobeController {
     const lineMat = new THREE.LineBasicMaterial({
       color: new THREE.Color('#38BDF8'),
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.25,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
 
-    const r = GLOBE_RADIUS * 1.0015;
+    const r = GLOBE_RADIUS * 1.0018;
+    const segmentCoords: number[] = [];
 
-    const addRing = (ring: number[][]) => {
+    const addRingSegments = (ring: number[][]) => {
       if (ring.length < 3) return;
-      const pts: THREE.Vector3[] = [];
-      for (const coord of ring) {
-        const [lon, lat] = coord;
-        const [x, y, z] = latLonToVector3(lat, lon, r);
-        pts.push(new THREE.Vector3(x, y, z));
+      for (let i = 0; i < ring.length - 1; i++) {
+        const [lon0, lat0] = ring[i];
+        const [lon1, lat1] = ring[i + 1];
+
+        // Skip artificial antimeridian / pole jump closure lines
+        if (Math.abs(lon1 - lon0) > 170) continue;
+
+        const angularSpan = Math.hypot(lon1 - lon0, lat1 - lat0);
+        const steps = Math.max(1, Math.min(20, Math.ceil(angularSpan / 1.5)));
+
+        let prev = latLonToVector3(lat0, lon0, r);
+        for (let s = 1; s <= steps; s++) {
+          const t = s / steps;
+          const next = latLonToVector3(
+            lat0 + (lat1 - lat0) * t,
+            lon0 + (lon1 - lon0) * t,
+            r
+          );
+          segmentCoords.push(prev[0], prev[1], prev[2], next[0], next[1], next[2]);
+          prev = next;
+        }
       }
-      const geo = new THREE.BufferGeometry().setFromPoints(pts);
-      globeGroup.add(new THREE.Line(geo, lineMat));
     };
 
     for (const feat of fc.features) {
@@ -367,15 +487,24 @@ export class EarthGlobeController {
       if (!geom) continue;
       if (geom.type === 'Polygon') {
         for (const ring of geom.coordinates as number[][][]) {
-          addRing(ring);
+          addRingSegments(ring);
         }
       } else if (geom.type === 'MultiPolygon') {
         for (const poly of geom.coordinates as number[][][][]) {
           for (const ring of poly) {
-            addRing(ring);
+            addRingSegments(ring);
           }
         }
       }
+    }
+
+    if (segmentCoords.length > 0) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute(
+        'position',
+        new THREE.Float32BufferAttribute(segmentCoords, 3)
+      );
+      globeGroup.add(new THREE.LineSegments(geo, lineMat));
     }
   }
 
@@ -385,6 +514,12 @@ export class EarthGlobeController {
   private buildCityMarkers(globeGroup: THREE.Group): void {
     const glowTex = createMarkerGlowTexture();
     const markerGeo = new THREE.SphereGeometry(1, 16, 16);
+    const hitMat = new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      colorWrite: false,
+    });
 
     for (const city of this.atlas.cities) {
       const [x, y, z] = latLonToVector3(city.lat, city.lon, GLOBE_RADIUS * 1.004);
@@ -411,6 +546,14 @@ export class EarthGlobeController {
       mesh.userData = { cityId: city.id, city };
       globeGroup.add(mesh);
       this.cityMeshes.set(city.id, mesh);
+
+      // Generous invisible 3D pick target so clustered cities are easy to hover and click
+      const hitMesh = new THREE.Mesh(markerGeo, hitMat);
+      hitMesh.position.set(x, y, z);
+      hitMesh.scale.setScalar(Math.max(0.055, radius * 2.4));
+      hitMesh.userData = { cityId: city.id, city };
+      globeGroup.add(hitMesh);
+      this.cityHitMeshes.set(city.id, hitMesh);
 
       // Delicate surface tangent ring
       const ringGeo = new THREE.RingGeometry(radius * 1.35, radius * 1.85, 28);
@@ -483,6 +626,7 @@ export class EarthGlobeController {
         id: route.id,
         fromCityId: route.fromCityId,
         toCityId: route.toCityId,
+        kind: route.kind,
         year: route.year,
         line,
         material: lineMat,
@@ -505,28 +649,16 @@ export class EarthGlobeController {
     }
 
     if (!cityId) {
-      const defaultPos = latLonToVector3(33, 40, 9.6);
-      gsap.to(this.camera.position, {
-        x: defaultPos[0],
-        y: defaultPos[1],
-        z: defaultPos[2],
-        duration: this.isMotionReduced ? 0 : 1.15,
-        ease: 'power3.out',
-      });
+      const width = this.container.clientWidth || window.innerWidth || 1280;
+      const defaultDist = width < 640 ? 10.8 : 9.6;
+      this.animateCameraToLatLon(34, 38, defaultDist, 1.15);
       return;
     }
 
     const city = this.atlas.cities.find((c) => c.id === cityId);
     if (!city) return;
 
-    const targetCamPos = latLonToVector3(city.lat, city.lon, 7.0);
-    gsap.to(this.camera.position, {
-      x: targetCamPos[0],
-      y: targetCamPos[1],
-      z: targetCamPos[2],
-      duration: this.isMotionReduced ? 0 : 1.1,
-      ease: 'power3.out',
-    });
+    this.animateCameraToLatLon(city.lat, city.lon, 7.0, 1.1);
   }
 
   public applyFilters(options: {
@@ -540,23 +672,23 @@ export class EarthGlobeController {
     this.updateVisualHighlightState();
 
     // If a region is selected, smoothly rotate globe toward that region's center
-    if (options.region && options.region !== 'all' && this.camera) {
-      const regionCenters: Record<string, [number, number, number]> = {
-        turkiye: [39.5, 31.5, 7.2],
-        'central-asia': [44.5, 76.0, 7.6],
-        mena: [29.5, 31.0, 7.8],
-        'balkans-caucasus': [42.2, 29.0, 7.4],
-      };
-      const target = regionCenters[options.region];
-      if (target) {
-        const camPos = latLonToVector3(target[0], target[1], target[2]);
-        gsap.to(this.camera.position, {
-          x: camPos[0],
-          y: camPos[1],
-          z: camPos[2],
-          duration: this.isMotionReduced ? 0 : 1.05,
-          ease: 'power3.out',
-        });
+    if (options.region !== undefined && this.camera) {
+      if (options.region === 'all') {
+        if (!this.selectedCityId) {
+          const width = this.container.clientWidth || window.innerWidth || 1280;
+          this.animateCameraToLatLon(34, 38, width < 640 ? 10.8 : 9.6, 1.05);
+        }
+      } else {
+        const regionCenters: Record<string, [number, number, number]> = {
+          turkiye: [39.5, 31.5, 7.2],
+          'central-asia': [44.5, 76.0, 7.6],
+          mena: [29.5, 31.0, 7.8],
+          'balkans-caucasus': [42.2, 29.0, 7.4],
+        };
+        const target = regionCenters[options.region];
+        if (target) {
+          this.animateCameraToLatLon(target[0], target[1], target[2], 1.05);
+        }
       }
     }
   }
@@ -579,21 +711,46 @@ export class EarthGlobeController {
       if (isMatch) matchedCityIds.add(city.id);
 
       const isSelected = this.selectedCityId === city.id;
+      const isHovered = this.hoveredCityId === city.id;
+      const isActiveBaseHub =
+        city.isBaseHub && this.activeRegion === 'all' && !this.selectedCityId;
+
       const mesh = this.cityMeshes.get(city.id);
       const sprite = this.citySprites.get(city.id);
       const ring = this.cityRings.get(city.id);
 
       if (mesh) {
         const mat = mesh.material as THREE.MeshBasicMaterial;
-        mat.opacity = isSelected ? 1.0 : isMatch ? 0.95 : 0.18;
+        mat.opacity =
+          isSelected || isHovered
+            ? 1.0
+            : isMatch
+              ? 0.95
+              : isActiveBaseHub
+                ? 0.65
+                : 0.18;
       }
       if (sprite) {
-        sprite.material.opacity = isSelected ? 1.0 : isMatch ? 0.8 : 0.1;
+        sprite.material.opacity =
+          isSelected || isHovered
+            ? 1.0
+            : isMatch
+              ? 0.82
+              : isActiveBaseHub
+                ? 0.5
+                : 0.1;
       }
       if (ring) {
         const rMat = ring.material as THREE.MeshBasicMaterial;
-        rMat.opacity = isSelected ? 0.95 : isMatch ? 0.58 : 0.1;
-        ring.scale.setScalar(isSelected ? 1.35 : 1.0);
+        rMat.opacity =
+          isSelected || isHovered
+            ? 0.95
+            : isMatch
+              ? 0.58
+              : isActiveBaseHub
+                ? 0.42
+                : 0.1;
+        ring.scale.setScalar(isSelected ? 1.4 : isHovered ? 1.25 : 1.0);
       }
     }
 
@@ -602,8 +759,16 @@ export class EarthGlobeController {
         !this.selectedCityId ||
         route.fromCityId === this.selectedCityId ||
         route.toCityId === this.selectedCityId;
+
+      // Hub routes connect the Istanbul base hub to each destination city;
+      // keep hub routes visible whenever their destination city matches active Year/Topic filters
       const endpointsMatch =
-        matchedCityIds.has(route.fromCityId) && matchedCityIds.has(route.toCityId);
+        this.selectedCityId !== null
+          ? matchedCityIds.has(route.fromCityId) || matchedCityIds.has(route.toCityId)
+          : route.kind === 'hub'
+            ? matchedCityIds.has(route.toCityId) &&
+              (this.activeRegion === 'all' || matchedCityIds.has(route.fromCityId))
+            : matchedCityIds.has(route.fromCityId) && matchedCityIds.has(route.toCityId);
 
       const visible = touchesSelected && endpointsMatch;
       route.material.opacity = visible
@@ -619,15 +784,19 @@ export class EarthGlobeController {
 
   public zoomBy(deltaFactor: number): void {
     if (!this.camera) return;
+    this.killCameraTween();
     const len = this.camera.position.length();
     const targetLen = Math.min(12.5, Math.max(4.5, len * deltaFactor));
     const scale = targetLen / (len || 1);
-    gsap.to(this.camera.position, {
+    this.cameraTween = gsap.to(this.camera.position, {
       x: this.camera.position.x * scale,
       y: this.camera.position.y * scale,
       z: this.camera.position.z * scale,
       duration: this.isMotionReduced ? 0 : 0.45,
       ease: 'power2.out',
+      onComplete: () => {
+        this.cameraTween = null;
+      },
     });
   }
 
@@ -676,9 +845,17 @@ export class EarthGlobeController {
 
     const elapsed = (performance.now() - this.startTime) * 0.001;
 
-    // Subtle idle rotation when no city is locked and motion is enabled
-    if (!this.isMotionReduced && !this.selectedCityId && this.globeGroup) {
-      this.camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.00045);
+    // Gentle bounded orbital sway centered on the Eurasia/MENA speaking hemisphere when idle
+    if (
+      !this.isMotionReduced &&
+      !this.selectedCityId &&
+      this.activeRegion === 'all' &&
+      !this.isUserInteracting &&
+      !this.cameraTween &&
+      this.globeGroup
+    ) {
+      const swayAngularVelocity = Math.cos(elapsed * 0.28) * 0.00036;
+      this.camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), swayAngularVelocity);
     }
 
     // Animate traveling route pulses along great-circle arcs
@@ -703,9 +880,51 @@ export class EarthGlobeController {
     this.projectCityLabels();
   }
 
+  private getOccludingPanelRects(): DOMRect[] {
+    const rects: DOMRect[] = [];
+    const selectors = [
+      'header',
+      '#hero-overview-panel',
+      '#right-discovery-column',
+      '#destination-panel',
+      '#speaking-impact-card',
+      '#view-mode-tablist',
+      '#recent-signals-strip',
+      '#globe-controls-toolbar',
+      '#mobile-globe-hint-pill',
+    ];
+    for (const sel of selectors) {
+      const el = document.querySelector<HTMLElement>(sel);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        if (sel === '#right-discovery-column' && window.innerWidth >= 1024) {
+          rects.push(new DOMRect(r.left, 0, r.width, r.bottom));
+        } else {
+          rects.push(r);
+        }
+      }
+    }
+    return rects;
+  }
+
+  private setLabelVisibility(el: HTMLElement, visible: boolean): void {
+    el.dataset.visible = visible ? 'true' : 'false';
+    el.style.opacity = visible ? '1' : '0';
+    el.style.pointerEvents = visible ? 'auto' : 'none';
+    if (visible) {
+      el.removeAttribute('inert');
+      el.removeAttribute('aria-hidden');
+    } else {
+      el.setAttribute('inert', '');
+      el.setAttribute('aria-hidden', 'true');
+    }
+  }
+
   /**
    * Projects 3D city coordinates to 2D floating HTML badges on the visible hemisphere,
-   * preventing overlaps while keeping the selected city and major hubs crystal clear.
+   * preventing overlaps with both UI panels and neighboring badges while keeping the
+   * selected/hovered city and major hubs crystal clear.
    */
   private projectCityLabels(): void {
     if (!this.camera) return;
@@ -714,15 +933,22 @@ export class EarthGlobeController {
     const height = rect.height || window.innerHeight || 800;
 
     const camDir = this.camera.position.clone().normalize();
-    const placedBoxes: Array<{ x: number; y: number }> = [];
+    const placedBoxes: Array<{ x: number; y: number; halfW: number }> = [];
+    const panelRects = this.getOccludingPanelRects();
 
     const orderedCities = [...this.atlas.cities].sort((a, b) => {
       const aSel = this.selectedCityId === a.id ? 1 : 0;
       const bSel = this.selectedCityId === b.id ? 1 : 0;
       if (aSel !== bSel) return bSel - aSel;
+
+      const aHov = this.hoveredCityId === a.id ? 1 : 0;
+      const bHov = this.hoveredCityId === b.id ? 1 : 0;
+      if (aHov !== bHov) return bHov - aHov;
+
       const aHub = a.isBaseHub ? 1 : 0;
       const bHub = b.isBaseHub ? 1 : 0;
       if (aHub !== bHub) return bHub - aHub;
+
       return b.eventsCount - a.eventsCount;
     });
 
@@ -737,9 +963,8 @@ export class EarthGlobeController {
 
       // Hide markers on the back side of the Earth
       const facingDot = normalVec.dot(camDir);
-      if (facingDot < 0.26) {
-        el.style.opacity = '0';
-        el.style.pointerEvents = 'none';
+      if (facingDot < 0.24) {
+        this.setLabelVisibility(el, false);
         continue;
       }
 
@@ -747,33 +972,57 @@ export class EarthGlobeController {
       const x = (projected.x * 0.5 + 0.5) * width;
       const y = (-projected.y * 0.5 + 0.5) * height;
 
-      // On desktop, clip labels outside the central globe column so they never overlap left/right panels
-      if (width >= 1024 && (x < 405 || x > width - 415 || y < 72 || y > height - 190)) {
-        el.style.opacity = '0';
-        el.style.pointerEvents = 'none';
+      // Estimate badge pill bounding box (centered horizontally at x, sitting above y)
+      const halfW = Math.max(36, city.city.length * 3.8 + 18);
+      const badgeLeft = x - halfW;
+      const badgeRight = x + halfW;
+      const badgeTop = y - 30;
+      const badgeBottom = y + 2;
+
+      // Clip labels that fall outside the viewport or overlap any UI panel on desktop, tablet, or mobile
+      const outOfBounds =
+        badgeLeft < 8 || badgeRight > width - 8 || badgeTop < 68 || badgeBottom > height - 16;
+
+      const overlapsPanel = panelRects.some(
+        (pr) =>
+          badgeRight > pr.left - 6 &&
+          badgeLeft < pr.right + 6 &&
+          badgeBottom > pr.top - 4 &&
+          badgeTop < pr.bottom + 4
+      );
+
+      if (outOfBounds || overlapsPanel) {
+        this.setLabelVisibility(el, false);
         continue;
       }
 
       const isSelected = this.selectedCityId === city.id;
+      const isHovered = this.hoveredCityId === city.id;
       const isMatched = this.doesCityMatchFilters(city);
 
-      // Avoid label overlap for tightly clustered cities
-      const minSepPx = 62;
+      // Avoid pill-to-pill overlap using accurate rectangular pill dimensions
       const collides =
         !isSelected &&
-        placedBoxes.some((b) => Math.hypot(b.x - x, b.y - y) < minSepPx);
+        !isHovered &&
+        placedBoxes.some(
+          (b) => Math.abs(b.x - x) < b.halfW + halfW + 6 && Math.abs(b.y - y) < 25
+        );
 
-      if (collides || !isMatched) {
-        el.style.opacity = isSelected ? '1' : '0';
-        el.style.pointerEvents = isSelected ? 'auto' : 'none';
+      if (collides || (!isMatched && !isSelected && !isHovered)) {
+        this.setLabelVisibility(el, false);
         continue;
       }
 
-      placedBoxes.push({ x, y });
+      placedBoxes.push({ x, y, halfW });
       el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
-      el.style.opacity = '1';
-      el.style.pointerEvents = 'auto';
-      el.style.zIndex = isSelected ? '30' : city.isBaseHub ? '20' : '10';
+      this.setLabelVisibility(el, true);
+      el.style.zIndex = isSelected
+        ? '30'
+        : isHovered
+          ? '25'
+          : city.isBaseHub
+            ? '20'
+            : '10';
     }
   }
 
@@ -790,38 +1039,51 @@ export class EarthGlobeController {
       const x = width * 0.34 + col * 92;
       const y = height * 0.24 + row * 54;
       el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
-      el.style.opacity = '1';
-      el.style.pointerEvents = 'auto';
+      this.setLabelVisibility(el, true);
     });
+  }
+
+  /**
+   * Raycasts against front-hemisphere city pick targets so back-of-Earth markers
+   * can never be hovered or clicked through the planet.
+   */
+  private pickFrontHemisphereCity(clientX: number, clientY: number): string | null {
+    if (!this.camera || !this.renderer) return null;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    this.pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+    this.raycaster.setFromCamera(this.pointer, this.camera);
+    const camDir = this.camera.position.clone().normalize();
+    const hitTargets = Array.from(this.cityHitMeshes.values());
+    const hits = this.raycaster.intersectObjects(hitTargets, false);
+
+    for (const hit of hits) {
+      const hitMesh = hit.object as THREE.Mesh;
+      const normalVec = hitMesh.position.clone().normalize();
+      if (normalVec.dot(camDir) > 0.15) {
+        return (hitMesh.userData.cityId as string | undefined) ?? null;
+      }
+    }
+    return null;
   }
 
   private handlePointerMove(event: PointerEvent): void {
     if (!this.camera || !this.renderer || this.isPaused) return;
-    const rect = this.renderer.domElement.getBoundingClientRect();
-    this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    const hitCityId = this.pickFrontHemisphereCity(event.clientX, event.clientY);
+    this.renderer.domElement.style.cursor = hitCityId ? 'pointer' : 'grab';
 
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const meshes = Array.from(this.cityMeshes.values());
-    const hits = this.raycaster.intersectObjects(meshes, false);
-    this.renderer.domElement.style.cursor = hits.length > 0 ? 'pointer' : 'grab';
+    if (this.hoveredCityId !== hitCityId) {
+      this.hoveredCityId = hitCityId;
+      this.updateVisualHighlightState();
+    }
   }
 
   private handleCanvasClick(event: PointerEvent): void {
     if (!this.camera || !this.renderer || this.isPaused) return;
-    const rect = this.renderer.domElement.getBoundingClientRect();
-    this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const meshes = Array.from(this.cityMeshes.values());
-    const hits = this.raycaster.intersectObjects(meshes, false);
-    if (hits.length > 0) {
-      const hitMesh = hits[0].object as THREE.Mesh;
-      const cityId = hitMesh.userData.cityId as string | undefined;
-      if (cityId) {
-        this.callbacks.onSelectCity(cityId);
-      }
+    const hitCityId = this.pickFrontHemisphereCity(event.clientX, event.clientY);
+    if (hitCityId) {
+      this.callbacks.onSelectCity(hitCityId);
     }
   }
 
@@ -833,12 +1095,7 @@ export class EarthGlobeController {
     const width = this.container.clientWidth || window.innerWidth || 1280;
     const height = this.container.clientHeight || window.innerHeight || 800;
     this.camera.aspect = width / height;
-    if (width >= 1024) {
-      this.camera.setViewOffset(width, height, -Math.round(width * 0.022), 0, width, height);
-    } else {
-      this.camera.clearViewOffset();
-    }
-    this.camera.updateProjectionMatrix();
+    this.applyCameraViewportOffset(this.camera, width, height);
     this.renderer.setSize(width, height);
     this.projectCityLabels();
   }
@@ -847,6 +1104,7 @@ export class EarthGlobeController {
    * Disposes all Three.js geometries, materials, textures, controls, and event listeners.
    */
   public dispose(): void {
+    this.killCameraTween();
     this.setPaused(true);
     window.removeEventListener('resize', this.boundResizeHandler);
     window.removeEventListener('pagehide', this.boundPageHideHandler);
@@ -883,3 +1141,4 @@ export class EarthGlobeController {
     }
   }
 }
+

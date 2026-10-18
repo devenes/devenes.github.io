@@ -99,20 +99,27 @@ const { totalTalks } = Astro.props;
     </a>
   </nav>
 
-  <!-- Right: Mobile Archive Button & GET IN TOUCH CTA Pill -->
-  <div class="relative z-10 flex items-center gap-3 pointer-events-auto">
+  <!-- Right: Mobile Archive/About Buttons & GET IN TOUCH CTA Pill -->
+  <div class="relative z-10 flex items-center gap-2 sm:gap-3 pointer-events-auto">
     <button
       type="button"
       data-action="open-archive"
-      class="md:hidden rounded-full px-3 py-1.5 text-[11px] font-mono uppercase tracking-wider text-slate-200 bg-white/[0.06] border border-white/15"
+      class="md:hidden rounded-full px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-200 bg-white/[0.06] border border-white/15 cursor-pointer"
     >
       TALKS ({totalTalks})
+    </button>
+    <button
+      type="button"
+      data-action="open-about"
+      class="md:hidden rounded-full px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-300 bg-white/[0.04] border border-white/10 cursor-pointer"
+    >
+      ABOUT
     </button>
     <a
       href="https://www.linkedin.com/in/devenes/"
       target="_blank"
       rel="noopener noreferrer"
-      class="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold tracking-[0.16em] uppercase text-slate-100 bg-white/[0.04] hover:bg-[#38BDF8]/15 border border-white/20 hover:border-[#38BDF8]/60 transition-all shadow-[0_0_20px_rgba(56,189,248,0.1)]"
+      class="inline-flex items-center gap-1.5 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] sm:tracking-[0.16em] uppercase text-slate-100 bg-white/[0.04] hover:bg-[#38BDF8]/15 border border-white/20 hover:border-[#38BDF8]/60 transition-all shadow-[0_0_20px_rgba(56,189,248,0.1)] whitespace-nowrap"
     >
       <span>GET IN TOUCH</span>
       <span aria-hidden="true" class="text-[#38BDF8]">↗</span>

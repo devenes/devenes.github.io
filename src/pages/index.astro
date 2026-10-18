@@ -95,15 +95,25 @@ const initialEvent = atlas.events[0];
 
     <!-- First-Viewport Three-Column Hero Composition (Left Identity · Center 3D Earth · Right Destination Panel) -->
     <main
-      class="relative z-20 flex-1 w-full max-w-[1600px] mx-auto pt-16 pb-2 px-5 lg:px-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pointer-events-none"
+      class="relative z-20 flex-1 w-full max-w-[1600px] mx-auto pt-20 md:pt-24 lg:pt-[84px] pb-2 px-5 lg:px-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6 pointer-events-none"
     >
       <!-- Left Column: Identity, Real Metrics & Primary Actions -->
       <div class="w-full lg:w-[390px] xl:w-[430px] shrink-0">
         <HeroOverview atlas={atlas} />
       </div>
 
-      <!-- Center Column: Spacer for the 3D Earth on Desktop -->
-      <div class="hidden lg:block flex-1 min-h-[380px] pointer-events-none" aria-hidden="true">
+      <!-- Center Column: Interactive 3D Earth Viewport Window on Mobile/Tablet & Spacer on Desktop -->
+      <div
+        id="mobile-globe-viewport"
+        class="w-full h-[250px] sm:h-[290px] lg:h-auto lg:flex-1 lg:min-h-[380px] flex items-end justify-center pb-2 pointer-events-none select-none"
+        aria-hidden="true"
+      >
+        <span
+          id="mobile-globe-hint-pill"
+          class="lg:hidden rounded-full px-3 py-1 bg-[#050B1A]/85 backdrop-blur-md border border-white/15 font-mono text-[9px] tracking-[0.14em] uppercase text-[#38BDF8] shadow-lg whitespace-nowrap"
+        >
+          Drag 3D Earth to rotate · Tap any city
+        </span>
       </div>
 
       <!-- Right Column: 4-Mode View Selector + Contextual Destination Panel + Speaking Impact Card -->
