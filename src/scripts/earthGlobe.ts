@@ -231,6 +231,7 @@ export class EarthGlobeController {
       controls.enableDamping = true;
       controls.dampingFactor = 0.06;
       controls.enablePan = false;
+      controls.enableZoom = false;
       controls.minDistance = 4.2;
       controls.maxDistance = 13.5;
       controls.rotateSpeed = 0.65;

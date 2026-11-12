@@ -1,5 +1,8 @@
 ---
+import CopyButton from './CopyButton.astro';
+import { SPEAKER_PROFILE } from '../data/speakerProfile';
 import type { SpeakingAtlasData } from '../utils/geography';
+import { withBase } from '../utils/paths';
 
 interface Props {
   atlas: SpeakingAtlasData;
@@ -7,6 +10,7 @@ interface Props {
 
 const { atlas } = Astro.props;
 const { metrics } = atlas;
+const primaryPhoto = SPEAKER_PROFILE.headshots[0];
 ---
 
 <dialog
@@ -31,18 +35,35 @@ const { metrics } = atlas;
   </div>
 
   <div class="mt-5">
-    <h2 id="about-modal-title" class="font-display text-3xl sm:text-4xl font-medium text-[#F4F1EA]">
-      Enes Turan
-    </h2>
-    <p class="mt-1 text-xs sm:text-sm text-[#E2A84B]">
-      Google Developer Expert — Cloud, Kubernetes &amp; AI · Based in Istanbul
-    </p>
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <img
+        src={withBase(primaryPhoto.assetPath)}
+        alt="Enes Turan"
+        width="88"
+        height="88"
+        fetchpriority="low"
+        loading="lazy"
+        decoding="async"
+        class="h-20 w-20 rounded-xl object-cover border border-[#F4F1EA]/16 shrink-0"
+      />
+      <div>
+        <h2
+          id="about-modal-title"
+          class="font-display text-3xl sm:text-4xl font-medium text-[#F4F1EA]"
+        >
+          {SPEAKER_PROFILE.name}
+        </h2>
+        <p class="mt-1 text-xs sm:text-sm text-[#E2A84B]">
+          {SPEAKER_PROFILE.roleHeadline} · Based in Istanbul
+        </p>
+      </div>
+    </div>
 
     <div class="mt-4 space-y-3 max-w-[60ch] text-sm text-[#C6C2B8] leading-[1.6]">
       <p>
-        I'm a cloud and platform engineer in Istanbul. Most of my day-to-day work focuses on
-        running production Kubernetes clusters, Google Cloud infrastructure, and multi-agent AI
-        systems that hold up outside a demo.
+        I'm a Software Engineer at JumpCloud and a cloud and platform engineer in Istanbul. Most of
+        my day-to-day work focuses on Kubernetes, multi-cloud platform engineering, and running
+        secure, scalable infrastructure for AI workloads.
       </p>
       <p>
         Since 2023, I've given {metrics.totalTalks} talks, keynotes, and hands-on workshops across{' '}
@@ -52,57 +73,50 @@ const { metrics } = atlas;
       </p>
     </div>
 
-    <div class="mt-6 rounded-lg bg-[#181B20]/80 border border-[#F4F1EA]/12 p-4 space-y-2 text-xs">
-      <div class="font-semibold text-[#F4F1EA]">For event &amp; workshop organizers</div>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-[#C6C2B8]">
-        <div>
-          <span class="block text-[#9C978C]">Current topics</span>
-          <span class="mt-0.5 block text-[#F4F1EA]">Agentic AI (ADK, Vertex AI), GKE &amp; SRE</span>
-        </div>
-        <div>
-          <span class="block text-[#9C978C]">Formats</span>
-          <span class="mt-0.5 block text-[#F4F1EA]">Keynotes, 40m deep dives, hands-on labs</span>
-        </div>
-        <div>
-          <span class="block text-[#9C978C]">Home airport</span>
-          <span class="mt-0.5 block font-mono text-[#F4F1EA]">Istanbul (IST / SAW)</span>
-        </div>
+    <!-- Third-Person Copyable Organizer Bio -->
+    <div class="mt-5 rounded-lg bg-[#181B20]/80 border border-[#F4F1EA]/12 p-4 space-y-2.5 text-xs">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="font-semibold text-[#F4F1EA]">Third-person speaker bio (for organizers)</span>
+        <CopyButton
+          targetId="modal-organizer-bio"
+          label="Copy bio"
+          testId="modal-copy-bio-btn"
+        />
+      </div>
+      <p id="modal-organizer-bio" class="text-xs leading-[1.6] text-[#C6C2B8]">
+        {SPEAKER_PROFILE.standardBio}
+      </p>
+      <div class="pt-2 border-t border-[#F4F1EA]/10 flex flex-wrap items-center justify-between gap-2">
+        <span class="text-[#9C978C]">
+          Need high-res headshots or flagship talk abstracts?
+        </span>
+        <a
+          href={withBase('speaker/')}
+          data-testid="modal-speaker-kit-link"
+          class="font-semibold text-[#E2A84B] hover:text-[#F4F1EA] transition-colors"
+        >
+          Open Speaker Kit &amp; Photos →
+        </a>
       </div>
     </div>
 
-    <div class="mt-6 flex flex-wrap gap-2.5">
-      <a
-        href="https://www.linkedin.com/in/devenes/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="rounded-md bg-[#F4F1EA] hover:bg-white px-4 py-2 text-xs font-semibold text-[#0B0C0E] transition-colors"
-      >
-        LinkedIn ↗
-      </a>
-      <a
-        href="https://github.com/devenes"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 px-4 py-2 text-xs font-medium text-[#E6E2D8] transition-colors"
-      >
-        GitHub (@devenes) ↗
-      </a>
-      <a
-        href="https://medium.com/@devenes"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 px-4 py-2 text-xs font-medium text-[#E6E2D8] transition-colors"
-      >
-        Medium ↗
-      </a>
-      <a
-        href="https://speakerdeck.com/devenes"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 px-4 py-2 text-xs font-medium text-[#E6E2D8] transition-colors"
-      >
-        Speaker Deck ↗
-      </a>
+    <div class="mt-6 flex flex-wrap gap-2">
+      {
+        SPEAKER_PROFILE.socialLinks.map((profile, idx) => (
+          <a
+            href={profile.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class={
+              idx === 0
+                ? 'rounded-md bg-[#F4F1EA] hover:bg-white px-3.5 py-2 text-xs font-semibold text-[#0B0C0E] transition-colors'
+                : 'rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 px-3.5 py-2 text-xs font-medium text-[#E6E2D8] transition-colors'
+            }
+          >
+            {profile.platform} ↗
+          </a>
+        ))
+      }
     </div>
   </div>
 </dialog>

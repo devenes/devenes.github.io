@@ -112,12 +112,14 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    // Open About modal and verify first-person human bio
+    // Open About modal and verify first-person human bio + JumpCloud role + Speaker Kit link
     await page.getByTestId('nav-about-btn').click();
     const aboutModal = page.getByTestId('about-modal');
     await expect(aboutModal).toBeVisible();
-    await expect(aboutModal).toContainText("I'm a cloud and platform engineer in Istanbul");
+    await expect(aboutModal).toContainText('Software Engineer at JumpCloud');
+    await expect(aboutModal).toContainText('cloud and platform engineer in Istanbul');
     await expect(aboutModal).not.toContainText('SPEAKER DOSSIER');
+    await expect(aboutModal.getByTestId('modal-speaker-kit-link')).toBeVisible();
     await page.getByTestId('close-about-btn').click();
     await expect(aboutModal).toBeHidden();
 
@@ -171,12 +173,18 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await expect(page.getByTestId('metric-talks')).toBeVisible();
     await expect(page.getByTestId('destination-panel')).toBeVisible();
 
-    // Mobile viewport check (390x844) & 320px reflow check (no horizontal overflow)
+    // Mobile viewport check (390x844) & 320px reflow check (single-row header, no horizontal overflow)
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByTestId('metric-talks')).toBeVisible();
     await expect(page.getByTestId('browse-all-talks-btn')).toBeVisible();
+    const mobileHeaderBox390 = await page.getByTestId('site-header').boundingBox();
+    expect(mobileHeaderBox390).not.toBeNull();
+    expect(mobileHeaderBox390!.height).toBeLessThanOrEqual(68);
 
     await page.setViewportSize({ width: 320, height: 700 });
+    const mobileHeaderBox320 = await page.getByTestId('site-header').boundingBox();
+    expect(mobileHeaderBox320).not.toBeNull();
+    expect(mobileHeaderBox320!.height).toBeLessThanOrEqual(68);
     const hasHorizontalOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
@@ -269,5 +277,95 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await expect(archiveModal).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(archiveModal).toBeHidden();
+  });
+
+  test('7. Dedicated Speaker Kit Page (/speaker/), Copy Buttons, Profile Photos, Social Links & SEO Assets', async ({
+    page,
+    context,
+    request,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    // Verify OpenGraph images, robots.txt, sitemap.xml, and profile headshots return 200 OK
+    for (const assetPath of [
+      '/images/og-home.jpg',
+      '/images/og-speaker.jpg',
+      '/robots.txt',
+      '/sitemap.xml',
+      '/assets/profile/enes-turan-pp-2.jpg',
+      '/assets/profile/enes-turan-pp.jpg',
+    ]) {
+      const res = await request.get(assetPath);
+      expect(res.status(), `Expected 200 for ${assetPath}`).toBe(200);
+    }
+
+    // Navigate from home page Speaker Kit link to /speaker/
+    await page.goto('/');
+    await page.getByTestId('nav-speaker-kit-link').click();
+    await expect(page).toHaveURL(/\/speaker\/?$/);
+
+    // Verify speaker identity, standard bio, and featured session proposal
+    await expect(page.getByRole('heading', { level: 1, name: 'Enes Turan' })).toBeVisible();
+    await expect(page.getByTestId('speaker-bio-standard')).toContainText(
+      'Enes Turan is a Software Engineer at JumpCloud and a Google Developer Expert.'
+    );
+    await expect(page.getByTestId('featured-talk-title')).toHaveText(
+      'Kubernetes for AI at Scale on Google Kubernetes Engine'
+    );
+    await expect(page.getByTestId('featured-talk-description')).toContainText(
+      'As AI agents and inference workloads become increasingly dynamic and resource-intensive'
+    );
+
+    // Verify downloadable high-res photo attributes
+    const studioDownload = page.getByTestId('download-photo-portrait-studio');
+    await expect(studioDownload).toHaveAttribute(
+      'download',
+      'Enes-Turan-Portrait-Headshot-1254x1254.jpg'
+    );
+    const stageDownload = page.getByTestId('download-photo-keynote-stage');
+    await expect(stageDownload).toHaveAttribute(
+      'download',
+      'Enes-Turan-Keynote-Stage-1254x1254.jpg'
+    );
+
+    // Verify all 4 requested social links are present on the Speaker Kit page
+    const socialGrid = page.getByTestId('social-links-grid');
+    for (const expectedUrl of [
+      'https://www.linkedin.com/in/devenes/',
+      'https://www.instagram.com/enes.ai/',
+      'https://x.com/thedevenes',
+      'https://www.facebook.com/profile.php?id=100087441315629',
+    ]) {
+      await expect(socialGrid.locator(`a[href="${expectedUrl}"]`)).toBeVisible();
+    }
+
+    // Verify one-click copy button writes exact speaker bio to clipboard and announces status
+    const copyBioBtn = page.getByTestId('copy-standard-bio-btn');
+    await copyBioBtn.click();
+    await expect(copyBioBtn).toHaveAttribute('data-copied', '');
+    const copiedBio = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copiedBio).toContain(
+      'Enes Turan is a Software Engineer at JumpCloud and a Google Developer Expert.'
+    );
+
+    // Verify full session proposal copy button
+    const copyProposalBtn = page.getByTestId('copy-full-talk-btn');
+    await copyProposalBtn.click();
+    await expect(copyProposalBtn).toHaveAttribute('data-copied', '');
+    const copiedProposal = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copiedProposal).toContain('Kubernetes for AI at Scale on Google Kubernetes Engine');
+
+    // Verify mobile responsiveness on /speaker/ (no horizontal overflow at 320px)
+    await page.setViewportSize({ width: 320, height: 700 });
+    const speakerOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    );
+    expect(speakerOverflow).toBe(false);
+
+    // Verify navigating to /#talks opens the full archive dialog directly
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/#talks');
+    await expect(page.getByTestId('archive-matrix-modal')).toBeVisible();
   });
 });

@@ -1,5 +1,6 @@
 ---
 import type { SpeakingAtlasData } from '../utils/geography';
+import { withBase } from '../utils/paths';
 
 interface Props {
   atlas: SpeakingAtlasData;
@@ -29,9 +30,9 @@ const { metrics } = atlas;
       Enes Turan
     </h1>
 
-    <p class="mt-3 max-w-[38ch] text-sm sm:text-[0.9375rem] leading-[1.55] text-[#C6C2B8]">
-      Google Developer Expert sharing practical engineering talks and workshops on production
-      Kubernetes, cloud infrastructure, and AI agent systems.
+    <p class="mt-3 max-w-[40ch] text-sm sm:text-[0.9375rem] leading-[1.55] text-[#C6C2B8]">
+      Software Engineer at JumpCloud and Google Developer Expert sharing practical engineering
+      talks and workshops on production Kubernetes, cloud infrastructure, and AI workloads.
     </p>
 
     <!-- Open Typographic Speaking Ledger -->
@@ -76,7 +77,7 @@ const { metrics } = atlas;
       {metrics.workshopsCount} workshops
     </p>
 
-    <!-- Restrained Editorial Actions (No neon drop-shadows) -->
+    <!-- Restrained Editorial Actions -->
     <div class="mt-5 flex flex-wrap items-center gap-2.5">
       <button
         type="button"
@@ -102,6 +103,15 @@ const { metrics } = atlas;
         <span>Istanbul hub</span>
         <span aria-hidden="true" class="text-[#E2A84B]">→</span>
       </button>
+
+      <a
+        href={withBase('speaker/')}
+        data-testid="hero-speaker-kit-link"
+        class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2.5 text-xs sm:text-sm font-medium text-[#E6E2D8] hover:text-[#F4F1EA] bg-[#121417]/88 hover:bg-[#181B20] border border-[#F4F1EA]/16 hover:border-[#F4F1EA]/32 backdrop-blur-sm transition-colors"
+      >
+        <span>Speaker kit &amp; bio</span>
+        <span aria-hidden="true" class="text-[#E2A84B]">→</span>
+      </a>
     </div>
   </div>
 </section>

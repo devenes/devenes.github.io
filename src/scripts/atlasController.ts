@@ -5,10 +5,38 @@ import type {
   TopicCategoryId,
 } from '../utils/geography';
 import { formatCoordinates, formatSignalDate, withBase } from '../utils/paths';
-import { EarthGlobeController } from './earthGlobe';
+import { initCopyButtons } from './copyButton';
+import type { EarthGlobeController } from './earthGlobe';
 
 export type AtlasViewMode = 'globe' | 'regions' | 'timeline' | 'topics';
 type NavLinkId = 'home' | 'talks' | 'about';
+
+export interface GlobeBridge {
+  setPaused(paused: boolean): void;
+  invalidatePanelRects(): void;
+  applyFilters(filters: { region?: string; year?: string; topic?: string }): void;
+  focusOnCity(cityId: string | null): void;
+  zoomBy(factor: number): void;
+  isMotionPaused(): boolean;
+  setMotionReduced(reduced: boolean): void;
+}
+
+function createPendingGlobeStub(): GlobeBridge {
+  let motionReduced = false;
+  return {
+    setPaused() {},
+    invalidatePanelRects() {},
+    applyFilters() {},
+    focusOnCity() {},
+    zoomBy() {},
+    isMotionPaused() {
+      return motionReduced;
+    },
+    setMotionReduced(reduced: boolean) {
+      motionReduced = reduced;
+    },
+  };
+}
 
 declare global {
   interface Window {
@@ -39,7 +67,7 @@ export function escapeHtml(value: string): string {
 
 export class SpeakingAtlasController {
   private atlas: SpeakingAtlasData;
-  private globe: EarthGlobeController;
+  private globe: GlobeBridge;
 
   private viewMode: AtlasViewMode = 'globe';
   private selectedCityId: string | null = null;
@@ -55,13 +83,32 @@ export class SpeakingAtlasController {
   private archiveYear = 'all';
   private archiveCity = 'all';
 
-  constructor(atlas: SpeakingAtlasData, globe: EarthGlobeController) {
+  constructor(atlas: SpeakingAtlasData, globe?: GlobeBridge) {
     this.atlas = atlas;
-    this.globe = globe;
+    this.globe = globe ?? createPendingGlobeStub();
+    initCopyButtons();
     this.bindEvents();
     this.syncBodyAttributes();
     this.updateTimelineScrollButtons();
     this.applyHashRoute(window.location.hash);
+  }
+
+  public attachGlobe(globe: GlobeBridge): void {
+    const wasMotionPaused = this.globe.isMotionPaused();
+    this.globe = globe;
+    if (wasMotionPaused) {
+      this.globe.setMotionReduced(true);
+    }
+    this.globe.applyFilters({
+      region: this.activeRegion,
+      year: this.activeYear,
+      topic: this.activeTopic,
+    });
+    if (this.selectedCityId) {
+      this.globe.focusOnCity(this.selectedCityId);
+    }
+    this.syncGlobeDialogPauseState();
+    this.globe.invalidatePanelRects();
   }
 
   private getEraNarrative(year: string): string {
@@ -154,6 +201,11 @@ export class SpeakingAtlasController {
   public applyHashRoute(rawHash: string): void {
     const cleaned = decodeURIComponent(rawHash.replace(/^#/, '').trim());
     if (!cleaned || cleaned === 'main-content') return;
+
+    if (cleaned === 'talks' || cleaned === 'archive') {
+      this.openArchive();
+      return;
+    }
 
     const matchedEvent = this.atlas.events.find((e) => e.id === cleaned);
     if (matchedEvent) {
@@ -1295,14 +1347,33 @@ export function initSpeakingAtlasApp(
   const globeContainer = document.getElementById('orbit-canvas-container');
   if (!globeContainer) return;
 
-  let controllerRef: SpeakingAtlasController | null = null;
-  const globe = new EarthGlobeController(globeContainer, atlas, landGeoJson, {
-    onSelectCity: (cityId) => {
-      controllerRef?.selectCity(cityId);
-    },
-  });
+  const controller = new SpeakingAtlasController(atlas);
+  window.__atlasController = controller;
 
-  controllerRef = new SpeakingAtlasController(atlas, globe);
-  window.__earthGlobe = globe;
-  window.__atlasController = controllerRef;
+  requestAnimationFrame(() => {
+    void import('./earthGlobe')
+      .then(({ EarthGlobeController }) => {
+        const globe = new EarthGlobeController(globeContainer, atlas, landGeoJson, {
+          onSelectCity: (cityId) => {
+            controller.selectCity(cityId);
+          },
+        });
+        window.__earthGlobe = globe;
+        controller.attachGlobe(globe);
+
+        return fetch(withBase('data/land.json'))
+          .then((res) => (res.ok ? res.json() : null))
+          .then((land) => {
+            if (land) {
+              globe.loadCoastlineGeoJson(land);
+            }
+          })
+          .catch(() => {
+            // Coastline vectors are progressive enhancement over the 3D Earth texture
+          });
+      })
+      .catch((err) => {
+        console.error('Failed to load 3D Earth module:', err);
+      });
+  });
 }

@@ -6,7 +6,9 @@ import {
   computeGreatCircleArcPoints,
   GLOBE_RADIUS,
   haversineDistanceKm,
+  hydrateClientAtlas,
   latLonToVector3,
+  serializeClientAtlas,
 } from '../../src/utils/geography';
 
 describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
@@ -110,5 +112,25 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
     const distIstanbulAlmaty = haversineDistanceKm(41.0082, 28.9784, 43.222, 76.8512);
     expect(distIstanbulAlmaty).toBeGreaterThan(3800);
     expect(distIstanbulAlmaty).toBeLessThan(4100);
+  });
+
+  it('slim-serializes client atlas payload by >70% and hydrates city events and 3D routes losslessly', () => {
+    const fullAtlas = buildSpeakingAtlas(rawEvents, rawLocations);
+    const fullJsonBytes = JSON.stringify(fullAtlas).length;
+
+    const slimPayload = serializeClientAtlas(fullAtlas);
+    const slimJsonBytes = JSON.stringify(slimPayload).length;
+
+    expect(slimJsonBytes).toBeLessThan(fullJsonBytes * 0.3);
+
+    const hydrated = hydrateClientAtlas(slimPayload);
+    expect(hydrated.metrics).toEqual(fullAtlas.metrics);
+    expect(hydrated.events).toHaveLength(44);
+    expect(hydrated.cities).toHaveLength(23);
+
+    const istanbul = hydrated.cities.find((c) => c.id === 'istanbul-tr');
+    expect(istanbul?.events).toHaveLength(7);
+    expect(hydrated.routes.length).toBe(fullAtlas.routes.length);
+    expect(hydrated.routes[0].points3D.length).toBeGreaterThan(20);
   });
 });

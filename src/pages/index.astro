@@ -1,7 +1,8 @@
 ---
 import rawEvents from '../../data/events.json';
 import rawLocations from '../../data/locations.json';
-import { buildSpeakingAtlas } from '../utils/geography';
+import { SPEAKER_PROFILE } from '../data/speakerProfile';
+import { buildSpeakingAtlas, serializeClientAtlas } from '../utils/geography';
 import { withBase } from '../utils/paths';
 import TopNav from '../components/TopNav.astro';
 import HeroOverview from '../components/HeroOverview.astro';
@@ -12,22 +13,25 @@ import ArchiveMatrix from '../components/ArchiveMatrix.astro';
 import AboutModal from '../components/AboutModal.astro';
 
 const atlas = buildSpeakingAtlas(rawEvents, rawLocations);
+const clientAtlasPayload = serializeClientAtlas(atlas);
 const initialEvent = atlas.events[0];
 const siteTitle = 'Enes Turan — Cloud, Kubernetes & AI';
-const siteDescription = `Talks, workshops, and conference notes by Enes Turan (Google Developer Expert) across ${atlas.metrics.uniqueCities} cities and ${atlas.metrics.uniqueCountries} countries.`;
-const canonicalUrl = 'https://devenes.github.io/';
+const siteDescription = `Talks, workshops, and conference notes by Enes Turan (Software Engineer at JumpCloud, Google Developer Expert) across ${atlas.metrics.uniqueCities} cities and ${atlas.metrics.uniqueCountries} countries.`;
+const siteOrigin = Astro.site?.toString().replace(/\/$/, '') || 'https://devenes.github.io';
+const canonicalUrl = new URL(withBase(''), `${siteOrigin}/`).toString();
+const ogImageUrl = new URL(withBase('images/og-home.jpg'), `${siteOrigin}/`).toString();
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Person',
-  name: 'Enes Turan',
-  jobTitle: 'Google Developer Expert (Cloud, Kubernetes & AI)',
+  name: SPEAKER_PROFILE.name,
+  jobTitle: `${SPEAKER_PROFILE.jobTitle} & ${SPEAKER_PROFILE.recognition}`,
+  worksFor: {
+    '@type': 'Organization',
+    name: SPEAKER_PROFILE.company,
+  },
+  image: new URL(withBase(SPEAKER_PROFILE.headshots[0].assetPath), `${siteOrigin}/`).toString(),
   url: canonicalUrl,
-  sameAs: [
-    'https://www.linkedin.com/in/devenes/',
-    'https://github.com/devenes',
-    'https://medium.com/@devenes',
-    'https://speakerdeck.com/devenes',
-  ],
+  sameAs: SPEAKER_PROFILE.socialLinks.map((s) => s.url),
 };
 ---
 
@@ -47,16 +51,32 @@ const jsonLd = {
     <meta property="og:site_name" content="Enes Turan" />
     <meta property="og:title" content={siteTitle} />
     <meta property="og:description" content={siteDescription} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Enes Turan — Cloud, Kubernetes & AI" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@thedevenes" />
+    <meta name="twitter:creator" content="@thedevenes" />
     <meta name="twitter:title" content={siteTitle} />
     <meta name="twitter:description" content={siteDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
     <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      href={withBase('fonts/plus-jakarta-sans-normal-400-700-latin.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
+    <link
+      rel="preload"
+      href={withBase('fonts/newsreader-normal-400-600-latin.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href={withBase('fonts/fonts.css')} />
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <style is:global>
       :root {
@@ -286,35 +306,25 @@ const jsonLd = {
     <!-- Speaker Bio Dialog -->
     <AboutModal atlas={atlas} />
 
-    <!-- Build-Time Atlas Data Payload -->
+    <!-- Build-Time Slimmed Atlas Data Payload -->
     <script
       id="speaking-atlas-data"
       type="application/json"
-      set:html={JSON.stringify(atlas)}
+      set:html={JSON.stringify(clientAtlasPayload)}
     />
 
-    <!-- Client-Side 3D Earth & State Initialization -->
+    <!-- Client-Side Interactive State & Deferred 3D Earth Initialization -->
     <script>
       import { initSpeakingAtlasApp } from '../scripts/atlasController';
-      import type { SpeakingAtlasData } from '../utils/geography';
-      import { withBase } from '../utils/paths';
+      import { hydrateClientAtlas, type ClientSpeakingAtlasPayload } from '../utils/geography';
 
       function bootstrap() {
         const atlasEl = document.getElementById('speaking-atlas-data');
         if (!atlasEl?.textContent) return;
         try {
-          const atlas = JSON.parse(atlasEl.textContent) as SpeakingAtlasData;
+          const payload = JSON.parse(atlasEl.textContent) as ClientSpeakingAtlasPayload;
+          const atlas = hydrateClientAtlas(payload);
           initSpeakingAtlasApp(atlas, null);
-          fetch(withBase('data/land.json'))
-            .then((res) => (res.ok ? res.json() : null))
-            .then((land) => {
-              if (land) {
-                window.__earthGlobe?.loadCoastlineGeoJson(land);
-              }
-            })
-            .catch(() => {
-              // Coastline vectors are progressive enhancement over the 3D Earth texture
-            });
         } catch (err) {
           console.error('Failed to initialize speaking map:', err);
         }

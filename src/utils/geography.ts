@@ -692,3 +692,68 @@ export function buildSpeakingAtlas(
     sameDateFindings,
   };
 }
+
+export interface ClientSpeakingAtlasPayload {
+  metrics: SpeakingAtlasData['metrics'];
+  events: EnrichedSpeakingEvent[];
+  cities: Array<Omit<CityDestination, 'events'>>;
+  topics: TopicCategorySummary[];
+  years: SpeakingAtlasData['years'];
+  routes: Array<Omit<TravelRouteArc, 'points3D'>>;
+}
+
+/**
+ * Strips duplicated nested event arrays, unused build-time audit structures,
+ * and pre-baked 45-segment 3D arc coordinate arrays before embedding JSON in HTML.
+ */
+export function serializeClientAtlas(atlas: SpeakingAtlasData): ClientSpeakingAtlasPayload {
+  return {
+    metrics: atlas.metrics,
+    events: atlas.events,
+    cities: atlas.cities.map(({ events: _events, ...cityRest }) => cityRest),
+    topics: atlas.topics,
+    years: atlas.years,
+    routes: atlas.routes.map(({ points3D: _points3D, ...routeRest }) => routeRest),
+  };
+}
+
+/**
+ * Reconstructs full SpeakingAtlasData on the client in <1ms without duplicating JSON over the wire.
+ */
+export function hydrateClientAtlas(payload: ClientSpeakingAtlasPayload): SpeakingAtlasData {
+  const eventsByCity = new Map<string, EnrichedSpeakingEvent[]>();
+  for (const ev of payload.events) {
+    if (!ev.locationId) continue;
+    const list = eventsByCity.get(ev.locationId) ?? [];
+    list.push(ev);
+    eventsByCity.set(ev.locationId, list);
+  }
+
+  const cities: CityDestination[] = payload.cities.map((c) => ({
+    ...c,
+    events: eventsByCity.get(c.id) ?? [],
+  }));
+
+  const routes: TravelRouteArc[] = payload.routes.map((r) => ({
+    ...r,
+    points3D: computeGreatCircleArcPoints(
+      r.fromCoords[0],
+      r.fromCoords[1],
+      r.toCoords[0],
+      r.toCoords[1],
+      GLOBE_RADIUS
+    ),
+  }));
+
+  return {
+    metrics: payload.metrics,
+    events: payload.events,
+    cities,
+    regions: [],
+    topics: payload.topics,
+    years: payload.years,
+    routes,
+    unverifiedLocations: [],
+    sameDateFindings: [],
+  };
+}

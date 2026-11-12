@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/paths';
+
 interface Props {
   totalTalks: number;
 }
@@ -7,26 +9,27 @@ const { totalTalks } = Astro.props;
 ---
 
 <header
-  class="fixed top-0 inset-x-0 z-30 min-h-16 md:min-h-20 px-5 lg:px-10 py-3 flex items-center justify-between pointer-events-none select-none"
+  data-testid="site-header"
+  class="fixed top-0 inset-x-0 z-30 min-h-16 md:min-h-20 px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-2 pointer-events-none select-none"
 >
   <div
     class="absolute inset-0 bg-gradient-to-b from-[#0B0C0E]/95 via-[#0B0C0E]/75 to-transparent backdrop-blur-[6px] border-b border-[#F4F1EA]/[0.07] pointer-events-none"
   >
   </div>
 
-  <!-- Left: Personal Wordmark & Role (No pulsing status light) -->
-  <div class="relative z-10 flex items-center gap-3 pointer-events-auto">
+  <!-- Left: Personal Wordmark & Role (Single-line on narrow viewports) -->
+  <div class="relative z-10 flex items-center shrink-0 pointer-events-auto">
     <a
       href="#top"
       data-action="reset-atlas"
-      class="group flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 text-left rounded-sm py-0.5"
+      class="group flex items-baseline gap-2.5 text-left rounded-sm py-0.5 whitespace-nowrap"
       aria-label="Enes Turan — Google Developer Expert (Reset map view)"
     >
-      <span class="font-display text-lg sm:text-xl font-medium tracking-[-0.015em] text-[#F4F1EA]">
+      <span class="font-display text-base sm:text-xl font-medium tracking-[-0.015em] text-[#F4F1EA]">
         Enes Turan
       </span>
-      <span class="hidden sm:inline text-[#6E6A61]" aria-hidden="true">/</span>
-      <span class="hidden sm:inline text-xs text-[#A39E93] group-hover:text-[#C6C2B8] transition-colors">
+      <span class="hidden xl:inline text-[#6E6A61]" aria-hidden="true">/</span>
+      <span class="hidden xl:inline text-xs text-[#A39E93] group-hover:text-[#C6C2B8] transition-colors">
         Google Developer Expert
       </span>
     </a>
@@ -34,7 +37,7 @@ const { totalTalks } = Astro.props;
 
   <!-- Center: Calm Editorial Navigation -->
   <nav
-    class="relative z-10 hidden md:flex items-center gap-7 pointer-events-auto text-sm"
+    class="relative z-10 hidden md:flex items-center gap-5 lg:gap-7 pointer-events-auto text-sm whitespace-nowrap"
     aria-label="Primary"
   >
     <button
@@ -65,10 +68,17 @@ const { totalTalks } = Astro.props;
       About
     </button>
     <a
+      href={withBase('speaker/')}
+      data-testid="nav-speaker-kit-link"
+      class="relative py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
+    >
+      Speaker Kit
+    </a>
+    <a
       href="https://medium.com/@devenes"
       target="_blank"
       rel="noopener noreferrer"
-      class="py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
+      class="hidden lg:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
     >
       Writing <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
     </a>
@@ -76,25 +86,25 @@ const { totalTalks } = Astro.props;
       href="https://speakerdeck.com/devenes"
       target="_blank"
       rel="noopener noreferrer"
-      class="py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
+      class="hidden lg:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
     >
       Slides <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
     </a>
   </nav>
 
   <!-- Right: Mobile Triggers & Contact Link -->
-  <div class="relative z-10 flex items-center gap-2 sm:gap-2.5 pointer-events-auto">
+  <div class="relative z-10 flex items-center gap-1.5 sm:gap-2.5 shrink-0 pointer-events-auto">
     <button
       type="button"
       data-action="open-archive"
-      class="md:hidden rounded-md px-2.5 py-1.5 text-xs text-[#F4F1EA] bg-[#181B20] border border-[#F4F1EA]/18 cursor-pointer tabular-nums"
+      class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#F4F1EA] bg-[#181B20] border border-[#F4F1EA]/18 cursor-pointer tabular-nums whitespace-nowrap"
     >
       Talks ({totalTalks})
     </button>
     <button
       type="button"
       data-action="open-about"
-      class="md:hidden rounded-md px-2.5 py-1.5 text-xs text-[#C6C2B8] bg-[#121417] border border-[#F4F1EA]/14 cursor-pointer"
+      class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#C6C2B8] bg-[#121417] border border-[#F4F1EA]/14 cursor-pointer whitespace-nowrap"
     >
       About
     </button>
@@ -102,9 +112,10 @@ const { totalTalks } = Astro.props;
       href="https://www.linkedin.com/in/devenes/"
       target="_blank"
       rel="noopener noreferrer"
-      class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium text-[#F4F1EA] bg-[#181B20]/90 hover:bg-[#22262D] border border-[#F4F1EA]/20 hover:border-[#F4F1EA]/35 transition-colors"
+      class="inline-flex items-center gap-1 sm:gap-1.5 rounded-md px-2.5 sm:px-3.5 py-1.5 text-[0.6875rem] sm:text-xs font-medium text-[#F4F1EA] bg-[#181B20]/90 hover:bg-[#22262D] border border-[#F4F1EA]/20 hover:border-[#F4F1EA]/35 transition-colors whitespace-nowrap"
     >
-      <span>Get in touch</span>
+      <span class="sr-only sm:not-sr-only">Get in touch</span>
+      <span aria-hidden="true" class="sm:hidden">Contact</span>
       <span aria-hidden="true" class="text-[#E2A84B]">↗</span>
     </a>
   </div>

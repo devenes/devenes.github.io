@@ -1,0 +1,684 @@
+---
+import rawEvents from '../../data/events.json';
+import rawLocations from '../../data/locations.json';
+import CopyButton from '../components/CopyButton.astro';
+import { SPEAKER_PROFILE } from '../data/speakerProfile';
+import { buildSpeakingAtlas } from '../utils/geography';
+import { withBase } from '../utils/paths';
+
+const atlas = buildSpeakingAtlas(rawEvents, rawLocations);
+const { metrics } = atlas;
+
+const pageTitle = 'Enes Turan — Speaker Bio, Photos & Media Kit';
+const pageDescription =
+  'Official speaker bio, downloadable high-resolution headshots, social links, and featured session abstracts for Enes Turan (Software Engineer at JumpCloud, Google Developer Expert).';
+const siteOrigin = Astro.site?.toString().replace(/\/$/, '') || 'https://devenes.github.io';
+const canonicalUrl = new URL(withBase('speaker/'), `${siteOrigin}/`).toString();
+const ogImageUrl = new URL(withBase('images/og-speaker.jpg'), `${siteOrigin}/`).toString();
+
+const socialProfiles = SPEAKER_PROFILE.socialLinks.filter((s) => s.category === 'social');
+const engineeringProfiles = SPEAKER_PROFILE.socialLinks.filter((s) => s.category === 'engineering');
+const primaryHeadshot = SPEAKER_PROFILE.headshots[0];
+const featuredTalk = SPEAKER_PROFILE.featuredTalks[0];
+const fullProposalCopyText = `Talk Session Title:\n${featuredTalk.title}\n\nSession Description:\n${featuredTalk.description}`;
+
+const standardWordCount = SPEAKER_PROFILE.standardBio.trim().split(/\s+/).length;
+const shortWordCount = SPEAKER_PROFILE.shortBio.trim().split(/\s+/).length;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url: canonicalUrl,
+  mainEntity: {
+    '@type': 'Person',
+    name: SPEAKER_PROFILE.name,
+    jobTitle: `${SPEAKER_PROFILE.jobTitle} & ${SPEAKER_PROFILE.recognition}`,
+    worksFor: {
+      '@type': 'Organization',
+      name: SPEAKER_PROFILE.company,
+    },
+    description: SPEAKER_PROFILE.standardBio,
+    image: new URL(withBase(primaryHeadshot.assetPath), `${siteOrigin}/`).toString(),
+    url: `${siteOrigin}/`,
+    homeLocation: {
+      '@type': 'Place',
+      name: SPEAKER_PROFILE.homeBase,
+    },
+    sameAs: SPEAKER_PROFILE.socialLinks.map((s) => s.url),
+  },
+};
+---
+
+<!doctype html>
+<html
+  lang="en"
+  class="dark bg-[#0B0C0E] text-[#F4F1EA] antialiased selection:bg-[#E2A84B]/30 selection:text-[#F4F1EA]"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="profile" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="Enes Turan" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Enes Turan — Speaker Bio & Media Kit" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@thedevenes" />
+    <meta name="twitter:creator" content="@thedevenes" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
+    <link
+      rel="preload"
+      href={withBase('fonts/plus-jakarta-sans-normal-400-700-latin.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={withBase('fonts/newsreader-normal-400-600-latin.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href={withBase('fonts/fonts.css')} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <style is:global>
+      :root {
+        color-scheme: dark;
+        --bg-canvas: #0b0c0e;
+        --bg-surface: #121417;
+        --ink-primary: #f4f1ea;
+        --ink-secondary: #c6c2b8;
+        --ink-muted: #9c978c;
+        --accent: #e2a84b;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        line-height: 1.5;
+        background-color: var(--bg-canvas);
+        color: var(--ink-primary);
+        overflow-x: hidden;
+        font-size-adjust: from-font;
+      }
+      h1,
+      h2,
+      h3 {
+        text-wrap: balance;
+      }
+      p {
+        text-wrap: pretty;
+      }
+      button:focus-visible,
+      a:focus-visible {
+        outline: 2px solid #e2a84b;
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+
+  <body class="font-sans text-[#F4F1EA] bg-[#0B0C0E]">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-md focus:bg-[#E2A84B] focus:text-[#0B0C0E] focus:font-semibold"
+    >
+      Skip to speaker kit content
+    </a>
+
+    <!-- Top Navigation Bar -->
+    <header
+      class="sticky top-0 z-30 min-h-16 md:min-h-20 px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-3 bg-[#0B0C0E]/92 backdrop-blur-md border-b border-[#F4F1EA]/[0.08]"
+    >
+      <a
+        href={withBase('')}
+        class="group flex items-baseline gap-2.5 whitespace-nowrap rounded-sm py-0.5 shrink-0"
+      >
+        <span class="font-display text-base sm:text-xl font-medium tracking-[-0.015em] text-[#F4F1EA]">
+          Enes Turan
+        </span>
+        <span class="hidden lg:inline text-[#6E6A61]" aria-hidden="true">/</span>
+        <span class="hidden lg:inline text-xs text-[#A39E93] group-hover:text-[#C6C2B8] transition-colors">
+          Google Developer Expert
+        </span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-6 text-sm whitespace-nowrap" aria-label="Primary">
+        <a
+          href={withBase('')}
+          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
+        >
+          ← Interactive Map
+        </a>
+        <a
+          href={withBase('#talks')}
+          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors tabular-nums"
+        >
+          Talks ({metrics.totalTalks})
+        </a>
+        <a
+          href={withBase('speaker/')}
+          aria-current="page"
+          class="py-1 text-[#F4F1EA] border-b-2 border-[#E2A84B] transition-colors"
+        >
+          Speaker Kit
+        </a>
+        <a
+          href="https://speakerdeck.com/devenes"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hidden lg:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
+        >
+          Slides <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
+        </a>
+      </nav>
+
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <a
+          href={withBase('')}
+          class="md:hidden rounded-md px-2.5 py-1.5 text-xs text-[#C6C2B8] hover:text-[#F4F1EA] bg-[#121417] border border-[#F4F1EA]/14 whitespace-nowrap transition-colors"
+        >
+          ← Map
+        </a>
+        <a
+          href="https://www.linkedin.com/in/devenes/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 rounded-md px-2.5 sm:px-3.5 py-1.5 text-xs font-medium text-[#F4F1EA] bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/20 hover:border-[#F4F1EA]/35 transition-colors whitespace-nowrap"
+        >
+          <span class="sr-only sm:not-sr-only">Get in touch</span>
+          <span aria-hidden="true" class="sm:hidden">Contact</span>
+          <span aria-hidden="true" class="text-[#E2A84B]">↗</span>
+        </a>
+      </div>
+    </header>
+
+    <main id="main-content" class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-10 py-10 sm:py-14 space-y-14 sm:space-y-16">
+      <!-- Hero Summary for Event Organizers -->
+      <section class="grid grid-cols-1 md:grid-cols-[1fr_240px] lg:grid-cols-[1fr_280px] gap-8 md:gap-10 items-center pb-10 border-b border-[#F4F1EA]/12">
+        <div>
+          <p class="text-xs font-medium text-[#E2A84B] tracking-wide">
+            Speaker Bio &amp; Media Kit for Event Organizers
+          </p>
+          <h1
+            class="mt-2 font-display font-medium tracking-[-0.02em] leading-[1.06] text-[#F4F1EA]"
+            style="font-size: clamp(2.25rem, 1.8rem + 2vw, 3.5rem);"
+          >
+            {SPEAKER_PROFILE.name}
+          </h1>
+          <p class="mt-2 text-base sm:text-lg font-medium text-[#E6E2D8]">
+            {SPEAKER_PROFILE.roleHeadline}
+          </p>
+          <p class="mt-3 max-w-[60ch] text-sm sm:text-[0.9375rem] leading-[1.6] text-[#C6C2B8]">
+            Everything needed for conference programs, event websites, stage introductions, and
+            social announcements—ready-to-paste bios, high-resolution profile photos, official
+            social links, and featured session proposals.
+          </p>
+
+          <!-- Track Record Strip -->
+          <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[#9C978C] font-mono tabular-nums">
+            <span>
+              <strong class="font-sans font-semibold text-[#F4F1EA]">{metrics.totalTalks}</strong> talks delivered
+            </span>
+            <span aria-hidden="true" class="text-[#F4F1EA]/20">·</span>
+            <span>
+              <strong class="font-sans font-semibold text-[#F4F1EA]">{metrics.uniqueCountries}</strong> countries
+            </span>
+            <span aria-hidden="true" class="text-[#F4F1EA]/20">·</span>
+            <span>
+              <strong class="font-sans font-semibold text-[#F4F1EA]">{metrics.uniqueCities}</strong> cities
+            </span>
+            <span aria-hidden="true" class="text-[#F4F1EA]/20">·</span>
+            <span>Base: <strong class="text-[#F4F1EA]">Istanbul ({SPEAKER_PROFILE.airports})</strong></span>
+          </div>
+
+          <!-- Quick Jump Links -->
+          <div class="mt-6 flex flex-wrap items-center gap-2.5">
+            <CopyButton
+              targetId="speaker-bio-standard"
+              label="Copy speaker bio"
+              testId="hero-copy-bio-btn"
+              variant="primary"
+            />
+            <a
+              href="#photos"
+              class="inline-flex min-h-[2rem] items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium text-[#F4F1EA] bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/18 hover:border-[#F4F1EA]/35 transition-colors"
+            >
+              <span>Download photos</span>
+              <span aria-hidden="true" class="text-[#E2A84B]">↓</span>
+            </a>
+            <a
+              href="#featured-session"
+              class="inline-flex min-h-[2rem] items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium text-[#C6C2B8] hover:text-[#F4F1EA] bg-[#121417] hover:bg-[#181B20] border border-[#F4F1EA]/14 transition-colors"
+            >
+              <span>Invitation talk</span>
+              <span aria-hidden="true" class="text-[#9C978C]">↓</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Primary Portrait Card (LCP Image) -->
+        <div class="mx-auto md:mx-0 w-full max-w-[260px] md:max-w-none">
+          <div class="overflow-hidden rounded-xl border border-[#F4F1EA]/16 bg-[#121417] shadow-2xl">
+            <img
+              src={withBase(primaryHeadshot.assetPath)}
+              alt="Enes Turan — Software Engineer at JumpCloud and Google Developer Expert"
+              width={primaryHeadshot.width}
+              height={primaryHeadshot.height}
+              fetchpriority="high"
+              decoding="async"
+              class="aspect-square w-full object-cover"
+            />
+            <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 border-t border-[#F4F1EA]/10 text-xs">
+              <span class="font-mono text-[0.6875rem] text-[#9C978C] tabular-nums">
+                {primaryHeadshot.width}×{primaryHeadshot.height} JPG
+              </span>
+              <a
+                href={withBase(primaryHeadshot.assetPath)}
+                download={primaryHeadshot.downloadFilename}
+                class="font-medium text-[#E2A84B] hover:text-[#F4F1EA] transition-colors"
+              >
+                Download ↓
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 1: Speaker Bio & Quick Facts -->
+      <section id="bio" aria-labelledby="bio-heading" class="space-y-6 scroll-mt-24">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <h2 id="bio-heading" class="font-display text-2xl sm:text-3xl font-medium text-[#F4F1EA]">
+              Speaker Biography
+            </h2>
+            <p class="mt-1 text-xs sm:text-sm text-[#9C978C]">
+              Approved third-person bios for conference websites, CFP portals, and MC stage introductions.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Standard Bio (2 cols) -->
+          <div class="lg:col-span-2 space-y-5">
+            <article class="rounded-xl bg-[#121417] border border-[#F4F1EA]/14 p-5 sm:p-6">
+              <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-[#F4F1EA]/10">
+                <div>
+                  <h3 class="text-sm font-semibold text-[#F4F1EA]">Standard Bio</h3>
+                  <span class="font-mono text-[0.6875rem] text-[#9C978C] tabular-nums">
+                    {standardWordCount} words · {SPEAKER_PROFILE.standardBio.length} characters
+                  </span>
+                </div>
+                <CopyButton
+                  targetId="speaker-bio-standard"
+                  label="Copy standard bio"
+                  testId="copy-standard-bio-btn"
+                />
+              </div>
+              <p
+                id="speaker-bio-standard"
+                data-testid="speaker-bio-standard"
+                class="mt-4 text-sm sm:text-[0.9375rem] leading-[1.7] text-[#E6E2D8]"
+              >
+                {SPEAKER_PROFILE.standardBio}
+              </p>
+            </article>
+
+            <article class="rounded-xl bg-[#121417] border border-[#F4F1EA]/14 p-5 sm:p-6">
+              <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-[#F4F1EA]/10">
+                <div>
+                  <h3 class="text-sm font-semibold text-[#F4F1EA]">Short Bio (One-Sentence)</h3>
+                  <span class="font-mono text-[0.6875rem] text-[#9C978C] tabular-nums">
+                    {shortWordCount} words · {SPEAKER_PROFILE.shortBio.length} characters
+                  </span>
+                </div>
+                <CopyButton
+                  targetId="speaker-bio-short"
+                  label="Copy short bio"
+                  testId="copy-short-bio-btn"
+                />
+              </div>
+              <p
+                id="speaker-bio-short"
+                data-testid="speaker-bio-short"
+                class="mt-4 text-sm leading-[1.65] text-[#C6C2B8]"
+              >
+                {SPEAKER_PROFILE.shortBio}
+              </p>
+            </article>
+          </div>
+
+          <!-- Quick Facts Card (1 col) -->
+          <aside
+            aria-label="Speaker quick facts"
+            class="rounded-xl bg-[#121417] border border-[#F4F1EA]/14 p-5 sm:p-6 flex flex-col justify-between"
+          >
+            <div>
+              <h3 class="text-sm font-semibold text-[#F4F1EA] pb-3.5 border-b border-[#F4F1EA]/10">
+                Quick Facts
+              </h3>
+              <dl class="mt-4 space-y-3.5 text-xs">
+                <div>
+                  <dt class="text-[#9C978C]">Full Name</dt>
+                  <dd class="mt-0.5 font-medium text-sm text-[#F4F1EA]">{SPEAKER_PROFILE.name}</dd>
+                </div>
+                <div>
+                  <dt class="text-[#9C978C]">Title &amp; Company</dt>
+                  <dd class="mt-0.5 font-medium text-[#F4F1EA]">
+                    {SPEAKER_PROFILE.jobTitle}, {SPEAKER_PROFILE.company}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-[#9C978C]">Community Recognition</dt>
+                  <dd class="mt-0.5 font-medium text-[#E2A84B]">
+                    {SPEAKER_PROFILE.recognition} (Cloud)
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-[#9C978C]">Location &amp; Home Airports</dt>
+                  <dd class="mt-0.5 text-[#F4F1EA]">
+                    {SPEAKER_PROFILE.homeBase} · <span class="font-mono">{SPEAKER_PROFILE.airports}</span>
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-[#9C978C]">Spoken Languages</dt>
+                  <dd class="mt-0.5 text-[#F4F1EA]">{SPEAKER_PROFILE.languages}</dd>
+                </div>
+                <div>
+                  <dt class="text-[#9C978C]">Session Formats</dt>
+                  <dd class="mt-0.5 text-[#C6C2B8]">
+                    Keynotes, 35–45m technical deep dives, hands-on labs &amp; panels
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <p class="mt-6 pt-3.5 border-t border-[#F4F1EA]/10 text-[0.75rem] leading-[1.5] text-[#9C978C]">
+              Please spell the speaker name as <strong class="text-[#F4F1EA]">Enes Turan</strong> on badges, slides, and schedules.
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <!-- Section 2: Downloadable Profile Photos -->
+      <section id="photos" aria-labelledby="photos-heading" class="space-y-6 scroll-mt-24">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <h2 id="photos-heading" class="font-display text-2xl sm:text-3xl font-medium text-[#F4F1EA]">
+              Profile Photos &amp; Headshots
+            </h2>
+            <p class="mt-1 text-xs sm:text-sm text-[#9C978C]">
+              High-resolution photos cleared for event websites, schedules, stage banners, and social graphics.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {
+            SPEAKER_PROFILE.headshots.map((photo, index) => (
+              <figure class="rounded-xl bg-[#121417] border border-[#F4F1EA]/14 overflow-hidden flex flex-col">
+                <div class="bg-[#0B0C0E] aspect-square overflow-hidden">
+                  <img
+                    src={withBase(photo.assetPath)}
+                    alt={`${SPEAKER_PROFILE.name} — ${photo.title}`}
+                    width={photo.width}
+                    height={photo.height}
+                    loading={index === 0 ? undefined : 'lazy'}
+                    decoding="async"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <figcaption class="p-5 flex-1 flex flex-col justify-between gap-4">
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-sm font-semibold text-[#F4F1EA]">{photo.title}</span>
+                      <span class="font-mono text-[0.6875rem] text-[#9C978C] tabular-nums">
+                        {photo.width}×{photo.height}
+                      </span>
+                    </div>
+                    <p class="mt-1.5 text-xs leading-[1.55] text-[#C6C2B8]">{photo.caption}</p>
+                    <p class="mt-2 font-mono text-[0.6875rem] text-[#9C978C]">
+                      {photo.aspectLabel} · {photo.fileSizeLabel}
+                    </p>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-2.5 pt-3 border-t border-[#F4F1EA]/10">
+                    <a
+                      href={withBase(photo.assetPath)}
+                      download={photo.downloadFilename}
+                      data-testid={`download-photo-${photo.id}`}
+                      class="inline-flex min-h-[2rem] items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-semibold text-[#0B0C0E] bg-[#F4F1EA] hover:bg-white transition-colors"
+                    >
+                      <span>Download JPG</span>
+                      <span aria-hidden="true">↓</span>
+                    </a>
+                    <a
+                      href={withBase(photo.assetPath)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex min-h-[2rem] items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-[#C6C2B8] hover:text-[#F4F1EA] bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 transition-colors"
+                    >
+                      <span>Open full size</span>
+                      <span aria-hidden="true">↗</span>
+                    </a>
+                  </div>
+                </figcaption>
+              </figure>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- Section 3: Featured Session Proposal for Invitations -->
+      <section
+        id="featured-session"
+        aria-labelledby="featured-session-heading"
+        class="space-y-6 scroll-mt-24"
+      >
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <h2
+              id="featured-session-heading"
+              class="font-display text-2xl sm:text-3xl font-medium text-[#F4F1EA]"
+            >
+              Featured Talk for Invitations
+            </h2>
+            <p class="mt-1 text-xs sm:text-sm text-[#9C978C]">
+              Ready-to-schedule flagship session title and abstract for conferences and cloud summits.
+            </p>
+          </div>
+          <a
+            href={withBase('#talks')}
+            class="text-xs font-medium text-[#E2A84B] hover:text-[#F4F1EA] transition-colors whitespace-nowrap"
+          >
+            Browse all {metrics.totalTalks} past talks →
+          </a>
+        </div>
+
+        <article
+          id="featured-talk-full"
+          data-copy-value={fullProposalCopyText}
+          class="rounded-xl bg-[#121417] border border-[#F4F1EA]/16 p-5 sm:p-7 space-y-5"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#F4F1EA]/10">
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <span class="rounded bg-[#E2A84B]/16 border border-[#E2A84B]/35 px-2.5 py-0.5 font-medium text-[#E2A84B]">
+                {featuredTalk.formats}
+              </span>
+              <span class="text-[#9C978C]">{featuredTalk.audience}</span>
+            </div>
+            <CopyButton
+              targetId="featured-talk-full"
+              label="Copy full proposal"
+              testId="copy-full-talk-btn"
+              variant="primary"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-medium text-[#9C978C]">Talk Session Title</span>
+              <CopyButton
+                targetId="featured-talk-title"
+                label="Copy title"
+                testId="copy-talk-title-btn"
+              />
+            </div>
+            <h3
+              id="featured-talk-title"
+              data-testid="featured-talk-title"
+              class="font-display text-xl sm:text-2xl font-medium text-[#F4F1EA] leading-[1.2]"
+            >
+              {featuredTalk.title}
+            </h3>
+          </div>
+
+          <div class="space-y-2 pt-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-medium text-[#9C978C]">Session Description</span>
+              <CopyButton
+                targetId="featured-talk-description"
+                label="Copy description"
+                testId="copy-talk-desc-btn"
+              />
+            </div>
+            <p
+              id="featured-talk-description"
+              data-testid="featured-talk-description"
+              class="text-sm sm:text-[0.9375rem] leading-[1.7] text-[#E6E2D8]"
+            >
+              {featuredTalk.description}
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-[#F4F1EA]/10 flex flex-wrap gap-1.5">
+            {
+              featuredTalk.topics.map((topic) => (
+                <span class="rounded px-2.5 py-1 text-xs bg-[#181B20] border border-[#F4F1EA]/12 text-[#C6C2B8]">
+                  {topic}
+                </span>
+              ))
+            }
+          </div>
+        </article>
+      </section>
+
+      <!-- Section 4: Social Media & Technical Profiles -->
+      <section id="social" aria-labelledby="social-heading" class="space-y-6 scroll-mt-24">
+        <div>
+          <h2 id="social-heading" class="font-display text-2xl sm:text-3xl font-medium text-[#F4F1EA]">
+            Social Media &amp; Official Links
+          </h2>
+          <p class="mt-1 text-xs sm:text-sm text-[#9C978C]">
+            Verified handles and profile URLs for tagging speaker announcements and speaker pages.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5" data-testid="social-links-grid">
+          {
+            socialProfiles.map((profile) => {
+              const urlElementId = `social-url-${profile.id}`;
+              return (
+                <div class="rounded-xl bg-[#121417] border border-[#F4F1EA]/14 p-4 flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="text-xs text-[#9C978C]">{profile.platform}</div>
+                    <a
+                      href={profile.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-0.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#F4F1EA] hover:text-[#E2A84B] transition-colors truncate max-w-full"
+                    >
+                      <span class="truncate">{profile.handle}</span>
+                      <span aria-hidden="true" class="text-xs text-[#E2A84B] shrink-0">↗</span>
+                    </a>
+                    <div
+                      id={urlElementId}
+                      class="mt-0.5 font-mono text-[0.6875rem] text-[#9C978C] truncate"
+                    >
+                      {profile.url}
+                    </div>
+                  </div>
+                  <CopyButton targetId={urlElementId} label={`Copy ${profile.platform.split(' ')[0]}`} />
+                </div>
+              );
+            })
+          }
+        </div>
+
+        <!-- Secondary Engineering & Content Links -->
+        <div class="pt-2">
+          <h3 class="text-xs font-medium text-[#9C978C] mb-3">
+            Code, Articles &amp; Slide Decks
+          </h3>
+          <div class="flex flex-wrap gap-2.5">
+            {
+              engineeringProfiles.map((profile) => (
+                <a
+                  href={profile.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 rounded-lg bg-[#121417] hover:bg-[#181B20] border border-[#F4F1EA]/14 hover:border-[#F4F1EA]/28 px-3.5 py-2 text-xs text-[#E6E2D8] transition-colors"
+                >
+                  <span class="font-semibold text-[#F4F1EA]">{profile.platform}</span>
+                  <span class="text-[#9C978C]">({profile.handle})</span>
+                  <span aria-hidden="true" class="text-[#E2A84B]">↗</span>
+                </a>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-[#F4F1EA]/10 py-8 px-4 sm:px-6 lg:px-10 text-xs text-[#9C978C]">
+      <div class="mx-auto max-w-5xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <span>Enes Turan · {SPEAKER_PROFILE.roleHeadline}</span>
+        <div class="flex flex-wrap items-center gap-4">
+          <a href={withBase('')} class="hover:text-[#F4F1EA] transition-colors">
+            Interactive Speaking Map
+          </a>
+          <a href={withBase('#talks')} class="hover:text-[#F4F1EA] transition-colors">
+            All {metrics.totalTalks} Talks
+          </a>
+          <a
+            href="https://www.linkedin.com/in/devenes/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-[#F4F1EA] transition-colors"
+          >
+            Contact on LinkedIn ↗
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      import { initCopyButtons } from '../scripts/copyButton';
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCopyButtons);
+      } else {
+        initCopyButtons();
+      }
+    </script>
+  </body>
+</html>
