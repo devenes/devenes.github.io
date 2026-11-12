@@ -304,6 +304,7 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await page.goto('/');
     await page.getByTestId('nav-speaker-kit-link').click();
     await expect(page).toHaveURL(/\/speaker\/?$/);
+    await expect(page.locator('body')).toHaveAttribute('data-copy-ready', 'true');
 
     // Verify speaker identity, standard bio, and featured session proposal
     await expect(page.getByRole('heading', { level: 1, name: 'Enes Turan' })).toBeVisible();

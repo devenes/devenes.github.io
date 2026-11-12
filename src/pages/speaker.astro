@@ -671,14 +671,86 @@ const jsonLd = {
       </div>
     </footer>
 
-    <script>
-      import { initCopyButtons } from '../scripts/copyButton';
+    <script is:inline>
+      (() => {
+        const timers = new WeakMap();
+        let lastMessage = '';
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCopyButtons);
-      } else {
-        initCopyButtons();
-      }
+        function legacyCopy(text) {
+          const field = Object.assign(document.createElement('textarea'), { value: text });
+          field.setAttribute('readonly', '');
+          field.style.cssText = 'position:fixed;inset-block-start:0;opacity:0';
+          document.body.append(field);
+          field.select();
+          try {
+            return document.execCommand('copy');
+          } finally {
+            field.remove();
+          }
+        }
+
+        function report(button, ok) {
+          const tip = button.nextElementSibling;
+          clearTimeout(timers.get(button));
+          button.removeAttribute('data-copied');
+          button.removeAttribute('data-failed');
+          let message = ok ? 'Copied' : 'Copy failed';
+          if (message === lastMessage) message += '\u00A0';
+          lastMessage = message;
+          if (tip) tip.textContent = '';
+          void button.offsetWidth;
+          button.setAttribute(ok ? 'data-copied' : 'data-failed', '');
+          requestAnimationFrame(() => {
+            if (tip) tip.textContent = message;
+          });
+          timers.set(
+            button,
+            setTimeout(() => {
+              button.removeAttribute('data-copied');
+              button.removeAttribute('data-failed');
+              if (tip) tip.textContent = '';
+            }, 2000)
+          );
+        }
+
+        async function copyFromTarget(button, target) {
+          const rawText = target.matches('input, textarea')
+            ? target.value
+            : (target.dataset.copyValue ?? target.innerText);
+          const text = (rawText || '').trim();
+          if (!text) return;
+          try {
+            await navigator.clipboard.writeText(text);
+            report(button, true);
+          } catch {
+            report(button, legacyCopy(text));
+          }
+        }
+
+        if ('CommandEvent' in window) {
+          document.addEventListener(
+            'command',
+            (event) => {
+              if (!event.command || !event.command.startsWith('--copy')) return;
+              if (event.source && event.target) {
+                void copyFromTarget(event.source, event.target);
+              }
+            },
+            true
+          );
+        } else {
+          document.addEventListener('click', (event) => {
+            const clickEl = event.target instanceof Element ? event.target : null;
+            const button = clickEl && clickEl.closest('button[command^="--copy"]');
+            if (!button) return;
+            const targetId = button.getAttribute('commandfor');
+            const target = targetId ? document.getElementById(targetId) : null;
+            if (target) void copyFromTarget(button, target);
+          });
+        }
+
+        document.body.dataset.copyReady = 'true';
+      })();
     </script>
   </body>
 </html>

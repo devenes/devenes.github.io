@@ -81,6 +81,7 @@ async function copyFromTarget(button: HTMLElement, target: HTMLElement): Promise
 export function initCopyButtons(): void {
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
+  document.body.dataset.copyReady = 'true';
 
   if ('CommandEvent' in window) {
     document.addEventListener(
