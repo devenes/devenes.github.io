@@ -88,15 +88,24 @@ const primaryPhoto = SPEAKER_PROFILE.headshots[0];
       </p>
       <div class="pt-2 border-t border-[#F4F1EA]/10 flex flex-wrap items-center justify-between gap-2">
         <span class="text-[#9C978C]">
-          Need high-res headshots or flagship talk abstracts?
+          For event organizers:
         </span>
-        <a
-          href={withBase('speaker/')}
-          data-testid="modal-speaker-kit-link"
-          class="font-semibold text-[#E2A84B] hover:text-[#F4F1EA] transition-colors"
-        >
-          Open Speaker Kit &amp; Photos →
-        </a>
+        <div class="flex flex-wrap items-center gap-3">
+          <a
+            href={withBase('sessions/')}
+            data-testid="modal-sessions-link"
+            class="font-semibold text-[#F4F1EA] hover:text-[#E2A84B] transition-colors"
+          >
+            Session Proposals →
+          </a>
+          <a
+            href={withBase('speaker/')}
+            data-testid="modal-speaker-kit-link"
+            class="font-semibold text-[#E2A84B] hover:text-[#F4F1EA] transition-colors"
+          >
+            Speaker Kit &amp; Photos →
+          </a>
+        </div>
       </div>
     </div>
 

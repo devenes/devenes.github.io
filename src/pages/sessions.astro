@@ -1,0 +1,851 @@
+---
+import rawEvents from '../../data/events.json';
+import rawLocations from '../../data/locations.json';
+import CopyButton from '../components/CopyButton.astro';
+import {
+  formatProposalCopyPayload,
+  SESSION_PROPOSALS,
+  SESSION_TRACKS,
+} from '../data/sessionCatalog';
+import { SPEAKER_PROFILE } from '../data/speakerProfile';
+import { buildSpeakingAtlas } from '../utils/geography';
+import { withBase } from '../utils/paths';
+
+const atlas = buildSpeakingAtlas(rawEvents, rawLocations);
+const { metrics } = atlas;
+
+const totalProposals = SESSION_PROPOSALS.length;
+const workshopsCount = SESSION_PROPOSALS.filter((s) => s.formats.includes('Workshop')).length;
+const talksCount = SESSION_PROPOSALS.filter((s) => s.formats.includes('Talk')).length;
+const keynotesCount = SESSION_PROPOSALS.filter((s) => s.formats.includes('Keynote')).length;
+
+const pageTitle = 'Enes Turan — Session Proposals, Workshops & Talk Abstracts';
+const pageDescription = `Ready-to-schedule conference talks, keynotes, and hands-on workshops by Enes Turan (${SPEAKER_PROFILE.roleHeadline}) covering Google Kubernetes Engine, AI Agents, ADK, MCP, MLOps, and Google Cloud.`;
+const siteOrigin = Astro.site?.toString().replace(/\/$/, '') || 'https://devenes.github.io';
+const canonicalUrl = new URL(withBase('sessions/'), `${siteOrigin}/`).toString();
+const ogImageUrl = new URL(withBase('images/og-sessions.jpg'), `${siteOrigin}/`).toString();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Enes Turan — Conference Talk & Workshop Proposals',
+  description: pageDescription,
+  url: canonicalUrl,
+  numberOfItems: totalProposals,
+  itemListElement: SESSION_PROPOSALS.map((session, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    url: `${canonicalUrl}#${session.id}`,
+    name: session.title,
+  })),
+};
+---
+
+<!doctype html>
+<html
+  lang="en"
+  class="dark bg-[#0B0C0E] text-[#F4F1EA] antialiased selection:bg-[#E2A84B]/30 selection:text-[#F4F1EA]"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="Enes Turan" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Enes Turan — Session Proposals & Workshop Catalog" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@thedevenes" />
+    <meta name="twitter:creator" content="@thedevenes" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
+    <link
+      rel="preload"
+      href={withBase('fonts/plus-jakarta-sans-normal-400-700-latin.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={withBase('fonts/newsreader-normal-400-600-latin.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href={withBase('fonts/fonts.css')} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <style is:global>
+      :root {
+        color-scheme: dark;
+        --bg-canvas: #0b0c0e;
+        --bg-surface: #121417;
+        --ink-primary: #f4f1ea;
+        --ink-secondary: #c6c2b8;
+        --ink-muted: #9c978c;
+        --accent: #e2a84b;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        line-height: 1.5;
+        background-color: var(--bg-canvas);
+        color: var(--ink-primary);
+        overflow-x: hidden;
+        font-size-adjust: from-font;
+      }
+      h1,
+      h2,
+      h3 {
+        text-wrap: balance;
+      }
+      p {
+        text-wrap: pretty;
+      }
+      :target {
+        scroll-margin-top: 6rem;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      summary:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 2px solid #e2a84b;
+        outline-offset: 2px;
+      }
+
+      /* Container-responsive session proposal card */
+      .session-card {
+        container-type: inline-size;
+      }
+      @container (inline-size >= 40rem) {
+        .session-card-footer {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+
+      /* Accessible native <details> disclosure with inline-start chevron mask */
+      .session-details > summary {
+        list-style: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55ch;
+        cursor: pointer;
+        user-select: none;
+      }
+      .session-details > summary::-webkit-details-marker {
+        display: none;
+      }
+      .session-details > summary::before {
+        content: '';
+        inline-size: 0.95em;
+        block-size: 0.95em;
+        flex-shrink: 0;
+        background-color: #e2a84b;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E")
+          no-repeat center / contain;
+        rotate: -90deg;
+      }
+      .session-details[open] > summary::before {
+        rotate: 0deg;
+      }
+      .session-details::details-content {
+        interpolate-size: allow-keywords;
+        overflow: clip;
+        contain: layout;
+      }
+      .session-details:not([open])::details-content {
+        block-size: 0;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .session-details > summary::before {
+          transition: rotate 0.2s ease;
+        }
+        .session-details::details-content {
+          transition:
+            block-size 0.25s ease-in-out,
+            content-visibility 0.25s ease-in-out,
+            display 0.25s ease-in-out;
+          transition-behavior: allow-discrete;
+        }
+      }
+
+      /* Expand / Collapse All toggle label swap */
+      [command='--toggle-all'][aria-expanded='true'] .expand-label,
+      [command='--toggle-all'][aria-expanded='false'] .collapse-label {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body class="font-sans text-[#F4F1EA] bg-[#0B0C0E]">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-md focus:bg-[#E2A84B] focus:text-[#0B0C0E] focus:font-semibold"
+    >
+      Skip to session proposals
+    </a>
+
+    <!-- Compact Single-Row Sticky Navigation Bar -->
+    <header
+      data-testid="sessions-header"
+      class="sticky top-0 z-30 min-h-16 md:min-h-20 px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-2 bg-[#0B0C0E]/92 backdrop-blur-md border-b border-[#F4F1EA]/[0.08]"
+    >
+      <a
+        href={withBase('')}
+        class="group flex items-baseline gap-2.5 whitespace-nowrap rounded-sm py-0.5 shrink-0"
+      >
+        <span class="font-display text-base sm:text-xl font-medium tracking-[-0.015em] text-[#F4F1EA]">
+          Enes Turan
+        </span>
+        <span class="hidden xl:inline text-[#6E6A61]" aria-hidden="true">/</span>
+        <span class="hidden xl:inline text-xs text-[#A39E93] group-hover:text-[#C6C2B8] transition-colors">
+          Google Developer Expert
+        </span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-5 lg:gap-7 text-sm whitespace-nowrap" aria-label="Primary">
+        <a
+          href={withBase('')}
+          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
+        >
+          ← Interactive Map
+        </a>
+        <a
+          href={withBase('#talks')}
+          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors tabular-nums"
+        >
+          Past Talks ({metrics.totalTalks})
+        </a>
+        <a
+          href={withBase('sessions/')}
+          aria-current="page"
+          class="py-1 text-[#F4F1EA] border-b-2 border-[#E2A84B] transition-colors tabular-nums"
+        >
+          Session Proposals ({totalProposals})
+        </a>
+        <a
+          href={withBase('speaker/')}
+          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
+        >
+          Speaker Kit
+        </a>
+      </nav>
+
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <a
+          href={withBase('speaker/')}
+          class="md:hidden rounded-md px-2 py-1.5 text-[0.6875rem] sm:text-xs text-[#C6C2B8] hover:text-[#F4F1EA] bg-[#121417] border border-[#F4F1EA]/14 whitespace-nowrap transition-colors"
+        >
+          Speaker Kit
+        </a>
+        <a
+          href="https://www.linkedin.com/in/devenes/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1 sm:gap-1.5 rounded-md px-2.5 sm:px-3.5 py-1.5 text-[0.6875rem] sm:text-xs font-medium text-[#F4F1EA] bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/20 hover:border-[#F4F1EA]/35 transition-colors whitespace-nowrap"
+        >
+          <span class="sr-only sm:not-sr-only">Invite to speak</span>
+          <span aria-hidden="true" class="sm:hidden">Contact</span>
+          <span aria-hidden="true" class="text-[#E2A84B]">↗</span>
+        </a>
+      </div>
+    </header>
+
+    <main
+      id="main-content"
+      class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-10 py-10 sm:py-14 space-y-10"
+    >
+      <!-- Editorial Header -->
+      <section class="pb-8 border-b border-[#F4F1EA]/12 space-y-5">
+        <p class="text-xs font-medium text-[#E2A84B] tracking-wide">
+          Conference Talks, Keynotes &amp; Hands-On Workshops
+        </p>
+        <h1
+          class="font-display font-medium tracking-[-0.02em] leading-[1.06] text-[#F4F1EA]"
+          style="font-size: clamp(2.2rem, 1.75rem + 2vw, 3.35rem);"
+        >
+          Session Proposals &amp; Topics
+        </h1>
+        <p class="max-w-[66ch] text-sm sm:text-[0.9375rem] leading-[1.65] text-[#C6C2B8]">
+          Current ready-to-deliver sessions on Google Kubernetes Engine, autonomous AI agents with
+          ADK &amp; MCP, MLOps platforms, serverless GPUs, and AI systems reliability. Any talk or
+          lab can be tailored to a 25-minute track slot, a 45-minute technical deep dive, or a
+          90–120 minute hands-on workshop.
+        </p>
+
+        <!-- Summary Ledger + Cross-Link to Speaker Bio -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-1">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[#9C978C] font-mono tabular-nums">
+            <span>
+              <strong class="font-sans font-semibold text-[#F4F1EA]">{totalProposals}</strong> active proposals
+            </span>
+            <span aria-hidden="true" class="text-[#F4F1EA]/20">·</span>
+            <span>
+              <strong class="font-sans font-semibold text-[#F4F1EA]">{talksCount}</strong> technical talks
+            </span>
+            <span aria-hidden="true" class="text-[#F4F1EA]/20">·</span>
+            <span>
+              <strong class="font-sans font-semibold text-[#F4F1EA]">{workshopsCount}</strong> hands-on labs
+            </span>
+            <span aria-hidden="true" class="text-[#F4F1EA]/20">·</span>
+            <span>
+              <strong class="font-sans font-semibold text-[#F4F1EA]">{keynotesCount}</strong> keynote-ready
+            </span>
+          </div>
+
+          <a
+            href={withBase('speaker/')}
+            class="text-xs font-medium text-[#E2A84B] hover:text-[#F4F1EA] transition-colors whitespace-nowrap"
+          >
+            Need speaker bio &amp; high-res photos? Open Speaker Kit →
+          </a>
+        </div>
+      </section>
+
+      <!-- Semantic <search> Filter Bar -->
+      <search
+        aria-label="Filter session proposals"
+        class="rounded-xl bg-[#121417] border border-[#F4F1EA]/14 p-4 sm:p-5 space-y-4"
+      >
+        <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3">
+          <div>
+            <label for="session-search-input" class="sr-only">
+              Search sessions by topic, tool, or keyword
+            </label>
+            <input
+              id="session-search-input"
+              data-testid="session-search-input"
+              type="search"
+              placeholder="Search GKE, ADK, MCP, Cloud Run, vLLM, Istio, SRE…"
+              class="w-full rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/16 px-3.5 py-2 text-xs sm:text-sm text-[#F4F1EA] placeholder:text-[#6E6A61] focus:border-[#E2A84B]"
+            />
+          </div>
+
+          <div>
+            <label for="session-format-select" class="sr-only">Filter by session format</label>
+            <select
+              id="session-format-select"
+              data-testid="session-format-select"
+              class="w-full sm:w-auto rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/16 px-3 py-2 text-xs sm:text-sm text-[#E6E2D8]"
+            >
+              <option value="all">All formats ({totalProposals})</option>
+              <option value="Talk">Talks ({talksCount})</option>
+              <option value="Workshop">Workshops ({workshopsCount})</option>
+              <option value="Keynote">Keynotes ({keynotesCount})</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="session-delivery-select" class="sr-only">Filter by participation mode</label>
+            <select
+              id="session-delivery-select"
+              data-testid="session-delivery-select"
+              class="w-full sm:w-auto rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/16 px-3 py-2 text-xs sm:text-sm text-[#E6E2D8]"
+            >
+              <option value="all">In-person &amp; Virtual</option>
+              <option value="virtual">Available Virtually</option>
+              <option value="in-person-only">In-person Lab / Session</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Track Filter Chips + Expand/Collapse Outlines -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by technical track">
+            <button
+              type="button"
+              data-track-filter="all"
+              aria-pressed="true"
+              class="track-chip rounded-md px-3 py-1.5 text-xs font-medium bg-[#F4F1EA] text-[#0B0C0E] transition-colors cursor-pointer"
+            >
+              All tracks
+            </button>
+            {
+              SESSION_TRACKS.map((track) => (
+                <button
+                  type="button"
+                  data-track-filter={track.id}
+                  data-testid={`track-chip-${track.id}`}
+                  aria-pressed="false"
+                  class="track-chip rounded-md px-3 py-1.5 text-xs font-medium bg-[#181B20] text-[#C6C2B8] hover:text-[#F4F1EA] border border-[#F4F1EA]/12 transition-colors cursor-pointer"
+                >
+                  {track.label}
+                </button>
+              ))
+            }
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span
+              id="sessions-visible-count"
+              data-testid="sessions-visible-count"
+              role="status"
+              class="font-mono text-xs text-[#9C978C] tabular-nums"
+            >
+              Showing {totalProposals} of {totalProposals}
+            </span>
+            <button
+              type="button"
+              id="toggle-all-outlines-btn"
+              data-testid="toggle-all-outlines-btn"
+              aria-expanded="false"
+              {...({ command: '--toggle-all', commandfor: 'sessions-catalog-list' } as Record<string, string>)}
+              class="rounded-md px-2.5 py-1.5 text-xs font-medium text-[#C6C2B8] hover:text-[#F4F1EA] bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/14 transition-colors cursor-pointer whitespace-nowrap"
+            >
+              <span class="expand-label">Expand all outlines</span>
+              <span class="collapse-label">Collapse all outlines</span>
+            </button>
+          </div>
+        </div>
+      </search>
+
+      <!-- Session Proposals List -->
+      <section
+        id="sessions-catalog-list"
+        data-testid="sessions-catalog-list"
+        aria-label="Session proposals"
+        class="space-y-5"
+      >
+        {
+          SESSION_PROPOSALS.map((session) => {
+            const fullCopyPayload = formatProposalCopyPayload(session);
+            const abstractText = session.abstract.join('\n\n');
+            const searchableBlob = [
+              session.title,
+              session.trackLabel,
+              session.formats.join(' '),
+              session.audienceLevels,
+              session.participation,
+              ...session.abstract,
+              ...session.keyTakeaways,
+              ...session.topics,
+            ]
+              .join(' ')
+              .toLowerCase();
+
+            const titleId = `title-${session.id}`;
+            const abstractId = `abstract-${session.id}`;
+            const fullPayloadId = `proposal-${session.id}`;
+            const isVirtualCapable = session.participation.includes('Virtual');
+
+            return (
+              <article
+                id={session.id}
+                data-session-card
+                data-testid={`session-card-${session.id}`}
+                data-track={session.trackId}
+                data-formats={session.formats.join(',')}
+                data-virtual={isVirtualCapable ? 'true' : 'false'}
+                data-search={searchableBlob}
+                class="session-card rounded-xl bg-[#121417] border border-[#F4F1EA]/14 hover:border-[#F4F1EA]/24 p-5 sm:p-7 space-y-5 transition-colors"
+              >
+                <header class="space-y-2.5">
+                  <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="flex flex-wrap items-center gap-2">
+                      {session.formats.map((fmt) => (
+                        <span
+                          class={
+                            fmt === 'Workshop'
+                              ? 'rounded bg-[#6BA38B]/18 border border-[#6BA38B]/40 px-2.5 py-0.5 font-medium text-[#8EC5AE]'
+                              : fmt === 'Keynote'
+                                ? 'rounded bg-[#E2A84B]/18 border border-[#E2A84B]/40 px-2.5 py-0.5 font-medium text-[#E2A84B]'
+                                : 'rounded bg-[#7DA2C8]/18 border border-[#7DA2C8]/38 px-2.5 py-0.5 font-medium text-[#9EC0E2]'
+                          }
+                        >
+                          {fmt === 'Workshop' ? 'Hands-On Workshop' : fmt}
+                        </span>
+                      ))}
+                      <span class="font-mono text-[0.75rem] text-[#C6C2B8]">
+                        {session.durationLabel}
+                      </span>
+                      <span aria-hidden="true" class="text-[#F4F1EA]/20">·</span>
+                      <span class="text-[#9C978C]">{session.trackLabel}</span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2 font-mono text-[0.6875rem] text-[#9C978C]">
+                      <span class="rounded bg-[#181B20] border border-[#F4F1EA]/10 px-2 py-0.5 text-[#C6C2B8]">
+                        {session.participation}
+                      </span>
+                      <span class="rounded bg-[#181B20] border border-[#F4F1EA]/10 px-2 py-0.5">
+                        Level: {session.audienceLevels}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h2
+                    id={titleId}
+                    class="font-display text-xl sm:text-2xl font-medium text-[#F4F1EA] leading-[1.2]"
+                  >
+                    <a
+                      href={`#${session.id}`}
+                      class="hover:text-[#E2A84B] transition-colors"
+                    >
+                      {session.title}
+                    </a>
+                  </h2>
+                </header>
+
+                <!-- Card Content Region -->
+                <div class="space-y-4">
+                  <div
+                    id={abstractId}
+                    data-copy-value={abstractText}
+                    class="space-y-3 text-sm sm:text-[0.9375rem] leading-[1.7] text-[#E6E2D8]"
+                  >
+                    {session.abstract.map((paragraph) => (
+                      <p>{paragraph}</p>
+                    ))}
+                  </div>
+
+                  <!-- Hidden full formatted CFP payload holder for Copy Full Proposal -->
+                  <span id={fullPayloadId} data-copy-value={fullCopyPayload} class="sr-only">
+                    {session.title}
+                  </span>
+
+                  <!-- Topic Pills -->
+                  <ul class="flex flex-wrap gap-1.5 pt-1" aria-label="Session topics">
+                    {session.topics.map((topic) => (
+                      <li class="rounded px-2.5 py-1 text-xs bg-[#181B20] border border-[#F4F1EA]/12 text-[#C6C2B8]">
+                        {topic}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <!-- On-Demand Disclosure: Takeaways, Audience & Prerequisites -->
+                  <details class="session-details rounded-lg bg-[#181B20]/65 border border-[#F4F1EA]/10 px-4 py-3 text-xs sm:text-sm">
+                    <summary class="font-medium text-[#E6E2D8] hover:text-[#F4F1EA]">
+                      Key takeaways &amp; target audience
+                    </summary>
+                    <div class="pt-4 mt-3 border-t border-[#F4F1EA]/10 grid grid-cols-1 md:grid-cols-2 gap-5 text-xs leading-[1.6] text-[#C6C2B8]">
+                      <div>
+                        <div class="font-semibold text-[#F4F1EA] mb-2">Key Takeaways</div>
+                        <ul class="list-disc pl-4 space-y-1.5">
+                          {session.keyTakeaways.map((item) => (
+                            <li>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div class="space-y-3">
+                        <div>
+                          <div class="font-semibold text-[#F4F1EA] mb-2">Who Should Attend</div>
+                          <ul class="list-disc pl-4 space-y-1.5">
+                            {session.whoShouldAttend.map((item) => (
+                              <li>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        {session.prerequisites && (
+                          <div class="pt-2 border-t border-[#F4F1EA]/10">
+                            <span class="font-semibold text-[#E2A84B]">Prerequisites: </span>
+                            <span>{session.prerequisites}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </details>
+                </div>
+
+                <!-- Card Footer Actions -->
+                <footer class="session-card-footer pt-4 border-t border-[#F4F1EA]/10 flex flex-col gap-3">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <CopyButton
+                      targetId={fullPayloadId}
+                      label="Copy full proposal"
+                      testId={`copy-proposal-${session.id}`}
+                      variant="primary"
+                    />
+                    <CopyButton
+                      targetId={titleId}
+                      label="Copy title"
+                      testId={`copy-title-${session.id}`}
+                    />
+                    <CopyButton
+                      targetId={abstractId}
+                      label="Copy abstract"
+                      testId={`copy-abstract-${session.id}`}
+                    />
+                  </div>
+
+                  <a
+                    href={`#${session.id}`}
+                    class="font-mono text-[0.6875rem] text-[#9C978C] hover:text-[#E2A84B] transition-colors whitespace-nowrap"
+                  >
+                    #{session.id}
+                  </a>
+                </footer>
+              </article>
+            );
+          })
+        }
+
+        <!-- Empty Search State -->
+        <div
+          id="sessions-empty-state"
+          hidden
+          class="rounded-xl bg-[#121417] border border-[#F4F1EA]/14 p-8 text-center space-y-3"
+        >
+          <p class="text-sm text-[#C6C2B8]">No session proposals match those filter criteria.</p>
+          <button
+            type="button"
+            id="sessions-reset-filters-btn"
+            class="rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/18 px-3.5 py-1.5 text-xs font-medium text-[#F4F1EA] cursor-pointer"
+          >
+            Reset filters
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-[#F4F1EA]/10 py-8 px-4 sm:px-6 lg:px-10 text-xs text-[#9C978C]">
+      <div class="mx-auto max-w-5xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <span>Enes Turan · {SPEAKER_PROFILE.roleHeadline}</span>
+        <div class="flex flex-wrap items-center gap-4">
+          <a href={withBase('')} class="hover:text-[#F4F1EA] transition-colors">
+            Interactive Speaking Map
+          </a>
+          <a href={withBase('speaker/')} class="hover:text-[#F4F1EA] transition-colors">
+            Speaker Bio &amp; Photos
+          </a>
+          <a
+            href="https://www.linkedin.com/in/devenes/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-[#F4F1EA] transition-colors"
+          >
+            Invite via LinkedIn ↗
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Zero-Waterfall Inline Copy, Filter & Accordion Controller -->
+    <script is:inline>
+      (() => {
+        const timers = new WeakMap();
+        let lastMessage = '';
+
+        function legacyCopy(text) {
+          const field = Object.assign(document.createElement('textarea'), { value: text });
+          field.setAttribute('readonly', '');
+          field.style.cssText = 'position:fixed;inset-block-start:0;opacity:0';
+          document.body.append(field);
+          field.select();
+          try {
+            return document.execCommand('copy');
+          } finally {
+            field.remove();
+          }
+        }
+
+        function report(button, ok) {
+          const tip = button.nextElementSibling;
+          clearTimeout(timers.get(button));
+          button.removeAttribute('data-copied');
+          button.removeAttribute('data-failed');
+          let message = ok ? 'Copied' : 'Copy failed';
+          if (message === lastMessage) message += '\u00A0';
+          lastMessage = message;
+          if (tip) tip.textContent = '';
+          void button.offsetWidth;
+          button.setAttribute(ok ? 'data-copied' : 'data-failed', '');
+          requestAnimationFrame(() => {
+            if (tip) tip.textContent = message;
+          });
+          timers.set(
+            button,
+            setTimeout(() => {
+              button.removeAttribute('data-copied');
+              button.removeAttribute('data-failed');
+              if (tip) tip.textContent = '';
+            }, 2000)
+          );
+        }
+
+        async function copyFromTarget(button, target) {
+          const rawText = target.matches('input, textarea')
+            ? target.value
+            : (target.dataset.copyValue ?? target.innerText);
+          const text = (rawText || '').trim();
+          if (!text) return;
+          try {
+            await navigator.clipboard.writeText(text);
+            report(button, true);
+          } catch {
+            report(button, legacyCopy(text));
+          }
+        }
+
+        const listEl = document.getElementById('sessions-catalog-list');
+        const toggleAllBtn = document.getElementById('toggle-all-outlines-btn');
+
+        function getVisibleDetails() {
+          if (!listEl) return [];
+          return Array.from(
+            listEl.querySelectorAll('article:not([hidden]) > div > details.session-details')
+          );
+        }
+
+        function syncToggleAllState() {
+          if (!toggleAllBtn) return;
+          const visibleDetails = getVisibleDetails();
+          const allOpen =
+            visibleDetails.length > 0 && visibleDetails.every((details) => details.open);
+          toggleAllBtn.setAttribute('aria-expanded', allOpen ? 'true' : 'false');
+        }
+
+        function toggleAllOutlines() {
+          if (!toggleAllBtn) return;
+          const shouldExpand = toggleAllBtn.getAttribute('aria-expanded') !== 'true';
+          for (const details of getVisibleDetails()) {
+            details.open = shouldExpand;
+          }
+          syncToggleAllState();
+        }
+
+        if ('CommandEvent' in window) {
+          document.addEventListener(
+            'command',
+            (event) => {
+              if (!event.command) return;
+              if (event.command.startsWith('--copy') && event.source && event.target) {
+                void copyFromTarget(event.source, event.target);
+              } else if (event.command === '--toggle-all') {
+                toggleAllOutlines();
+              }
+            },
+            true
+          );
+        } else {
+          document.addEventListener('click', (event) => {
+            const clickEl = event.target instanceof Element ? event.target : null;
+            const copyBtn = clickEl && clickEl.closest('button[command^="--copy"]');
+            if (copyBtn) {
+              const targetId = copyBtn.getAttribute('commandfor');
+              const target = targetId ? document.getElementById(targetId) : null;
+              if (target) void copyFromTarget(copyBtn, target);
+              return;
+            }
+            const toggleBtn = clickEl && clickEl.closest('button[command="--toggle-all"]');
+            if (toggleBtn) {
+              toggleAllOutlines();
+            }
+          });
+        }
+
+        document.addEventListener(
+          'toggle',
+          (event) => {
+            if (
+              event.target instanceof HTMLDetailsElement &&
+              event.target.classList.contains('session-details')
+            ) {
+              syncToggleAllState();
+            }
+          },
+          true
+        );
+
+        // Live Catalog Filtering
+        const searchInput = document.getElementById('session-search-input');
+        const formatSelect = document.getElementById('session-format-select');
+        const deliverySelect = document.getElementById('session-delivery-select');
+        const trackChips = Array.from(document.querySelectorAll('[data-track-filter]'));
+        const cards = Array.from(document.querySelectorAll('[data-session-card]'));
+        const countEl = document.getElementById('sessions-visible-count');
+        const emptyEl = document.getElementById('sessions-empty-state');
+        const resetBtn = document.getElementById('sessions-reset-filters-btn');
+        let activeTrack = 'all';
+
+        function applyFilters() {
+          const q = ((searchInput && searchInput.value) || '').trim().toLowerCase();
+          const fmt = (formatSelect && formatSelect.value) || 'all';
+          const delivery = (deliverySelect && deliverySelect.value) || 'all';
+          let visibleCount = 0;
+
+          for (const card of cards) {
+            const cardTrack = card.getAttribute('data-track') || '';
+            const cardFormats = (card.getAttribute('data-formats') || '').split(',');
+            const isVirtual = card.getAttribute('data-virtual') === 'true';
+            const hay = card.getAttribute('data-search') || '';
+
+            const trackOk = activeTrack === 'all' || cardTrack === activeTrack;
+            const fmtOk = fmt === 'all' || cardFormats.includes(fmt);
+            const deliveryOk =
+              delivery === 'all' ||
+              (delivery === 'virtual' && isVirtual) ||
+              (delivery === 'in-person-only' && !isVirtual);
+            const queryOk = !q || hay.includes(q);
+
+            const show = trackOk && fmtOk && deliveryOk && queryOk;
+            card.hidden = !show;
+            if (show) visibleCount += 1;
+          }
+
+          if (countEl) {
+            countEl.textContent = `Showing ${visibleCount} of ${cards.length}`;
+          }
+          if (emptyEl) {
+            emptyEl.hidden = visibleCount > 0;
+          }
+          syncToggleAllState();
+        }
+
+        function setTrackFilter(nextTrack) {
+          activeTrack = nextTrack;
+          for (const chip of trackChips) {
+            const isActive = chip.getAttribute('data-track-filter') === nextTrack;
+            chip.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            if (isActive) {
+              chip.classList.add('bg-[#F4F1EA]', 'text-[#0B0C0E]');
+              chip.classList.remove('bg-[#181B20]', 'text-[#C6C2B8]', 'border', 'border-[#F4F1EA]/12');
+            } else {
+              chip.classList.remove('bg-[#F4F1EA]', 'text-[#0B0C0E]');
+              chip.classList.add('bg-[#181B20]', 'text-[#C6C2B8]', 'border', 'border-[#F4F1EA]/12');
+            }
+          }
+          applyFilters();
+        }
+
+        for (const chip of trackChips) {
+          chip.addEventListener('click', () => {
+            setTrackFilter(chip.getAttribute('data-track-filter') || 'all');
+          });
+        }
+        searchInput && searchInput.addEventListener('input', applyFilters);
+        formatSelect && formatSelect.addEventListener('change', applyFilters);
+        deliverySelect && deliverySelect.addEventListener('change', applyFilters);
+        resetBtn &&
+          resetBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            if (formatSelect) formatSelect.value = 'all';
+            if (deliverySelect) deliverySelect.value = 'all';
+            setTrackFilter('all');
+          });
+
+        document.body.dataset.copyReady = 'true';
+      })();
+    </script>
+  </body>
+</html>

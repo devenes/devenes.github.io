@@ -369,4 +369,90 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await page.goto('/#talks');
     await expect(page.getByTestId('archive-matrix-modal')).toBeVisible();
   });
+
+  test('8. Session Proposals Catalog (/sessions/), Track & Format Filtering, Expand All Outlines & Copy Proposal', async ({
+    page,
+    context,
+    request,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    // Verify /images/og-sessions.jpg returns 200 OK and sitemap lists /sessions/
+    const ogRes = await request.get('/images/og-sessions.jpg');
+    expect(ogRes.status()).toBe(200);
+    const sitemapRes = await request.get('/sitemap.xml');
+    expect(sitemapRes.status()).toBe(200);
+    expect(await sitemapRes.text()).toContain('/sessions/');
+
+    // Navigate from home page Topics & Abstracts link to /sessions/
+    await page.goto('/');
+    await page.getByTestId('nav-sessions-link').click();
+    await expect(page).toHaveURL(/\/sessions\/?$/);
+    await expect(page.locator('body')).toHaveAttribute('data-copy-ready', 'true');
+
+    // Verify all 13 session proposal cards are rendered and visible initially
+    const visibleCards = page.locator('[data-session-card]:not([hidden])');
+    await expect(visibleCards).toHaveCount(13);
+    await expect(page.getByTestId('sessions-visible-count')).toHaveText('Showing 13 of 13');
+
+    // Filter by AI Agents track chip -> 3 proposals
+    await page.getByTestId('track-chip-ai-agents').click();
+    await expect(visibleCards).toHaveCount(3);
+    await expect(page.getByTestId('sessions-visible-count')).toHaveText('Showing 3 of 13');
+
+    // Reset back to All tracks and filter by Workshop format -> 3 hands-on workshops
+    await page.locator('[data-track-filter="all"]').click();
+    await expect(visibleCards).toHaveCount(13);
+    await page.getByTestId('session-format-select').selectOption('Workshop');
+    await expect(visibleCards).toHaveCount(3);
+    await expect(page.getByTestId('sessions-visible-count')).toHaveText('Showing 3 of 13');
+
+    // Search for "Cloud Service Mesh" within Workshops -> 1 card
+    await page.getByTestId('session-search-input').fill('Cloud Service Mesh');
+    await expect(visibleCards).toHaveCount(1);
+    await expect(page.getByTestId('session-card-model-deployment-canary-csm-gke')).toBeVisible();
+
+    // Trigger empty state and reset via button
+    await page.getByTestId('session-search-input').fill('nonexistent-xyz-topic');
+    await expect(visibleCards).toHaveCount(0);
+    await page.locator('#sessions-reset-filters-btn').click();
+    await expect(visibleCards).toHaveCount(13);
+
+    // Expand all outlines and collapse all outlines
+    const toggleAllBtn = page.getByTestId('toggle-all-outlines-btn');
+    await expect(toggleAllBtn).toHaveAttribute('aria-expanded', 'false');
+    await toggleAllBtn.click();
+    await expect(toggleAllBtn).toHaveAttribute('aria-expanded', 'true');
+    const openDetails = page.locator('details.session-details[open]');
+    await expect(openDetails).toHaveCount(13);
+    await toggleAllBtn.click();
+    await expect(toggleAllBtn).toHaveAttribute('aria-expanded', 'false');
+    await expect(openDetails).toHaveCount(0);
+
+    // Verify one-click full proposal copy writes formatted CFP text to clipboard
+    const copyProposalBtn = page.getByTestId('copy-proposal-gke-ai-infrastructure-next-gen');
+    await copyProposalBtn.click();
+    await expect(copyProposalBtn).toHaveAttribute('data-copied', '');
+    const copiedText = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copiedText).toContain(
+      'Session Title: Kubernetes for AI at Scale: Building the Next Generation of AI Infrastructure'
+    );
+    expect(copiedText).toContain('GKE Inference Gateway');
+
+    // Verify mobile responsiveness on /sessions/ (single-row compact header & zero horizontal overflow)
+    await page.setViewportSize({ width: 390, height: 844 });
+    const header390 = await page.getByTestId('sessions-header').boundingBox();
+    expect(header390).not.toBeNull();
+    expect(header390!.height).toBeLessThanOrEqual(68);
+
+    await page.setViewportSize({ width: 320, height: 700 });
+    const header320 = await page.getByTestId('sessions-header').boundingBox();
+    expect(header320).not.toBeNull();
+    expect(header320!.height).toBeLessThanOrEqual(68);
+    const sessionsOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    );
+    expect(sessionsOverflow).toBe(false);
+  });
 });

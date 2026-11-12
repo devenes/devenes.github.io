@@ -2,12 +2,18 @@
 import rawEvents from '../../data/events.json';
 import rawLocations from '../../data/locations.json';
 import CopyButton from '../components/CopyButton.astro';
+import { SESSION_PROPOSALS } from '../data/sessionCatalog';
 import { SPEAKER_PROFILE } from '../data/speakerProfile';
 import { buildSpeakingAtlas } from '../utils/geography';
 import { withBase } from '../utils/paths';
 
 const atlas = buildSpeakingAtlas(rawEvents, rawLocations);
 const { metrics } = atlas;
+const additionalHighlights = SESSION_PROPOSALS.filter((s) =>
+  ['gke-ai-infrastructure-next-gen', 'adk-agents-skills-tools', 'from-cloud-to-code-2026'].includes(
+    s.id
+  )
+);
 
 const pageTitle = 'Enes Turan — Speaker Bio, Photos & Media Kit';
 const pageDescription =
@@ -162,7 +168,7 @@ const jsonLd = {
         </span>
       </a>
 
-      <nav class="hidden md:flex items-center gap-6 text-sm whitespace-nowrap" aria-label="Primary">
+      <nav class="hidden md:flex items-center gap-5 lg:gap-6 text-sm whitespace-nowrap" aria-label="Primary">
         <a
           href={withBase('')}
           class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
@@ -173,7 +179,14 @@ const jsonLd = {
           href={withBase('#talks')}
           class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors tabular-nums"
         >
-          Talks ({metrics.totalTalks})
+          Past Talks ({metrics.totalTalks})
+        </a>
+        <a
+          href={withBase('sessions/')}
+          data-testid="speaker-kit-sessions-nav-link"
+          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors tabular-nums"
+        >
+          Session Proposals ({SESSION_PROPOSALS.length})
         </a>
         <a
           href={withBase('speaker/')}
@@ -186,7 +199,7 @@ const jsonLd = {
           href="https://speakerdeck.com/devenes"
           target="_blank"
           rel="noopener noreferrer"
-          class="hidden lg:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
+          class="hidden xl:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
         >
           Slides <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
         </a>
@@ -580,6 +593,52 @@ const jsonLd = {
             }
           </div>
         </article>
+
+        <!-- Additional Session Drafts Preview + Full Catalog Link -->
+        <div class="rounded-xl bg-[#121417] border border-[#F4F1EA]/14 p-5 sm:p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#F4F1EA]/10">
+            <div>
+              <h3 class="text-sm font-semibold text-[#F4F1EA]">
+                More Ready-to-Schedule Talks &amp; Hands-On Workshops ({SESSION_PROPOSALS.length} total)
+              </h3>
+              <p class="mt-0.5 text-xs text-[#9C978C]">
+                Need a hands-on ADK/Cloud Run lab, a Google Cloud Next / I/O synthesis keynote, or an MLOps deep dive?
+              </p>
+            </div>
+            <a
+              href={withBase('sessions/')}
+              data-testid="browse-all-proposals-btn"
+              class="inline-flex min-h-[2rem] items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-semibold text-[#0B0C0E] bg-[#F4F1EA] hover:bg-white transition-colors whitespace-nowrap self-start sm:self-auto"
+            >
+              <span>Browse all {SESSION_PROPOSALS.length} proposals</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            {
+              additionalHighlights.map((item) => (
+                <a
+                  href={`${withBase('sessions/')}#${item.id}`}
+                  class="group rounded-lg bg-[#181B20]/80 hover:bg-[#22262D] border border-[#F4F1EA]/10 hover:border-[#E2A84B]/45 p-3.5 flex flex-col justify-between gap-3 transition-colors"
+                >
+                  <div class="space-y-1.5">
+                    <div class="font-mono text-[0.6875rem] text-[#E2A84B]">
+                      {item.formats.join(' / ')} · {item.durationLabel}
+                    </div>
+                    <div class="text-xs font-semibold text-[#F4F1EA] group-hover:text-white leading-[1.4]">
+                      {item.title}
+                    </div>
+                  </div>
+                  <div class="text-[0.6875rem] text-[#9C978C] flex items-center justify-between">
+                    <span>{item.participation}</span>
+                    <span aria-hidden="true" class="text-[#E2A84B]">→</span>
+                  </div>
+                </a>
+              ))
+            }
+          </div>
+        </div>
       </section>
 
       <!-- Section 4: Social Media & Technical Profiles -->
@@ -655,6 +714,9 @@ const jsonLd = {
         <div class="flex flex-wrap items-center gap-4">
           <a href={withBase('')} class="hover:text-[#F4F1EA] transition-colors">
             Interactive Speaking Map
+          </a>
+          <a href={withBase('sessions/')} class="hover:text-[#F4F1EA] transition-colors">
+            Session Proposals ({SESSION_PROPOSALS.length})
           </a>
           <a href={withBase('#talks')} class="hover:text-[#F4F1EA] transition-colors">
             All {metrics.totalTalks} Talks

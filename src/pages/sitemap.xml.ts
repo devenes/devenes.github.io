@@ -9,6 +9,7 @@ export const GET: APIRoute = ({ site }) => {
   const pages = [
     { path: withBase(''), priority: '1.0', changefreq: 'monthly', lastmod: latestEventDate },
     { path: withBase('speaker/'), priority: '0.9', changefreq: 'monthly', lastmod: latestEventDate },
+    { path: withBase('sessions/'), priority: '0.9', changefreq: 'monthly', lastmod: latestEventDate },
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

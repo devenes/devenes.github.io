@@ -68,6 +68,13 @@ const { totalTalks } = Astro.props;
       About
     </button>
     <a
+      href={withBase('sessions/')}
+      data-testid="nav-sessions-link"
+      class="relative py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
+    >
+      Topics &amp; Abstracts
+    </a>
+    <a
       href={withBase('speaker/')}
       data-testid="nav-speaker-kit-link"
       class="relative py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
@@ -78,7 +85,7 @@ const { totalTalks } = Astro.props;
       href="https://medium.com/@devenes"
       target="_blank"
       rel="noopener noreferrer"
-      class="hidden lg:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
+      class="hidden xl:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
     >
       Writing <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
     </a>
@@ -86,7 +93,7 @@ const { totalTalks } = Astro.props;
       href="https://speakerdeck.com/devenes"
       target="_blank"
       rel="noopener noreferrer"
-      class="hidden lg:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
+      class="hidden xl:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
     >
       Slides <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
     </a>
