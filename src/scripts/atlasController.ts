@@ -8,6 +8,7 @@ import { formatCoordinates, formatSignalDate, withBase } from '../utils/paths';
 import { EarthGlobeController } from './earthGlobe';
 
 export type AtlasViewMode = 'globe' | 'regions' | 'timeline' | 'topics';
+type NavLinkId = 'home' | 'talks' | 'about';
 
 declare global {
   interface Window {
@@ -17,16 +18,24 @@ declare global {
 }
 
 const ERA_NARRATIVES: Record<string, string> = {
-  all: 'Tracing 44 speaking engagements across 4 years: from enterprise Kubernetes and cloud architectures to autonomous AI agents and global reliability engineering.',
   '2026':
-    '2026 — AI Infrastructure, Surgical AI Agents & Global Reliability: High-scale AI infrastructure, clinical AI agent workshops, Kubernetes for AI workloads, and SRE at Google scale.',
+    '2026 — Hands-on workshops on clinical AI agent design, Kubernetes for AI workloads, and SRE practices.',
   '2025':
-    '2025 — The Autonomous Agent Wave: Rapid transition into Generative AI and autonomous AI Agents, building with Agent Development Kit (ADK), Vertex AI, and enterprise GKE platforms.',
+    '2025 — Multi-agent workflows with ADK and Vertex AI alongside production GKE platform sessions.',
   '2024':
-    '2024 — Containers Meet AI/ML: Container orchestration converges with high-scale AI/ML workloads, introducing MLOps pipelines and multi-cloud GKE architectures.',
+    '2024 — Running ML workloads on containers, MLOps pipelines, and multi-cluster GKE architectures.',
   '2023':
-    '2023 — Cloud & Kubernetes Foundations: Deep dives into GKE Enterprise, scheduler internals, and serverless architectures across Türkiye, Central Asia, and the Balkans.',
+    '2023 — Deep dives into Kubernetes scheduler internals, Knative serverless, and cloud foundations.',
 };
+
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 export class SpeakingAtlasController {
   private atlas: SpeakingAtlasData;
@@ -51,6 +60,15 @@ export class SpeakingAtlasController {
     this.globe = globe;
     this.bindEvents();
     this.syncBodyAttributes();
+    this.updateTimelineScrollButtons();
+    this.applyHashRoute(window.location.hash);
+  }
+
+  private getEraNarrative(year: string): string {
+    if (year !== 'all' && ERA_NARRATIVES[year]) {
+      return ERA_NARRATIVES[year];
+    }
+    return `${this.atlas.metrics.totalTalks} sessions from 2023 to 2026 across cloud architecture, GKE internals, and multi-agent AI systems.`;
   }
 
   private syncBodyAttributes(): void {
@@ -62,19 +80,112 @@ export class SpeakingAtlasController {
     document.body.dataset.topic = this.activeTopic;
   }
 
+  private setActiveNavLink(navId: NavLinkId): void {
+    document.querySelectorAll<HTMLButtonElement>('[data-nav-link]').forEach((btn) => {
+      const isMatch = btn.dataset.navLink === navId;
+      if (isMatch) {
+        btn.setAttribute('aria-current', 'page');
+        btn.classList.add('text-[#F4F1EA]', 'border-[#E2A84B]');
+        btn.classList.remove('text-[#A39E93]', 'border-transparent');
+      } else {
+        btn.removeAttribute('aria-current');
+        btn.classList.remove('text-[#F4F1EA]', 'border-[#E2A84B]');
+        btn.classList.add('text-[#A39E93]', 'border-transparent');
+      }
+    });
+  }
+
+  private isDialogOpen(id: string): boolean {
+    const dialog = document.getElementById(id) as HTMLDialogElement | null;
+    if (!dialog) return false;
+    return Boolean(dialog.open) || dialog.getAttribute('aria-hidden') === 'false';
+  }
+
+  private syncGlobeDialogPauseState(): void {
+    const anyModalOpen =
+      this.isDialogOpen('signal-drawer') ||
+      this.isDialogOpen('archive-matrix-modal') ||
+      this.isDialogOpen('about-modal');
+    this.globe.setPaused(anyModalOpen);
+  }
+
+  private openDialogElement(
+    dialog: HTMLDialogElement | null,
+    useFlexLayout = false
+  ): void {
+    if (!dialog) return;
+    if (useFlexLayout) {
+      dialog.classList.add('flex');
+    }
+    dialog.setAttribute('aria-hidden', 'false');
+    if (!dialog.open) {
+      if (typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute('open', '');
+      }
+    }
+    this.syncGlobeDialogPauseState();
+  }
+
+  private closeDialogElement(dialog: HTMLDialogElement | null): void {
+    if (!dialog) return;
+    dialog.classList.remove('flex');
+    dialog.setAttribute('aria-hidden', 'true');
+    if (dialog.open) {
+      if (typeof dialog.close === 'function') {
+        dialog.close();
+      } else {
+        dialog.removeAttribute('open');
+      }
+    }
+    this.syncGlobeDialogPauseState();
+  }
+
+  private setUrlHash(hashValue: string | null): void {
+    if (typeof window === 'undefined' || !window.history?.replaceState) return;
+    const baseUrl = `${window.location.pathname}${window.location.search}`;
+    const targetUrl = hashValue ? `${baseUrl}#${encodeURIComponent(hashValue)}` : baseUrl;
+    if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== targetUrl) {
+      window.history.replaceState(null, '', targetUrl);
+    }
+  }
+
+  public applyHashRoute(rawHash: string): void {
+    const cleaned = decodeURIComponent(rawHash.replace(/^#/, '').trim());
+    if (!cleaned || cleaned === 'main-content') return;
+
+    const matchedEvent = this.atlas.events.find((e) => e.id === cleaned);
+    if (matchedEvent) {
+      this.openEventDrawer(matchedEvent.id);
+      return;
+    }
+
+    const matchedCity = this.atlas.cities.find((c) => c.id === cleaned);
+    if (matchedCity) {
+      this.selectCity(matchedCity.id);
+    }
+  }
+
+  private setPanelHidden(
+    el: HTMLElement | null,
+    isHidden: boolean,
+    flexWhenVisible = false
+  ): void {
+    if (!el) return;
+    el.hidden = isHidden;
+    el.classList.toggle('hidden', isHidden);
+    if (flexWhenVisible) {
+      el.classList.toggle('flex', !isHidden);
+    }
+  }
+
   public setViewMode(mode: AtlasViewMode): void {
     this.viewMode = mode;
 
     document.querySelectorAll<HTMLButtonElement>('[data-view-mode]').forEach((btn) => {
       const isSelected = btn.dataset.viewMode === mode;
       btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-      if (isSelected) {
-        btn.classList.add('bg-[#1D4ED8]/45', 'text-white', 'border-[#38BDF8]/50');
-        btn.classList.remove('text-slate-300', 'border-transparent');
-      } else {
-        btn.classList.remove('bg-[#1D4ED8]/45', 'text-white', 'border-[#38BDF8]/50');
-        btn.classList.add('text-slate-300', 'border-transparent');
-      }
     });
 
     const overviewEl = document.getElementById('city-overview-state');
@@ -83,29 +194,14 @@ export class SpeakingAtlasController {
     const timelineEl = document.getElementById('view-panel-timeline');
     const topicsEl = document.getElementById('view-panel-topics');
 
-    overviewEl?.classList.add('hidden');
-    selectedCityEl?.classList.add('hidden');
-    selectedCityEl?.classList.remove('flex');
-    regionsEl?.classList.add('hidden');
-    timelineEl?.classList.add('hidden');
-    topicsEl?.classList.add('hidden');
-
-    if (mode === 'globe') {
-      if (this.selectedCityId) {
-        selectedCityEl?.classList.remove('hidden');
-        selectedCityEl?.classList.add('flex');
-      } else {
-        overviewEl?.classList.remove('hidden');
-      }
-    } else if (mode === 'regions') {
-      regionsEl?.classList.remove('hidden');
-    } else if (mode === 'timeline') {
-      timelineEl?.classList.remove('hidden');
-    } else if (mode === 'topics') {
-      topicsEl?.classList.remove('hidden');
-    }
+    this.setPanelHidden(overviewEl, !(mode === 'globe' && !this.selectedCityId));
+    this.setPanelHidden(selectedCityEl, !(mode === 'globe' && Boolean(this.selectedCityId)), true);
+    this.setPanelHidden(regionsEl, mode !== 'regions');
+    this.setPanelHidden(timelineEl, mode !== 'timeline');
+    this.setPanelHidden(topicsEl, mode !== 'topics');
 
     this.syncBodyAttributes();
+    this.globe.invalidatePanelRects();
   }
 
   public selectCity(cityId: string | null): void {
@@ -120,6 +216,10 @@ export class SpeakingAtlasController {
       this.globe.applyFilters({ region: 'all' });
       this.globe.focusOnCity(null);
       this.setViewMode('globe');
+      if (!this.isDialogOpen('signal-drawer')) {
+        this.setUrlHash(null);
+      }
+      this.globe.invalidatePanelRects();
       return;
     }
 
@@ -143,6 +243,10 @@ export class SpeakingAtlasController {
     this.setViewMode('globe');
     this.globe.focusOnCity(city.id);
     this.syncBodyAttributes();
+    if (!this.isDialogOpen('signal-drawer')) {
+      this.setUrlHash(city.id);
+    }
+    this.globe.invalidatePanelRects();
   }
 
   public selectRegion(regionId: string): void {
@@ -167,11 +271,11 @@ export class SpeakingAtlasController {
       const regId = card.dataset.regionCard ?? '';
       const isSelected = regId === this.activeRegion && this.activeRegion !== 'all';
       if (isSelected) {
-        card.classList.add('border-[#38BDF8]/60', 'bg-[#1D4ED8]/20');
-        card.classList.remove('border-white/10', 'bg-slate-900/70');
+        card.classList.add('border-[#E2A84B]/60', 'bg-[#22262D]/85');
+        card.classList.remove('border-[#F4F1EA]/12', 'bg-[#181B20]/75');
       } else {
-        card.classList.remove('border-[#38BDF8]/60', 'bg-[#1D4ED8]/20');
-        card.classList.add('border-white/10', 'bg-slate-900/70');
+        card.classList.remove('border-[#E2A84B]/60', 'bg-[#22262D]/85');
+        card.classList.add('border-[#F4F1EA]/12', 'bg-[#181B20]/75');
       }
     });
   }
@@ -183,20 +287,32 @@ export class SpeakingAtlasController {
     const coordsEl = document.getElementById('selected-city-coords');
     const countEl = document.getElementById('selected-city-talks-count');
     const eventsListEl = document.getElementById('selected-city-events-list');
+    const photosTabBtn = document.getElementById('city-tab-btn-photos');
     const photosContentEl = document.getElementById('selected-city-photos-content');
     const aboutContentEl = document.getElementById('selected-city-about-content');
     const archiveBtn = document.getElementById('selected-city-archive-btn');
 
     if (nameEl) nameEl.textContent = city.city;
     if (countryEl) {
-      countryEl.innerHTML = `<span>${city.flag}</span><span>${city.country}</span>`;
+      countryEl.innerHTML = `<span>${escapeHtml(city.flag)}</span><span>${escapeHtml(city.country)}</span>`;
     }
-    if (regionBadgeEl) regionBadgeEl.textContent = city.regionName.toUpperCase();
+    if (regionBadgeEl) {
+      if (city.isBaseHub) {
+        regionBadgeEl.textContent = 'Home base';
+      } else if (city.regionName.toLowerCase() === city.country.toLowerCase()) {
+        regionBadgeEl.textContent =
+          city.years.length > 1
+            ? `${city.years[city.years.length - 1]}–${city.years[0]}`
+            : city.years[0] ?? 'Speaking stop';
+      } else {
+        regionBadgeEl.textContent = city.regionName;
+      }
+    }
     if (coordsEl) {
       coordsEl.textContent = formatCoordinates(city.lat, city.lon, 2);
     }
     if (countEl) {
-      countEl.textContent = `${city.eventsCount} ${city.eventsCount === 1 ? 'TALK' : 'TALKS'}`;
+      countEl.textContent = `${city.eventsCount} ${city.eventsCount === 1 ? 'talk' : 'talks'}`;
     }
     if (archiveBtn) {
       archiveBtn.textContent = `View all talks in ${city.city} →`;
@@ -207,31 +323,37 @@ export class SpeakingAtlasController {
 
     if (eventsListEl) {
       eventsListEl.innerHTML = city.events
-        .map(
-          (ev) => `
+        .map((ev) => {
+          const formatLabel =
+            ev.sessionType === 'keynote'
+              ? 'Keynote'
+              : ev.sessionType === 'workshop'
+                ? 'Workshop'
+                : 'Talk';
+          return `
           <button
             type="button"
-            data-city-event-id="${ev.id}"
-            data-testid="city-event-item-${ev.id}"
-            class="w-full group flex items-center justify-between gap-3 rounded-xl p-2.5 bg-slate-900/75 hover:bg-slate-900 border border-white/10 hover:border-[#38BDF8]/50 text-left transition-all cursor-pointer"
+            data-city-event-id="${escapeHtml(ev.id)}"
+            data-testid="city-event-item-${escapeHtml(ev.id)}"
+            class="w-full group flex items-center justify-between gap-3 rounded-lg p-2.5 bg-[#181B20]/80 hover:bg-[#22262D] border border-[#F4F1EA]/10 hover:border-[#E2A84B]/50 text-left transition-colors cursor-pointer"
           >
             <div class="min-w-0 flex-1">
-              <div class="font-mono text-[10px] text-[#38BDF8] uppercase">
-                ${formatSignalDate(ev.date)} · ${ev.sessionType.toUpperCase()}
+              <div class="font-mono text-[0.6875rem] text-[#9C978C]">
+                ${escapeHtml(formatSignalDate(ev.date))} · <span class="font-sans text-[#E2A84B]">${escapeHtml(formatLabel)}</span>
               </div>
-              <div class="text-xs font-bold text-white truncate mt-0.5 group-hover:text-[#38BDF8] transition-colors">
-                ${ev.event}
+              <div class="text-xs font-semibold text-[#F4F1EA] truncate mt-0.5 group-hover:text-white transition-colors">
+                ${escapeHtml(ev.talk)}
               </div>
-              <div class="text-[11px] text-slate-300 truncate mt-0.5">
-                ${ev.talk}
+              <div class="text-xs text-[#9C978C] truncate mt-0.5">
+                ${escapeHtml(ev.event)}
               </div>
             </div>
-            <span class="h-7 w-7 rounded-full flex items-center justify-center bg-white/[0.06] group-hover:bg-[#38BDF8]/20 text-slate-300 group-hover:text-white text-xs shrink-0">
+            <span class="text-[#9C978C] group-hover:text-[#F4F1EA] text-xs shrink-0" aria-hidden="true">
               →
             </span>
           </button>
-        `
-        )
+        `;
+        })
         .join('');
 
       eventsListEl
@@ -244,26 +366,33 @@ export class SpeakingAtlasController {
         });
     }
 
-    if (photosContentEl) {
-      const allPhotos = city.events.flatMap((e) =>
-        e.photos.map((p) => ({ photo: p, event: e.event, date: e.date }))
-      );
-      if (allPhotos.length > 0) {
+    const allPhotos = city.events.flatMap((e) =>
+      e.photos.map((p) => ({ photo: p, event: e.event, date: e.date }))
+    );
+
+    if (allPhotos.length > 0) {
+      if (photosTabBtn) {
+        photosTabBtn.hidden = false;
+        photosTabBtn.classList.remove('hidden');
+      }
+      if (photosContentEl) {
         photosContentEl.innerHTML = `<div class="grid grid-cols-2 gap-2">${allPhotos
           .map(
             (item) =>
-              `<img src="${withBase(item.photo)}" alt="${item.event}" class="rounded-lg border border-white/15 object-cover aspect-video w-full"/>`
+              `<img src="${escapeHtml(withBase(item.photo))}" alt="${escapeHtml(item.event)}" loading="lazy" decoding="async" class="rounded-lg border border-[#F4F1EA]/15 object-cover aspect-video w-full"/>`
           )
           .join('')}</div>`;
-      } else {
-        photosContentEl.innerHTML = `
-          <div class="rounded-xl p-3.5 bg-slate-900/60 border border-white/10 text-slate-300">
-            <p class="font-semibold text-white">Verified Event Archive (${city.eventsCount} ${city.eventsCount === 1 ? 'session' : 'sessions'})</p>
-            <p class="mt-1 text-[11px] text-slate-400">
-              Stage photography for ${city.city}, ${city.country} is not yet attached in <code>data/events.json</code>. Only authentic repository photos are displayed.
-            </p>
-          </div>
-        `;
+      }
+    } else {
+      if (photosTabBtn) {
+        photosTabBtn.hidden = true;
+        photosTabBtn.classList.add('hidden');
+      }
+      if (photosContentEl) {
+        photosContentEl.innerHTML = '';
+      }
+      if (this.activeCityTab === 'photos') {
+        this.activeCityTab = 'talks';
       }
     }
 
@@ -273,32 +402,32 @@ export class SpeakingAtlasController {
       ).slice(0, 8);
 
       aboutContentEl.innerHTML = `
-        <div class="rounded-xl p-3 bg-slate-900/60 border border-white/10 space-y-1.5">
-          <div class="flex justify-between">
-            <span class="text-slate-400">Region:</span>
-            <strong class="text-white">${city.regionName}</strong>
+        <div class="rounded-lg p-3 bg-[#181B20]/75 border border-[#F4F1EA]/10 space-y-1.5">
+          <div class="flex justify-between gap-2">
+            <span class="text-[#9C978C]">Region</span>
+            <strong class="font-medium text-[#F4F1EA]">${escapeHtml(city.regionName)}</strong>
           </div>
-          <div class="flex justify-between">
-            <span class="text-slate-400">Coordinates:</span>
-            <strong class="font-mono text-white">${formatCoordinates(city.lat, city.lon, 4)}</strong>
+          <div class="flex justify-between gap-2">
+            <span class="text-[#9C978C]">Coordinates</span>
+            <strong class="font-mono font-normal text-[#F4F1EA] tabular-nums">${escapeHtml(formatCoordinates(city.lat, city.lon, 4))}</strong>
           </div>
-          <div class="flex justify-between">
-            <span class="text-slate-400">Active Years:</span>
-            <strong class="font-mono text-white">${city.years.join(', ')}</strong>
+          <div class="flex justify-between gap-2">
+            <span class="text-[#9C978C]">Years visited</span>
+            <strong class="font-mono font-normal text-[#F4F1EA] tabular-nums">${escapeHtml(city.years.join(', '))}</strong>
           </div>
           ${
             city.note
-              ? `<p class="pt-1.5 border-t border-white/10 text-[11px] text-[#38BDF8]">${city.note}</p>`
+              ? `<p class="pt-1.5 border-t border-[#F4F1EA]/10 text-xs text-[#E2A84B]">${escapeHtml(city.note)}</p>`
               : ''
           }
         </div>
         <div class="pt-1">
-          <div class="font-mono text-[9px] tracking-widest uppercase text-slate-400 mb-1.5">TOPICS PRESENTED IN ${city.city.toUpperCase()}</div>
+          <div class="text-xs font-medium text-[#9C978C] mb-1.5">Topics covered in ${escapeHtml(city.city)}</div>
           <div class="flex flex-wrap gap-1">
             ${allTopics
               .map(
                 (t) =>
-                  `<span class="rounded-full px-2 py-0.5 font-mono text-[10px] bg-white/10 text-slate-200">${t}</span>`
+                  `<span class="rounded px-2 py-0.5 text-xs bg-[#181B20] text-[#C6C2B8] border border-[#F4F1EA]/10">${escapeHtml(t)}</span>`
               )
               .join('')}
           </div>
@@ -308,24 +437,21 @@ export class SpeakingAtlasController {
   }
 
   private setCityTab(tab: 'talks' | 'photos' | 'about'): void {
-    this.activeCityTab = tab;
+    const photosBtn = document.getElementById('city-tab-btn-photos');
+    const safeTab =
+      tab === 'photos' && (!photosBtn || photosBtn.hidden) ? 'talks' : tab;
+    this.activeCityTab = safeTab;
+
     const tabs: Array<'talks' | 'photos' | 'about'> = ['talks', 'photos', 'about'];
     tabs.forEach((t) => {
       const btn = document.getElementById(`city-tab-btn-${t}`);
       const content = document.getElementById(`city-tab-content-${t}`);
-      const isSelected = t === tab;
+      const isSelected = t === safeTab;
       btn?.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-      if (isSelected) {
-        btn?.classList.add('text-white', 'border-[#38BDF8]');
-        btn?.classList.remove('text-slate-400', 'border-transparent');
-        content?.classList.remove('hidden');
-      } else {
-        btn?.classList.remove('text-white', 'border-[#38BDF8]');
-        btn?.classList.add('text-slate-400', 'border-transparent');
-        content?.classList.add('hidden');
-      }
+      this.setPanelHidden(content, !isSelected);
     });
     this.syncBodyAttributes();
+    this.globe.invalidatePanelRects();
   }
 
   public selectYear(year: string): void {
@@ -335,33 +461,11 @@ export class SpeakingAtlasController {
     document.querySelectorAll<HTMLButtonElement>('[data-action="select-year"]').forEach((btn) => {
       const isSelected = btn.dataset.year === year;
       btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-      if (isSelected) {
-        btn.classList.add(
-          'bg-[#1D4ED8]/55',
-          'text-white',
-          'border-[#38BDF8]/70',
-          'font-semibold'
-        );
-        btn.classList.remove(
-          'bg-white/[0.04]',
-          'bg-white/[0.05]',
-          'text-slate-300',
-          'border-white/10'
-        );
-      } else {
-        btn.classList.remove(
-          'bg-[#1D4ED8]/55',
-          'text-white',
-          'border-[#38BDF8]/70',
-          'font-semibold'
-        );
-        btn.classList.add('bg-white/[0.04]', 'text-slate-300', 'border-white/10');
-      }
     });
 
     const narrativeEl = document.getElementById('timeline-era-narrative');
     if (narrativeEl) {
-      narrativeEl.textContent = ERA_NARRATIVES[year] ?? ERA_NARRATIVES.all;
+      narrativeEl.textContent = this.getEraNarrative(year);
     }
 
     this.filterTimelineStrip();
@@ -378,21 +482,29 @@ export class SpeakingAtlasController {
       const isSelected = btn.dataset.topic === nextTopic && nextTopic !== 'all';
       if (btn.dataset.topic !== 'all') {
         btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-        if (isSelected) {
-          btn.classList.add('border-[#38BDF8]', 'bg-[#1D4ED8]/25');
-          btn.classList.remove('border-white/10', 'bg-slate-900/70');
-        } else {
-          btn.classList.remove('border-[#38BDF8]', 'bg-[#1D4ED8]/25');
-          btn.classList.add('border-white/10', 'bg-slate-900/70');
-        }
       }
     });
+
+    const activeTopicPill = document.getElementById('active-topic-filter-pill');
+    const activeTopicLabel = document.getElementById('active-topic-filter-label');
+    if (activeTopicPill && activeTopicLabel) {
+      if (nextTopic === 'all') {
+        activeTopicPill.classList.add('hidden');
+        activeTopicPill.classList.remove('inline-flex');
+      } else {
+        const topicMeta = this.atlas.topics.find((t) => t.id === nextTopic);
+        activeTopicLabel.textContent = `Topic: ${topicMeta ? topicMeta.shortLabel : nextTopic}`;
+        activeTopicPill.classList.remove('hidden');
+        activeTopicPill.classList.add('inline-flex');
+      }
+    }
 
     this.filterTimelineStrip();
     this.syncBodyAttributes();
   }
 
   private filterTimelineStrip(): void {
+    let visibleStripCount = 0;
     const cards = document.querySelectorAll<HTMLElement>('[data-timeline-card]');
     cards.forEach((card) => {
       const cardYear = card.dataset.year ?? '';
@@ -403,11 +515,24 @@ export class SpeakingAtlasController {
 
       if (yearMatch && topicMatch) {
         card.classList.remove('hidden');
+        visibleStripCount += 1;
       } else {
         card.classList.add('hidden');
       }
     });
 
+    const stripEmptyEl = document.getElementById('timeline-strip-empty-state');
+    if (stripEmptyEl) {
+      if (visibleStripCount === 0) {
+        stripEmptyEl.classList.remove('hidden');
+        stripEmptyEl.classList.add('flex');
+      } else {
+        stripEmptyEl.classList.add('hidden');
+        stripEmptyEl.classList.remove('flex');
+      }
+    }
+
+    let visiblePanelCount = 0;
     const panelItems = document.querySelectorAll<HTMLElement>('[data-timeline-panel-item]');
     panelItems.forEach((item) => {
       const itemYear = item.dataset.year ?? '';
@@ -418,15 +543,40 @@ export class SpeakingAtlasController {
 
       if (yearMatch && topicMatch) {
         item.classList.remove('hidden');
+        visiblePanelCount += 1;
       } else {
         item.classList.add('hidden');
       }
     });
 
+    const panelEmptyEl = document.getElementById('timeline-panel-empty-state');
+    if (panelEmptyEl) {
+      if (visiblePanelCount === 0) {
+        panelEmptyEl.classList.remove('hidden');
+      } else {
+        panelEmptyEl.classList.add('hidden');
+      }
+    }
+
     const track = document.getElementById('timeline-cards-track');
     if (track) {
       track.scrollLeft = 0;
     }
+    this.updateTimelineScrollButtons();
+  }
+
+  private updateTimelineScrollButtons(): void {
+    const track = document.getElementById('timeline-cards-track');
+    const prevBtn = document.getElementById('timeline-scroll-prev');
+    const nextBtn = document.getElementById('timeline-scroll-next');
+    if (!track) return;
+
+    const maxScrollLeft = Math.max(0, track.scrollWidth - track.clientWidth);
+    const atStart = track.scrollLeft <= 4;
+    const atEnd = track.scrollLeft >= maxScrollLeft - 4;
+
+    prevBtn?.setAttribute('aria-disabled', atStart ? 'true' : 'false');
+    nextBtn?.setAttribute('aria-disabled', atEnd ? 'true' : 'false');
   }
 
   public openEventDrawer(eventId: string): void {
@@ -434,6 +584,7 @@ export class SpeakingAtlasController {
     if (!ev) return;
 
     this.closeArchiveInternal();
+    this.closeAboutModal();
 
     if (!ev.isOnline && ev.locationId) {
       this.selectCity(ev.locationId);
@@ -441,12 +592,9 @@ export class SpeakingAtlasController {
 
     this.populateEventDrawerDOM(ev);
 
-    const drawer = document.getElementById('signal-drawer');
-    const backdrop = document.getElementById('signal-drawer-backdrop');
-    drawer?.classList.remove('hidden');
-    drawer?.setAttribute('aria-hidden', 'false');
-    backdrop?.classList.remove('hidden');
-    backdrop?.setAttribute('aria-hidden', 'false');
+    const drawer = document.getElementById('signal-drawer') as HTMLDialogElement | null;
+    this.openDialogElement(drawer, false);
+    this.setUrlHash(ev.id);
   }
 
   private populateEventDrawerDOM(ev: EnrichedSpeakingEvent): void {
@@ -464,14 +612,14 @@ export class SpeakingAtlasController {
     const inspectCityBtn = document.getElementById('drawer-inspect-city-btn');
     const connectedEl = document.getElementById('drawer-connected');
 
-    if (typeEl) typeEl.textContent = ev.sessionType.toUpperCase();
+    if (typeEl) typeEl.textContent = ev.sessionType;
     if (dateEl) dateEl.textContent = formatSignalDate(ev.date);
     if (locEl) locEl.textContent = `${ev.flag} ${ev.city}`;
     if (coordsEl) {
       coordsEl.textContent =
         ev.lat !== null && ev.lon !== null
           ? formatCoordinates(ev.lat, ev.lon, 4)
-          : 'Online Broadcast';
+          : 'Online';
     }
     if (eventEl) eventEl.textContent = ev.event;
     if (titleEl) titleEl.textContent = ev.talk;
@@ -481,7 +629,7 @@ export class SpeakingAtlasController {
       clustersEl.innerHTML = ev.topics
         .map(
           (t) =>
-            `<span class="rounded-full px-3 py-1 font-mono text-[10px] tracking-wider uppercase bg-white/10 text-slate-200 border border-white/15">${t}</span>`
+            `<span class="rounded-md px-2.5 py-1 text-xs bg-[#181B20] text-[#C6C2B8] border border-[#F4F1EA]/12">${escapeHtml(t)}</span>`
         )
         .join('');
     }
@@ -492,7 +640,7 @@ export class SpeakingAtlasController {
         photosGrid.innerHTML = ev.photos
           .map(
             (p) =>
-              `<img src="${withBase(p)}" alt="${ev.event}" class="w-full rounded-xl border border-white/15 object-cover"/>`
+              `<img src="${escapeHtml(withBase(p))}" alt="${escapeHtml(ev.event)}" loading="lazy" decoding="async" class="w-full rounded-lg border border-[#F4F1EA]/15 object-cover"/>`
           )
           .join('');
       } else {
@@ -505,22 +653,22 @@ export class SpeakingAtlasController {
       const linkItems: string[] = [];
       if (ev.eventUrl) {
         linkItems.push(
-          `<a href="${ev.eventUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg bg-[#38BDF8]/15 hover:bg-[#38BDF8]/25 border border-[#38BDF8]/40 px-3.5 py-2 text-xs font-medium text-white transition-colors">Event Page ↗</a>`
+          `<a href="${escapeHtml(ev.eventUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-md bg-[#F4F1EA] hover:bg-white px-3.5 py-2 text-xs font-semibold text-[#0B0C0E] transition-colors">Event page ↗</a>`
         );
       }
       if (ev.slidesUrl) {
         linkItems.push(
-          `<a href="${ev.slidesUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 px-3.5 py-2 text-xs font-medium text-slate-200 transition-colors">View Slides ↗</a>`
+          `<a href="${escapeHtml(ev.slidesUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 px-3.5 py-2 text-xs font-medium text-[#E6E2D8] transition-colors">Slides ↗</a>`
         );
       }
       if (ev.recordingUrl) {
         linkItems.push(
-          `<a href="${ev.recordingUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 px-3.5 py-2 text-xs font-medium text-slate-200 transition-colors">Watch Recording ↗</a>`
+          `<a href="${escapeHtml(ev.recordingUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 px-3.5 py-2 text-xs font-medium text-[#E6E2D8] transition-colors">Recording ↗</a>`
         );
       }
       if (ev.linkedinUrl) {
         linkItems.push(
-          `<a href="${ev.linkedinUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 px-3.5 py-2 text-xs font-medium text-slate-200 transition-colors">LinkedIn Post ↗</a>`
+          `<a href="${escapeHtml(ev.linkedinUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 px-3.5 py-2 text-xs font-medium text-[#E6E2D8] transition-colors">LinkedIn post ↗</a>`
         );
       }
       linksEl.innerHTML = linkItems.join('');
@@ -529,7 +677,7 @@ export class SpeakingAtlasController {
     if (inspectCityBtn) {
       if (ev.locationId) {
         inspectCityBtn.classList.remove('hidden');
-        inspectCityBtn.textContent = `Inspect ${ev.cityName} on Globe →`;
+        inspectCityBtn.textContent = `Show ${ev.cityName} on globe →`;
         inspectCityBtn.onclick = () => {
           this.closeEventDrawer();
           this.selectCity(ev.locationId);
@@ -554,15 +702,15 @@ export class SpeakingAtlasController {
           (item) => `
           <button
             type="button"
-            data-connected-event="${item.id}"
-            class="flex items-center justify-between gap-3 rounded-xl p-3 bg-slate-900/60 hover:bg-slate-900 border border-white/10 hover:border-[#38BDF8]/40 text-left transition-all cursor-pointer"
+            data-connected-event="${escapeHtml(item.id)}"
+            class="flex items-center justify-between gap-3 rounded-lg p-3 bg-[#181B20]/75 hover:bg-[#22262D] border border-[#F4F1EA]/10 hover:border-[#E2A84B]/45 text-left transition-colors cursor-pointer"
           >
             <div class="min-w-0">
-              <div class="font-mono text-[10px] text-[#38BDF8] uppercase">${formatSignalDate(item.date)} · ${item.flag} ${item.city}</div>
-              <div class="text-xs font-semibold text-white truncate mt-0.5">${item.talk}</div>
-              <div class="text-[11px] text-slate-400 truncate">${item.event}</div>
+              <div class="font-mono text-[0.6875rem] text-[#9C978C]">${escapeHtml(formatSignalDate(item.date))} · ${escapeHtml(item.city)}</div>
+              <div class="text-xs font-semibold text-[#F4F1EA] truncate mt-0.5">${escapeHtml(item.talk)}</div>
+              <div class="text-xs text-[#9C978C] truncate">${escapeHtml(item.event)}</div>
             </div>
-            <span class="text-slate-400 text-xs shrink-0">→</span>
+            <span class="text-[#9C978C] text-xs shrink-0" aria-hidden="true">→</span>
           </button>
         `
         )
@@ -580,12 +728,9 @@ export class SpeakingAtlasController {
   }
 
   public closeEventDrawer(): void {
-    const drawer = document.getElementById('signal-drawer');
-    const backdrop = document.getElementById('signal-drawer-backdrop');
-    drawer?.classList.add('hidden');
-    drawer?.setAttribute('aria-hidden', 'true');
-    backdrop?.classList.add('hidden');
-    backdrop?.setAttribute('aria-hidden', 'true');
+    const drawer = document.getElementById('signal-drawer') as HTMLDialogElement | null;
+    this.closeDialogElement(drawer);
+    this.setUrlHash(this.selectedCityId);
   }
 
   public openArchive(options?: { cityId?: string; topicId?: string }): void {
@@ -625,40 +770,39 @@ export class SpeakingAtlasController {
 
     this.filterArchiveMatrix();
 
-    const modal = document.getElementById('archive-matrix-modal');
-    modal?.classList.remove('hidden');
-    modal?.classList.add('flex');
-    modal?.setAttribute('aria-hidden', 'false');
-
-    this.globe.setPaused(true);
+    const modal = document.getElementById(
+      'archive-matrix-modal'
+    ) as HTMLDialogElement | null;
+    this.openDialogElement(modal, true);
+    this.setActiveNavLink('talks');
 
     searchInput?.focus();
   }
 
   private closeArchiveInternal(): void {
-    const modal = document.getElementById('archive-matrix-modal');
-    modal?.classList.add('hidden');
-    modal?.classList.remove('flex');
-    modal?.setAttribute('aria-hidden', 'true');
+    const modal = document.getElementById(
+      'archive-matrix-modal'
+    ) as HTMLDialogElement | null;
+    this.closeDialogElement(modal);
   }
 
   public closeArchive(): void {
     this.closeArchiveInternal();
-    this.globe.setPaused(false);
+    this.setActiveNavLink('home');
   }
 
   public openAboutModal(): void {
-    const modal = document.getElementById('about-modal');
-    modal?.classList.remove('hidden');
-    modal?.classList.add('flex');
-    modal?.setAttribute('aria-hidden', 'false');
+    this.closeEventDrawer();
+    this.closeArchiveInternal();
+    const modal = document.getElementById('about-modal') as HTMLDialogElement | null;
+    this.openDialogElement(modal, false);
+    this.setActiveNavLink('about');
   }
 
   public closeAboutModal(): void {
-    const modal = document.getElementById('about-modal');
-    modal?.classList.add('hidden');
-    modal?.classList.remove('flex');
-    modal?.setAttribute('aria-hidden', 'true');
+    const modal = document.getElementById('about-modal') as HTMLDialogElement | null;
+    this.closeDialogElement(modal);
+    this.setActiveNavLink('home');
   }
 
   private filterArchiveMatrix(): void {
@@ -719,7 +863,7 @@ export class SpeakingAtlasController {
       const countryLabel = visibleCountries.size === 1 ? 'country' : 'countries';
       const onlineSuffix =
         visibleOnlineCount > 0 ? ` + ${visibleOnlineCount} online` : '';
-      counterEl.textContent = `Showing ${visibleCount} of ${this.atlas.events.length} talks (${visibleCities.size} physical ${cityLabel} across ${visibleCountries.size} ${countryLabel}${onlineSuffix})`;
+      counterEl.textContent = `Showing ${visibleCount} of ${this.atlas.events.length} talks (${visibleCities.size} ${cityLabel} across ${visibleCountries.size} ${countryLabel}${onlineSuffix})`;
     }
 
     if (emptyEl) {
@@ -735,13 +879,7 @@ export class SpeakingAtlasController {
     const buttons = document.querySelectorAll<HTMLButtonElement>('[data-archive-type]');
     buttons.forEach((btn) => {
       const isMatch = btn.dataset.archiveType === selectedType;
-      if (isMatch) {
-        btn.classList.add('bg-[#38BDF8]/20', 'text-white', 'border-[#38BDF8]/50');
-        btn.classList.remove('bg-white/[0.04]', 'text-slate-300', 'border-white/10');
-      } else {
-        btn.classList.remove('bg-[#38BDF8]/20', 'text-white', 'border-[#38BDF8]/50');
-        btn.classList.add('bg-white/[0.04]', 'text-slate-300', 'border-white/10');
-      }
+      btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
     });
   }
 
@@ -750,7 +888,6 @@ export class SpeakingAtlasController {
     onActivate: () => void
   ): void {
     el.addEventListener('click', onActivate);
-    // Per WAI-ARIA button pattern: Enter activates on keydown; Space prevents page scroll on keydown and activates on keyup
     el.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -767,8 +904,48 @@ export class SpeakingAtlasController {
     });
   }
 
+  private bindDialogLifecycle(dialogId: string, onNativeClose?: () => void): void {
+    const dialog = document.getElementById(dialogId) as HTMLDialogElement | null;
+    if (!dialog) return;
+
+    dialog.addEventListener('close', () => {
+      dialog.classList.remove('flex');
+      dialog.setAttribute('aria-hidden', 'true');
+      this.syncGlobeDialogPauseState();
+      onNativeClose?.();
+    });
+
+    // Fallback for browsers without native closedby="any" support (e.g. Safari)
+    if (
+      typeof HTMLDialogElement !== 'undefined' &&
+      !('closedBy' in HTMLDialogElement.prototype)
+    ) {
+      dialog.addEventListener('click', (event) => {
+        if (event.target !== dialog) return;
+        const rect = dialog.getBoundingClientRect();
+        const isDialogContent =
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width;
+        if (isDialogContent) return;
+        dialog.close();
+      });
+    }
+  }
+
   private bindEvents(): void {
-    // 4-Mode View Selector Tabs (Globe · Regions · Timeline · Topics)
+    this.bindDialogLifecycle('signal-drawer', () => {
+      this.setUrlHash(this.selectedCityId);
+    });
+    this.bindDialogLifecycle('archive-matrix-modal', () => {
+      this.setActiveNavLink('home');
+    });
+    this.bindDialogLifecycle('about-modal', () => {
+      this.setActiveNavLink('home');
+    });
+
+    // 4-Mode View Selector Tabs (Places · Regions · Years · Topics)
     const viewModeButtons = Array.from(
       document.querySelectorAll<HTMLButtonElement>('[data-view-mode]')
     );
@@ -791,7 +968,7 @@ export class SpeakingAtlasController {
       });
     });
 
-    // Select City triggers (2D globe badges, prominent destination chips, region city pills)
+    // Select City triggers
     document.querySelectorAll<HTMLElement>('[data-action="select-city"]').forEach((el) => {
       el.addEventListener('click', () => {
         const cid = el.dataset.cityId ?? null;
@@ -807,30 +984,31 @@ export class SpeakingAtlasController {
       this.selectCity(cityDropdown.value || null);
     });
 
-    // Reset City / View All Destinations
+    // Reset City / Overview
     document
-      .querySelectorAll<HTMLElement>('[data-action="reset-city"], [data-action="reset-atlas"], [data-action="focus-globe"]')
+      .querySelectorAll<HTMLElement>('[data-action="reset-city"], [data-action="reset-atlas"]')
       .forEach((el) => {
         el.addEventListener('click', (e) => {
           e.preventDefault();
           this.selectYear('all');
           this.selectTopic('all');
           this.selectCity(null);
+          this.setActiveNavLink('home');
         });
       });
 
-    // Explore the world CTA -> selects Istanbul hub (or focuses globe) to demonstrate city inspection immediately
+    // Istanbul hub button
     document.querySelectorAll<HTMLElement>('[data-action="explore-world"]').forEach((el) => {
       el.addEventListener('click', () => {
         this.selectCity('istanbul-tr');
       });
     });
 
-    // City Panel Sub-Tabs (TALKS | PHOTOS | ABOUT)
+    // City Panel Sub-Tabs (skips hidden tabs such as Photos when empty)
     const cityTabButtons = Array.from(
       document.querySelectorAll<HTMLButtonElement>('[data-city-tab]')
     );
-    cityTabButtons.forEach((btn, idx) => {
+    cityTabButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         const tab = (btn.dataset.cityTab ?? 'talks') as 'talks' | 'photos' | 'about';
         this.setCityTab(tab);
@@ -838,10 +1016,14 @@ export class SpeakingAtlasController {
       btn.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
           e.preventDefault();
+          const visibleTabs = cityTabButtons.filter((b) => !b.hidden);
+          if (visibleTabs.length === 0) return;
+          const currentIdx = visibleTabs.indexOf(btn);
           const dir = e.key === 'ArrowRight' ? 1 : -1;
           const nextIdx =
-            (idx + dir + cityTabButtons.length) % cityTabButtons.length;
-          const nextBtn = cityTabButtons[nextIdx];
+            ((currentIdx === -1 ? 0 : currentIdx) + dir + visibleTabs.length) %
+            visibleTabs.length;
+          const nextBtn = visibleTabs[nextIdx];
           nextBtn?.focus();
           const tab = (nextBtn?.dataset.cityTab ?? 'talks') as
             | 'talks'
@@ -860,12 +1042,22 @@ export class SpeakingAtlasController {
       btn.addEventListener('click', () => this.globe.zoomBy(1.22));
     });
 
-    const motionBtn = document.getElementById('toggle-motion-btn');
-    motionBtn?.addEventListener('click', () => {
-      const nextReduced = !this.globe.isMotionPaused();
-      this.globe.setMotionReduced(nextReduced);
-      motionBtn.setAttribute('aria-pressed', nextReduced ? 'true' : 'false');
-      motionBtn.textContent = nextReduced ? 'Resume motion' : 'Pause motion';
+    const motionBtns = document.querySelectorAll<HTMLElement>(
+      '#toggle-motion-btn, [data-action="toggle-motion"]'
+    );
+    motionBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const nextReduced = !this.globe.isMotionPaused();
+        this.globe.setMotionReduced(nextReduced);
+        motionBtns.forEach((b) => {
+          b.setAttribute('aria-pressed', nextReduced ? 'true' : 'false');
+          if (b.id === 'toggle-motion-btn') {
+            b.textContent = nextReduced ? 'Resume motion' : 'Pause motion';
+          } else {
+            b.textContent = nextReduced ? 'Resume' : 'Pause';
+          }
+        });
+      });
     });
 
     // Year filter buttons
@@ -876,13 +1068,22 @@ export class SpeakingAtlasController {
       });
     });
 
-    // Topic filter cards
+    // Topic filter cards & clear topic pill
     document.querySelectorAll<HTMLElement>('[data-action="select-topic"]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const topic = (btn.dataset.topic ?? 'all') as TopicCategoryId | 'all';
         this.selectTopic(topic);
       });
     });
+
+    document
+      .querySelectorAll<HTMLElement>('[data-action="clear-timeline-filters"]')
+      .forEach((btn) => {
+        btn.addEventListener('click', () => {
+          this.selectYear('all');
+          this.selectTopic('all');
+        });
+      });
 
     // Region filter headers
     document.querySelectorAll<HTMLElement>('[data-action="filter-region"]').forEach((btn) => {
@@ -892,28 +1093,49 @@ export class SpeakingAtlasController {
       });
     });
 
-    // Timeline cards & overview recent event triggers
-    document.querySelectorAll<HTMLElement>('[data-timeline-card], [data-action="open-event"]').forEach((card) => {
-      if (card.tagName === 'BUTTON') {
-        card.addEventListener('click', () => {
-          const evId = card.dataset.eventId;
-          if (evId) this.openEventDrawer(evId);
-        });
-      } else {
-        this.bindAccessibleButtonRow(card, () => {
-          const evId = card.dataset.eventId;
-          if (evId) this.openEventDrawer(evId);
-        });
-      }
-    });
+    // Timeline cards & panel items
+    document
+      .querySelectorAll<HTMLElement>('[data-timeline-card], [data-action="open-event"]')
+      .forEach((card) => {
+        if (card.tagName === 'BUTTON') {
+          card.addEventListener('click', () => {
+            const evId = card.dataset.eventId;
+            if (evId) this.openEventDrawer(evId);
+          });
+        } else {
+          this.bindAccessibleButtonRow(card, () => {
+            const evId = card.dataset.eventId;
+            if (evId) this.openEventDrawer(evId);
+          });
+        }
+      });
 
     // Timeline horizontal scroll arrows
     const track = document.getElementById('timeline-cards-track');
-    document.getElementById('timeline-scroll-prev')?.addEventListener('click', () => {
-      track?.scrollBy({ left: -360, behavior: 'smooth' });
+    track?.addEventListener(
+      'scroll',
+      () => {
+        this.updateTimelineScrollButtons();
+      },
+      { passive: true }
+    );
+    window.addEventListener(
+      'resize',
+      () => {
+        this.updateTimelineScrollButtons();
+      },
+      { passive: true }
+    );
+
+    const prevScrollBtn = document.getElementById('timeline-scroll-prev');
+    const nextScrollBtn = document.getElementById('timeline-scroll-next');
+    prevScrollBtn?.addEventListener('click', () => {
+      if (prevScrollBtn.getAttribute('aria-disabled') === 'true') return;
+      track?.scrollBy({ left: -340, behavior: 'smooth' });
     });
-    document.getElementById('timeline-scroll-next')?.addEventListener('click', () => {
-      track?.scrollBy({ left: 360, behavior: 'smooth' });
+    nextScrollBtn?.addEventListener('click', () => {
+      if (nextScrollBtn.getAttribute('aria-disabled') === 'true') return;
+      track?.scrollBy({ left: 340, behavior: 'smooth' });
     });
 
     // Archive Matrix open/close triggers
@@ -1010,12 +1232,16 @@ export class SpeakingAtlasController {
       });
     });
 
-    // Global Keyboard Shortcuts
+    // URL Hash Navigation
+    window.addEventListener('hashchange', () => {
+      this.applyHashRoute(window.location.hash);
+    });
+
+    // Global Keyboard Shortcuts (⌘K / Ctrl+K, '/', Escape)
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        const archiveModal = document.getElementById('archive-matrix-modal');
-        if (archiveModal && !archiveModal.classList.contains('hidden')) {
+        if (this.isDialogOpen('archive-matrix-modal')) {
           this.closeArchive();
         } else {
           this.openArchive();
@@ -1023,19 +1249,34 @@ export class SpeakingAtlasController {
         return;
       }
 
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const activeEl = document.activeElement as HTMLElement | null;
+        const isEditable =
+          activeEl &&
+          (activeEl.tagName === 'INPUT' ||
+            activeEl.tagName === 'TEXTAREA' ||
+            activeEl.tagName === 'SELECT' ||
+            activeEl.isContentEditable);
+        if (!isEditable) {
+          e.preventDefault();
+          this.openArchive();
+          return;
+        }
+      }
+
       if (e.key === 'Escape') {
-        const aboutModal = document.getElementById('about-modal');
-        if (aboutModal && !aboutModal.classList.contains('hidden')) {
+        if (this.isDialogOpen('about-modal')) {
+          e.preventDefault();
           this.closeAboutModal();
           return;
         }
-        const drawer = document.getElementById('signal-drawer');
-        if (drawer && !drawer.classList.contains('hidden')) {
+        if (this.isDialogOpen('signal-drawer')) {
+          e.preventDefault();
           this.closeEventDrawer();
           return;
         }
-        const archiveModal = document.getElementById('archive-matrix-modal');
-        if (archiveModal && !archiveModal.classList.contains('hidden')) {
+        if (this.isDialogOpen('archive-matrix-modal')) {
+          e.preventDefault();
           this.closeArchive();
           return;
         }
@@ -1049,7 +1290,7 @@ export class SpeakingAtlasController {
 
 export function initSpeakingAtlasApp(
   atlas: SpeakingAtlasData,
-  landGeoJson: unknown
+  landGeoJson?: unknown
 ): void {
   const globeContainer = document.getElementById('orbit-canvas-container');
   if (!globeContainer) return;

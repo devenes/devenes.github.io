@@ -10,29 +10,23 @@ const { atlas } = Astro.props;
 const { events, cities, topics, years, metrics } = atlas;
 ---
 
-<div
+<dialog
   id="archive-matrix-modal"
   data-testid="archive-matrix-modal"
-  role="dialog"
-  aria-modal="true"
+  closedby="any"
   aria-hidden="true"
   aria-labelledby="archive-matrix-title"
-  class="fixed inset-0 z-50 hidden flex-col bg-[#030712]/92 backdrop-blur-2xl overflow-hidden"
+  class="fixed inset-0 m-0 h-full w-full max-h-none max-w-none flex-col bg-[#0B0C0E]/96 text-[#F4F1EA] backdrop-blur-xl overflow-hidden p-0"
 >
-  <!-- Modal Header -->
-  <div class="px-6 md:px-12 py-5 border-b border-white/10 flex flex-wrap items-center justify-between gap-4 bg-slate-950/70">
+  <!-- Header -->
+  <div class="px-6 md:px-12 py-5 border-b border-[#F4F1EA]/12 flex flex-wrap items-center justify-between gap-4 bg-[#121417]">
     <div>
-      <div class="flex items-center gap-2.5">
-        <span class="h-2 w-2 rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8]"></span>
-        <span class="font-mono text-[10px] tracking-[0.24em] uppercase text-[#38BDF8]">
-          COMPLETE CHRONOLOGICAL SPEAKING ARCHIVE
-        </span>
-      </div>
+      <p class="text-xs font-medium text-[#E2A84B]">Speaking archive · 2023–2026</p>
       <h2
         id="archive-matrix-title"
-        class="mt-1 font-display text-2xl sm:text-3xl font-bold text-white tracking-tight"
+        class="mt-0.5 font-display text-2xl sm:text-3xl font-medium text-[#F4F1EA]"
       >
-        All Speaking Engagements ({metrics.totalTalks})
+        All talks &amp; workshops ({metrics.totalTalks})
       </h2>
     </div>
 
@@ -40,9 +34,10 @@ const { events, cities, topics, years, metrics } = atlas;
       <p
         id="archive-result-counter"
         data-testid="archive-result-counter"
-        class="font-mono text-xs text-slate-300"
+        aria-live="polite"
+        class="text-xs text-[#C6C2B8] tabular-nums"
       >
-        Showing {events.length} of {events.length} talks ({metrics.uniqueCities} physical cities across{' '}
+        Showing {events.length} of {events.length} talks ({metrics.uniqueCities} cities across{' '}
         {metrics.uniqueCountries} countries + {metrics.onlineTalks} online)
       </p>
 
@@ -50,18 +45,17 @@ const { events, cities, topics, years, metrics } = atlas;
         type="button"
         data-action="close-archive"
         data-testid="close-archive-btn"
-        aria-label="Close Archive Matrix"
-        class="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/15 text-slate-200 hover:text-white transition-colors cursor-pointer text-xl leading-none"
+        aria-label="Close talks archive"
+        class="flex min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-md bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 text-[#C6C2B8] hover:text-[#F4F1EA] transition-colors cursor-pointer text-lg leading-none"
       >
         ×
       </button>
     </div>
   </div>
 
-  <!-- Search & Multi-Facet Filter Bar -->
-  <div class="px-6 md:px-12 py-4 border-b border-white/10 bg-slate-900/50 flex flex-col gap-3">
+  <!-- Search & Filter Controls -->
+  <div class="px-6 md:px-12 py-4 border-b border-[#F4F1EA]/12 bg-[#121417]/75 flex flex-col gap-3">
     <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-      <!-- Instant Search Input -->
       <div class="md:col-span-4 relative">
         <label for="archive-search-input" class="sr-only">
           Search talks by title, event, city, country, or topic
@@ -70,21 +64,26 @@ const { events, cities, topics, years, metrics } = atlas;
           id="archive-search-input"
           data-testid="archive-search-input"
           type="search"
-          placeholder="Search by title, event, city, country, or topic..."
+          placeholder="Search title, conference, city, or topic..."
           autocomplete="off"
-          class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none transition-colors"
+          class="w-full rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/20 focus:border-[#E2A84B] pl-3.5 pr-14 py-2 text-sm text-[#F4F1EA] placeholder-[#6E6A61] focus:outline-none transition-colors"
         />
+        <kbd
+          aria-hidden="true"
+          class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-[#F4F1EA]/15 bg-[#181B20] px-1.5 py-0.5 font-mono text-[0.6875rem] text-[#9C978C]"
+        >
+          ⌘K
+        </kbd>
       </div>
 
-      <!-- Technical Domain Dropdown -->
       <div class="md:col-span-3">
-        <label for="archive-cluster-select" class="sr-only">Technical Domain</label>
+        <label for="archive-cluster-select" class="sr-only">Topic</label>
         <select
           id="archive-cluster-select"
           data-testid="archive-cluster-select"
-          class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-2.5 text-xs text-slate-200 focus:outline-none"
+          class="w-full rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/20 focus:border-[#E2A84B] px-3 py-2 text-xs text-[#F4F1EA] focus:outline-none"
         >
-          <option value="all">All Technical Domains</option>
+          <option value="all">All topics</option>
           {
             topics.map((t) => (
               <option value={t.id}>
@@ -95,30 +94,28 @@ const { events, cities, topics, years, metrics } = atlas;
         </select>
       </div>
 
-      <!-- Session Type Dropdown -->
       <div class="md:col-span-2">
-        <label for="archive-type-select" class="sr-only">Session Format</label>
+        <label for="archive-type-select" class="sr-only">Format</label>
         <select
           id="archive-type-select"
           data-testid="archive-type-select"
-          class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-2.5 text-xs text-slate-200 focus:outline-none"
+          class="w-full rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/20 focus:border-[#E2A84B] px-3 py-2 text-xs text-[#F4F1EA] focus:outline-none"
         >
-          <option value="all">All Session Formats</option>
+          <option value="all">All formats</option>
           <option value="keynote">Keynote ({metrics.keynotesCount})</option>
           <option value="conference">Conference ({metrics.conferencesCount})</option>
           <option value="workshop">Workshop ({metrics.workshopsCount})</option>
         </select>
       </div>
 
-      <!-- Year Dropdown -->
       <div class="md:col-span-1">
         <label for="archive-year-select" class="sr-only">Year</label>
         <select
           id="archive-year-select"
           data-testid="archive-year-select"
-          class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-2.5 text-xs text-slate-200 focus:outline-none"
+          class="w-full rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/20 focus:border-[#E2A84B] px-3 py-2 text-xs text-[#F4F1EA] focus:outline-none"
         >
-          <option value="all">All Years</option>
+          <option value="all">All years</option>
           {
             years.map((y) => (
               <option value={y.year}>
@@ -129,15 +126,14 @@ const { events, cities, topics, years, metrics } = atlas;
         </select>
       </div>
 
-      <!-- City / Destination Dropdown -->
       <div class="md:col-span-2">
-        <label for="archive-city-select" class="sr-only">Destination City</label>
+        <label for="archive-city-select" class="sr-only">City</label>
         <select
           id="archive-city-select"
           data-testid="archive-city-select"
-          class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-2.5 text-xs text-slate-200 focus:outline-none"
+          class="w-full rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/20 focus:border-[#E2A84B] px-3 py-2 text-xs text-[#F4F1EA] focus:outline-none"
         >
-          <option value="all">All Destinations ({metrics.uniqueCities} + Online)</option>
+          <option value="all">All cities ({metrics.uniqueCities} + Online)</option>
           {
             cities.map((c) => (
               <option value={c.id}>
@@ -150,23 +146,17 @@ const { events, cities, topics, years, metrics } = atlas;
       </div>
     </div>
 
-    <!-- Quick Filter Pill Row for Session Formats -->
-    <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-      <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Session Type Quick Filters">
-        <span class="font-mono text-[10px] tracking-widest uppercase text-slate-400 mr-1">
-          Format:
-        </span>
+    <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+      <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by session format">
+        <span class="text-xs text-[#9C978C] mr-1">Format:</span>
         {
           (['all', 'keynote', 'conference', 'workshop'] as const).map((typeKey) => (
             <button
               type="button"
               data-archive-type={typeKey}
               data-testid={`archive-type-btn-${typeKey}`}
-              class={`rounded-lg px-2.5 py-1 font-mono text-[11px] uppercase transition-colors cursor-pointer border ${
-                typeKey === 'all'
-                  ? 'bg-[#38BDF8]/20 text-white border-[#38BDF8]/50'
-                  : 'bg-white/[0.04] text-slate-300 border-white/10 hover:bg-white/10'
-              }`}
+              aria-pressed={typeKey === 'all' ? 'true' : 'false'}
+              class="filter-pill rounded-md px-2.5 py-1 text-xs capitalize transition-colors cursor-pointer border"
             >
               {typeKey}
             </button>
@@ -178,28 +168,31 @@ const { events, cities, topics, years, metrics } = atlas;
         type="button"
         id="archive-reset-filters-btn"
         data-testid="archive-reset-filters-btn"
-        class="font-mono text-[11px] text-slate-400 hover:text-[#38BDF8] transition-colors cursor-pointer"
+        class="text-xs text-[#9C978C] hover:text-[#E2A84B] transition-colors cursor-pointer"
       >
-        Reset Filters ↺
+        Reset filters
       </button>
     </div>
   </div>
 
-  <!-- Scrollable Table Container -->
+  <!-- Table -->
   <div class="flex-1 overflow-y-auto px-6 md:px-12 py-6">
-    <div class="max-w-7xl mx-auto overflow-x-auto rounded-2xl border border-white/10 bg-slate-950/70">
+    <div class="max-w-7xl mx-auto overflow-x-auto rounded-xl border border-[#F4F1EA]/12 bg-[#121417]">
       <table class="w-full text-left border-collapse">
+        <caption class="sr-only">
+          Chronological list of all {metrics.totalTalks} speaking engagements by Enes Turan
+        </caption>
         <thead>
-          <tr class="border-b border-white/10 font-mono text-[10px] tracking-[0.2em] uppercase text-slate-400 bg-slate-900/60">
-            <th class="py-3.5 px-4">Date</th>
-            <th class="py-3.5 px-4">Event</th>
-            <th class="py-3.5 px-4">Talk Title</th>
-            <th class="py-3.5 px-4">Destination</th>
-            <th class="py-3.5 px-4">Topics</th>
-            <th class="py-3.5 px-4 text-right">Format</th>
+          <tr class="border-b border-[#F4F1EA]/12 text-xs font-medium text-[#9C978C] bg-[#181B20]/70">
+            <th scope="col" class="py-3 px-4">Date</th>
+            <th scope="col" class="py-3 px-4">Talk</th>
+            <th scope="col" class="py-3 px-4">Event</th>
+            <th scope="col" class="py-3 px-4">Location</th>
+            <th scope="col" class="py-3 px-4">Topics</th>
+            <th scope="col" class="py-3 px-4 text-right">Format</th>
           </tr>
         </thead>
-        <tbody id="archive-rows-container" class="divide-y divide-white/[0.06] text-sm">
+        <tbody id="archive-rows-container" class="divide-y divide-[#F4F1EA]/[0.07] text-sm">
           {
             events.map((ev) => {
               const searchBlob = [
@@ -229,22 +222,24 @@ const { events, cities, topics, years, metrics } = atlas;
                   tabindex="0"
                   role="button"
                   aria-label={`${ev.talk} at ${ev.event} (${ev.city})`}
-                  class="group hover:bg-white/[0.05] transition-colors cursor-pointer"
+                  class="group hover:bg-[#181B20] transition-colors cursor-pointer"
                 >
-                  <td class="py-3.5 px-4 font-mono text-xs text-slate-400 whitespace-nowrap">
+                  <td class="py-3.5 px-4 font-mono text-xs text-[#9C978C] whitespace-nowrap">
                     {formatSignalDate(ev.date)}
                   </td>
-                  <td class="py-3.5 px-4 font-semibold text-white group-hover:text-[#38BDF8] transition-colors max-w-xs">
+                  <td class="py-3.5 px-4 font-medium text-[#F4F1EA] group-hover:text-white max-w-md">
+                    {ev.talk}
+                  </td>
+                  <td class="py-3.5 px-4 text-xs text-[#C6C2B8] max-w-xs">
                     {ev.event}
                   </td>
-                  <td class="py-3.5 px-4 text-slate-200 max-w-md">{ev.talk}</td>
-                  <td class="py-3.5 px-4 text-xs text-slate-300 whitespace-nowrap">
-                    {ev.flag} {ev.city}
+                  <td class="py-3.5 px-4 text-xs text-[#C6C2B8] whitespace-nowrap">
+                    {ev.city}
                   </td>
                   <td class="py-3.5 px-4">
                     <div class="flex flex-wrap gap-1">
                       {ev.topics.slice(0, 3).map((topic) => (
-                        <span class="rounded-full px-2 py-0.5 font-mono text-[10px] bg-white/[0.06] text-slate-300 border border-white/10">
+                        <span class="rounded px-2 py-0.5 text-xs bg-[#181B20] text-[#9C978C] border border-[#F4F1EA]/10">
                           {topic}
                         </span>
                       ))}
@@ -253,7 +248,11 @@ const { events, cities, topics, years, metrics } = atlas;
                   <td class="py-3.5 px-4 text-right whitespace-nowrap">
                     <span
                       data-testid="archive-row-type"
-                      class="inline-block rounded-md px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider bg-white/[0.06] text-slate-200 border border-white/15"
+                      class={`inline-block rounded px-2 py-0.5 text-xs capitalize border ${
+                        ev.sessionType === 'keynote' || ev.sessionType === 'workshop'
+                          ? 'bg-[#E2A84B]/12 text-[#F3D08A] border-[#E2A84B]/35'
+                          : 'bg-[#181B20] text-[#C6C2B8] border-[#F4F1EA]/12'
+                      }`}
                     >
                       {ev.sessionType}
                     </span>
@@ -267,10 +266,10 @@ const { events, cities, topics, years, metrics } = atlas;
 
       <div
         id="archive-empty-state"
-        class="hidden py-12 text-center font-mono text-sm text-slate-400"
+        class="hidden py-12 text-center text-sm text-[#9C978C]"
       >
-        No speaking engagements match the active search or filter criteria.
+        No talks match the current search or filter selection.
       </div>
     </div>
   </div>
-</div>
+</dialog>

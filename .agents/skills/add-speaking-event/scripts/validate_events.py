@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Validation script for devenes.github.io speaking events.
-Checks events.json format, chronological ordering, coordinate mapping, and site counter consistency.
+Checks events.json format, reverse chronological ordering, and location mapping in data/locations.json.
 """
 
 import json
@@ -11,9 +11,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 EVENTS_JSON_PATH = REPO_ROOT / "data" / "events.json"
-APP_JS_PATH = REPO_ROOT / "app.js"
-INDEX_HTML_PATH = REPO_ROOT / "index.html"
-README_PATH = REPO_ROOT / "README.md"
+LOCATIONS_JSON_PATH = REPO_ROOT / "data" / "locations.json"
 
 
 def validate():
@@ -72,36 +70,26 @@ def validate():
     if dates != sorted_dates:
         errors.append("Events in data/events.json are not sorted in reverse chronological order (newest first)")
 
-    # 4. Check coordinates mapping in app.js
-    if APP_JS_PATH.exists():
-        with open(APP_JS_PATH, "r", encoding="utf-8") as f:
-            app_js_content = f.read()
+    # 4. Check location mappings in data/locations.json
+    city_keys = set()
+    if LOCATIONS_JSON_PATH.exists():
+        try:
+            with open(LOCATIONS_JSON_PATH, "r", encoding="utf-8") as f:
+                loc_list = json.load(f)
+                if isinstance(loc_list, list):
+                    for loc in loc_list:
+                        if "cityKey" in loc:
+                            city_keys.add(loc["cityKey"])
+        except Exception as e:
+            errors.append(f"Invalid JSON in data/locations.json: {e}")
 
-        for ev in events:
-            city = ev.get("city", "Online")
-            if city and city != "Online":
-                if f"'{city}'" not in app_js_content and f'"{city}"' not in app_js_content:
-                    # Check partial city label match
-                    city_base = city.split(",")[0].strip()
-                    if city_base not in app_js_content:
-                        warnings.append(f"City '{city}' for event '{ev.get('id')}' might not be mapped in CITY_COORDINATES in app.js")
-
-    # 5. Check counter consistency across index.html
-    if INDEX_HTML_PATH.exists():
-        with open(INDEX_HTML_PATH, "r", encoding="utf-8") as f:
-            index_html = f.read()
-
-        hero_talk_count_match = re.search(r'<strong id="hero-talk-count">(\d+)</strong>', index_html)
-        if hero_talk_count_match:
-            count = int(hero_talk_count_match.group(1))
-            if count != total_events:
-                warnings.append(f"index.html hero-talk-count is {count}, but events.json has {total_events} events")
-
-        archive_count_match = re.search(r'<span class="archive-count" id="archive-count"[^>]*>(\d+)\s+talks</span>', index_html)
-        if archive_count_match:
-            count = int(archive_count_match.group(1))
-            if count != total_events:
-                warnings.append(f"index.html archive-count is {count}, but events.json has {total_events} events")
+    for ev in events:
+        city = ev.get("city", "Online")
+        if city and city != "Online":
+            if city_keys and city not in city_keys:
+                warnings.append(
+                    f"City '{city}' for event '{ev.get('id')}' is not mapped as a cityKey in data/locations.json"
+                )
 
     return errors, warnings
 

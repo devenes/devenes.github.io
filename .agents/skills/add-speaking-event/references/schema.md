@@ -1,6 +1,6 @@
 # Event Schema & Architectural Reference
 
-This reference details the data structures, geographical mapping, stream classification, and visual engine synchronization for speaking events on [devenes.github.io](https://devenes.github.io).
+This reference details the data structures, geographical mapping, and topic classification for speaking events on [devenes.github.io](https://devenes.github.io).
 
 ---
 
@@ -28,45 +28,42 @@ Events in `data/events.json` **must be sorted in reverse chronological order** (
 
 ---
 
-## 2. City Coordinates (`app.js`)
+## 2. City Coordinates (`data/locations.json` & `src/utils/geography.ts`)
 
-All physical locations must be defined in `CITY_COORDINATES` in `app.js` with exact geographic coordinates:
+All physical locations are stored in `data/locations.json` (`locations` array) with exact geographic coordinates:
 
-```javascript
-'City Name, Country': { lat: 41.0082, lon: 28.9784, label: 'City Name', country: 'Country' }
+```json
+{
+  "id": "istanbul-tr",
+  "city": "Istanbul",
+  "country": "Türkiye",
+  "countryCode": "TR",
+  "lat": 41.0082,
+  "lon": 28.9784,
+  "eventsCount": 7,
+  "years": [2023, 2024, 2025, 2026],
+  "highlights": ["KCD Istanbul", "DevFest Istanbul"],
+  "note": "Primary engineering hub"
+}
 ```
 
-If a new city is introduced, add it to `CITY_COORDINATES` and ensure it maps to one of the regional groupings in `REGION_DEFINITIONS`:
+And mapped in `src/utils/geography.ts` via `CITY_STRING_TO_LOCATION_ID` and `COUNTRY_METADATA` into one of five regional groupings (`RegionId`):
 - `turkiye`: Türkiye
 - `central-asia`: Kazakhstan, Uzbekistan, Kyrgyzstan, Mongolia
-- `mena`: UAE, Egypt, Tunisia, Morocco, Saudi Arabia, etc.
-- `balkans-caucasus`: Kosovo, Bosnia and Herzegovina, Azerbaijan
-- `online`: Online
+- `mena`: UAE, Egypt, Tunisia, Morocco
+- `europe-caucasus`: Kosovo, Bosnia and Herzegovina, Azerbaijan
+- `online`: Online & Global Broadcasts
 
 ---
 
-## 3. Technical River Streams
+## 3. Topic Categories (`src/utils/geography.ts`)
 
-The visualization engine classifies each talk into one of six core architectural tracks based on `topics` and title keywords:
+`classifyTopicCategories()` maps each talk's `topics` and title keywords into one or more of five core topic tracks (`TopicCategoryId`):
 
-| Stream ID | Label | Color | Keywords |
-| :--- | :--- | :--- | :--- |
-| `agents` | Autonomous AI Agents & ADK | `#e11d48` | `ai agents`, `adk`, `agent`, `intelligent agents`, `agentic` |
-| `genai` | Generative AI Systems | `#9333ea` | `generative ai`, `genai`, `gemini`, `ai trends`, `build with ai` |
-| `mlops` | AI/ML & MLOps Platforms | `#6366f1` | `mlops`, `ai/ml`, `vertex ai`, `machine learning`, `kubernetes for ai` |
-| `devops-sre` | DevOps & Global SRE | `#d97706` | `sre`, `reliability`, `observability`, `devops`, `software delivery` |
-| `kubernetes` | Kubernetes & GKE Platforms | `#0284c7` | `kubernetes`, `gke`, `gke enterprise`, `scheduling`, `containers` |
-| `cloud` | Cloud Architecture & Serverless | `#2563eb` | `google cloud`, `cloud architecture`, `serverless`, `cloud run` |
-
----
-
-## 4. Milestone Callouts (`app.js`)
-
-Keynotes and flagship sessions can be featured along the river timeline by registering an entry in `MILESTONE_CALLOUTS`:
-
-```javascript
-const MILESTONE_CALLOUTS = {
-  // ...
-  '<event-id>': 'Short Milestone Label'
-};
-```
+| Category ID | Name | Accent Color |
+| :--- | :--- | :--- |
+| `ai-agents` | AI Agents & GenAI | `#38BDF8` |
+| `kubernetes` | Kubernetes & Platform Engineering | `#60A5FA` |
+| `mlops` | AI/ML & MLOps | `#818CF8` |
+| `cloud` | Cloud & Serverless Architecture | `#2DD4BF` |
+| `devops-sre` | DevOps, SRE & Community | `#F59E0B` |

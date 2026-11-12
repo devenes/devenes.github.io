@@ -477,10 +477,10 @@ export function buildSpeakingAtlas(
 
   // Regional summaries
   const regionMeta: Array<{ id: string; name: string; color: string }> = [
-    { id: 'turkiye', name: 'Türkiye', color: '#38BDF8' },
-    { id: 'central-asia', name: 'Central Asia', color: '#F59E0B' },
-    { id: 'mena', name: 'Middle East & North Africa', color: '#A855F7' },
-    { id: 'balkans-caucasus', name: 'Balkans & Caucasus', color: '#10B981' },
+    { id: 'turkiye', name: 'Türkiye', color: '#E2A84B' },
+    { id: 'central-asia', name: 'Central Asia', color: '#7DA2C8' },
+    { id: 'mena', name: 'Middle East & North Africa', color: '#D4845A' },
+    { id: 'balkans-caucasus', name: 'Balkans & Caucasus', color: '#6BA38B' },
   ];
 
   const regions: RegionSummary[] = regionMeta.map((rm) => {
@@ -511,28 +511,28 @@ export function buildSpeakingAtlas(
       label: 'Generative AI & AI Agents',
       shortLabel: 'AI Agents & GenAI',
       subLabel: 'ADK · Gemini · Multi-Agent Systems',
-      color: '#38BDF8',
+      color: '#E2A84B',
     },
     {
       id: 'kubernetes',
       label: 'Kubernetes & Platform Engineering',
       shortLabel: 'Kubernetes & GKE',
       subLabel: 'GKE Enterprise · Scheduling · Fleets',
-      color: '#F59E0B',
+      color: '#7DA2C8',
     },
     {
       id: 'cloud',
       label: 'Google Cloud & Serverless',
       shortLabel: 'Google Cloud & SRE',
       subLabel: 'Cloud Architecture · Cloud Run · SRE',
-      color: '#60A5FA',
+      color: '#D4845A',
     },
     {
       id: 'mlops',
       label: 'AI/ML & MLOps Infrastructure',
       shortLabel: 'AI/ML & MLOps',
       subLabel: 'Vertex AI · GPU Inference · Pipelines',
-      color: '#10B981',
+      color: '#6BA38B',
     },
   ];
 
@@ -593,7 +593,7 @@ export function buildSpeakingAtlas(
         distanceKm: distKm,
         kind: 'hub',
         year: dest.latestDate.slice(0, 4),
-        color: isInternational ? '#38BDF8' : '#F59E0B',
+        color: isInternational ? '#E2A84B' : '#C89D7C',
         points3D: computeGreatCircleArcPoints(
           baseHub.lat,
           baseHub.lon,
@@ -641,7 +641,7 @@ export function buildSpeakingAtlas(
       distanceKm: distKm,
       kind: 'chronological',
       year: next.year,
-      color: '#FBBF24',
+      color: '#8FA8C4',
       points3D: computeGreatCircleArcPoints(
         curr.lat!,
         curr.lon!,

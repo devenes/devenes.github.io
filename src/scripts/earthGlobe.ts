@@ -33,9 +33,9 @@ const ATMOSPHERE_LIMB_FRAGMENT_SHADER = /* glsl */ `
   void main() {
     vec3 viewDirection = normalize(cameraPosition - vPositionWorld);
     float ndotv = max(0.0, dot(vNormal, viewDirection));
-    float fresnel = pow(1.0 - ndotv, 5.8);
-    vec3 rimColor = mix(vec3(0.08, 0.42, 0.96), vec3(0.35, 0.85, 1.0), fresnel);
-    gl_FragColor = vec4(rimColor, fresnel * 0.62);
+    float fresnel = pow(1.0 - ndotv, 6.2);
+    vec3 rimColor = mix(vec3(0.32, 0.44, 0.62), vec3(0.76, 0.82, 0.88), fresnel);
+    gl_FragColor = vec4(rimColor, fresnel * 0.42);
   }
 `;
 
@@ -45,9 +45,9 @@ const ATMOSPHERE_HALO_FRAGMENT_SHADER = /* glsl */ `
 
   void main() {
     vec3 viewDirection = normalize(cameraPosition - vPositionWorld);
-    float intensity = pow(max(0.0, 0.52 - dot(-vNormal, viewDirection)), 3.0);
-    vec3 haloColor = vec3(0.14, 0.56, 0.98);
-    gl_FragColor = vec4(haloColor, intensity * 0.42);
+    float intensity = pow(max(0.0, 0.48 - dot(-vNormal, viewDirection)), 3.2);
+    vec3 haloColor = vec3(0.28, 0.38, 0.52);
+    gl_FragColor = vec4(haloColor, intensity * 0.24);
   }
 `;
 
@@ -60,10 +60,10 @@ function createMarkerGlowTexture(): THREE.CanvasTexture | null {
   if (!ctx) return null;
 
   const grad = ctx.createRadialGradient(48, 48, 1.5, 48, 48, 46);
-  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  grad.addColorStop(0.22, 'rgba(253, 224, 71, 0.85)');
-  grad.addColorStop(0.55, 'rgba(56, 189, 248, 0.28)');
-  grad.addColorStop(1, 'rgba(14, 165, 233, 0)');
+  grad.addColorStop(0, 'rgba(255, 250, 240, 0.95)');
+  grad.addColorStop(0.25, 'rgba(226, 168, 75, 0.72)');
+  grad.addColorStop(0.6, 'rgba(226, 168, 75, 0.18)');
+  grad.addColorStop(1, 'rgba(226, 168, 75, 0)');
 
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 96, 96);
@@ -88,6 +88,10 @@ export class EarthGlobeController {
   private cityHitMeshes = new Map<string, THREE.Mesh>();
   private citySprites = new Map<string, THREE.Sprite>();
   private cityRings = new Map<string, THREE.Mesh>();
+  private labelElements = new Map<string, HTMLElement>();
+  private cachedPanelRects: DOMRect[] | null = null;
+  private cachedViewportSize: { width: number; height: number } | null = null;
+  private coastlineBuilt = false;
   private routeLines: Array<{
     id: string;
     fromCityId: string;
@@ -175,7 +179,30 @@ export class EarthGlobeController {
     camera.updateProjectionMatrix();
   }
 
+  private cacheLabelElements(): void {
+    this.labelElements.clear();
+    for (const city of this.atlas.cities) {
+      const el = document.querySelector<HTMLElement>(
+        `[data-globe-city-label="${city.id}"]`
+      );
+      if (el) {
+        this.labelElements.set(city.id, el);
+      }
+    }
+  }
+
+  public loadCoastlineGeoJson(landGeoJson: unknown): void {
+    this.landGeoJson = landGeoJson;
+    if (this.globeGroup && !this.coastlineBuilt) {
+      this.buildCoastlineVectors(this.globeGroup);
+      if (this.isPaused && this.renderer && this.scene && this.camera) {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+  }
+
   private init(): void {
+    this.cacheLabelElements();
     try {
       const scene = new THREE.Scene();
       const width = this.container.clientWidth || window.innerWidth || 1280;
@@ -223,10 +250,10 @@ export class EarthGlobeController {
       scene.add(globeGroup);
 
       // Subtle lighting: let the emissive satellite/night-lights texture carry full contrast
-      const ambientLight = new THREE.AmbientLight(0x93c5fd, 0.14);
+      const ambientLight = new THREE.AmbientLight(0xd6d3cd, 0.14);
       scene.add(ambientLight);
 
-      const sunLight = new THREE.DirectionalLight(0x60a5fa, 0.2);
+      const sunLight = new THREE.DirectionalLight(0xe7e2d8, 0.18);
       sunLight.position.set(6, 5, 8);
       scene.add(sunLight);
 
@@ -327,7 +354,7 @@ export class EarthGlobeController {
   }
 
   private buildStarfield(scene: THREE.Scene): void {
-    const starCount = 1200;
+    const starCount = 700;
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
 
@@ -342,7 +369,7 @@ export class EarthGlobeController {
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = r * Math.cos(phi);
 
-      const c = i % 5 === 0 ? new THREE.Color('#38BDF8') : new THREE.Color('#CBD5E1');
+      const c = i % 6 === 0 ? new THREE.Color('#E2C799') : new THREE.Color('#A8A29E');
       colors[i * 3] = c.r;
       colors[i * 3 + 1] = c.g;
       colors[i * 3 + 2] = c.b;
@@ -353,10 +380,10 @@ export class EarthGlobeController {
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const mat = new THREE.PointsMaterial({
-      size: 0.075,
+      size: 0.06,
       vertexColors: true,
       transparent: true,
-      opacity: 0.48,
+      opacity: 0.32,
       depthWrite: false,
     });
     scene.add(new THREE.Points(geo, mat));
@@ -373,30 +400,15 @@ export class EarthGlobeController {
     });
 
     const loader = new THREE.TextureLoader();
-    loader.load(
-      withBase('textures/earth-atlas.webp'),
-      (tex) => {
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = 4;
-        earthMat.map = tex;
-        earthMat.emissiveMap = tex;
-        earthMat.emissive = new THREE.Color('#ffffff');
-        earthMat.emissiveIntensity = 1.05;
-        earthMat.needsUpdate = true;
-      },
-      undefined,
-      () => {
-        // Fallback to PNG if WebP fails
-        loader.load(withBase('textures/earth-atlas.png'), (pngTex) => {
-          pngTex.colorSpace = THREE.SRGBColorSpace;
-          earthMat.map = pngTex;
-          earthMat.emissiveMap = pngTex;
-          earthMat.emissive = new THREE.Color('#ffffff');
-          earthMat.emissiveIntensity = 1.05;
-          earthMat.needsUpdate = true;
-        });
-      }
-    );
+    loader.load(withBase('textures/earth-atlas.webp'), (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 4;
+      earthMat.map = tex;
+      earthMat.emissiveMap = tex;
+      earthMat.emissive = new THREE.Color('#ffffff');
+      earthMat.emissiveIntensity = 1.05;
+      earthMat.needsUpdate = true;
+    });
 
     const earthMesh = new THREE.Mesh(sphereGeo, earthMat);
     // Align Three.js SphereGeometry equirectangular UV mapping (u=0.5 at +X)
@@ -434,6 +446,7 @@ export class EarthGlobeController {
    * batched into a single LineSegments draw call.
    */
   private buildCoastlineVectors(globeGroup: THREE.Group): void {
+    if (this.coastlineBuilt) return;
     const fc = this.landGeoJson as {
       features?: Array<{
         geometry?: {
@@ -444,11 +457,12 @@ export class EarthGlobeController {
     } | null;
 
     if (!fc?.features) return;
+    this.coastlineBuilt = true;
 
     const lineMat = new THREE.LineBasicMaterial({
-      color: new THREE.Color('#38BDF8'),
+      color: new THREE.Color('#94A3B8'),
       transparent: true,
-      opacity: 0.25,
+      opacity: 0.2,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -525,10 +539,10 @@ export class EarthGlobeController {
       const [x, y, z] = latLonToVector3(city.lat, city.lon, GLOBE_RADIUS * 1.004);
       const isHub = city.isBaseHub || city.eventsCount >= 2;
       const colorHex = city.isBaseHub
-        ? '#38BDF8'
+        ? '#E2A84B'
         : city.eventsCount >= 2
-          ? '#FDE047'
-          : '#60A5FA';
+          ? '#F3D08A'
+          : '#CBD5E1';
 
       const radius = city.isBaseHub
         ? 0.026
@@ -599,7 +613,7 @@ export class EarthGlobeController {
     this.atlas.routes.forEach((route, idx) => {
       const vecPoints = route.points3D.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
       const lineGeo = new THREE.BufferGeometry().setFromPoints(vecPoints);
-      const baseOpacity = route.kind === 'hub' ? 0.64 : 0.42;
+      const baseOpacity = route.kind === 'hub' ? 0.52 : 0.32;
 
       const lineMat = new THREE.LineBasicMaterial({
         color: new THREE.Color(route.color),
@@ -612,9 +626,9 @@ export class EarthGlobeController {
       globeGroup.add(line);
 
       const pulseMat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color('#FEF08A'),
+        color: new THREE.Color('#F4F1EA'),
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.85,
       });
       const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
       if (vecPoints.length > 0) {
@@ -880,14 +894,22 @@ export class EarthGlobeController {
     this.projectCityLabels();
   }
 
+  public invalidatePanelRects(): void {
+    this.cachedPanelRects = null;
+    this.cachedViewportSize = null;
+    this.projectCityLabels();
+  }
+
   private getOccludingPanelRects(): DOMRect[] {
+    if (this.cachedPanelRects) {
+      return this.cachedPanelRects;
+    }
     const rects: DOMRect[] = [];
     const selectors = [
       'header',
       '#hero-overview-panel',
       '#right-discovery-column',
       '#destination-panel',
-      '#speaking-impact-card',
       '#view-mode-tablist',
       '#recent-signals-strip',
       '#globe-controls-toolbar',
@@ -905,19 +927,23 @@ export class EarthGlobeController {
         }
       }
     }
+    this.cachedPanelRects = rects;
     return rects;
   }
 
   private setLabelVisibility(el: HTMLElement, visible: boolean): void {
-    el.dataset.visible = visible ? 'true' : 'false';
-    el.style.opacity = visible ? '1' : '0';
-    el.style.pointerEvents = visible ? 'auto' : 'none';
-    if (visible) {
-      el.removeAttribute('inert');
-      el.removeAttribute('aria-hidden');
-    } else {
-      el.setAttribute('inert', '');
-      el.setAttribute('aria-hidden', 'true');
+    const nextStr = visible ? 'true' : 'false';
+    if (el.dataset.visible !== nextStr) {
+      el.dataset.visible = nextStr;
+      el.style.opacity = visible ? '1' : '0';
+      el.style.pointerEvents = visible ? 'auto' : 'none';
+      if (visible) {
+        el.removeAttribute('inert');
+        el.removeAttribute('aria-hidden');
+      } else {
+        el.setAttribute('inert', '');
+        el.setAttribute('aria-hidden', 'true');
+      }
     }
   }
 
@@ -928,9 +954,14 @@ export class EarthGlobeController {
    */
   private projectCityLabels(): void {
     if (!this.camera) return;
-    const rect = this.container.getBoundingClientRect();
-    const width = rect.width || window.innerWidth || 1280;
-    const height = rect.height || window.innerHeight || 800;
+    if (!this.cachedViewportSize) {
+      const rect = this.container.getBoundingClientRect();
+      this.cachedViewportSize = {
+        width: rect.width || window.innerWidth || 1280,
+        height: rect.height || window.innerHeight || 800,
+      };
+    }
+    const { width, height } = this.cachedViewportSize;
 
     const camDir = this.camera.position.clone().normalize();
     const placedBoxes: Array<{ x: number; y: number; halfW: number }> = [];
@@ -953,9 +984,9 @@ export class EarthGlobeController {
     });
 
     for (const city of orderedCities) {
-      const el = document.querySelector<HTMLElement>(
-        `[data-globe-city-label="${city.id}"]`
-      );
+      const el =
+        this.labelElements.get(city.id) ??
+        document.querySelector<HTMLElement>(`[data-globe-city-label="${city.id}"]`);
       if (!el) continue;
 
       const worldVec = new THREE.Vector3(...city.position3D);
@@ -1030,9 +1061,9 @@ export class EarthGlobeController {
     const width = window.innerWidth || 1280;
     const height = window.innerHeight || 800;
     this.atlas.cities.forEach((city, idx) => {
-      const el = document.querySelector<HTMLElement>(
-        `[data-globe-city-label="${city.id}"]`
-      );
+      const el =
+        this.labelElements.get(city.id) ??
+        document.querySelector<HTMLElement>(`[data-globe-city-label="${city.id}"]`);
       if (!el) return;
       const col = idx % 5;
       const row = Math.floor(idx / 5);
@@ -1088,6 +1119,8 @@ export class EarthGlobeController {
   }
 
   private handleResize(): void {
+    this.cachedPanelRects = null;
+    this.cachedViewportSize = null;
     if (!this.camera || !this.renderer) {
       this.projectFallbackCityLabels();
       return;

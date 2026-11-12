@@ -1,7 +1,6 @@
 ---
 import rawEvents from '../../data/events.json';
 import rawLocations from '../../data/locations.json';
-import rawLand from '../../data/land.json';
 import { buildSpeakingAtlas } from '../utils/geography';
 import { withBase } from '../utils/paths';
 import TopNav from '../components/TopNav.astro';
@@ -14,48 +13,184 @@ import AboutModal from '../components/AboutModal.astro';
 
 const atlas = buildSpeakingAtlas(rawEvents, rawLocations);
 const initialEvent = atlas.events[0];
+const siteTitle = 'Enes Turan — Cloud, Kubernetes & AI';
+const siteDescription = `Talks, workshops, and conference notes by Enes Turan (Google Developer Expert) across ${atlas.metrics.uniqueCities} cities and ${atlas.metrics.uniqueCountries} countries.`;
+const canonicalUrl = 'https://devenes.github.io/';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Enes Turan',
+  jobTitle: 'Google Developer Expert (Cloud, Kubernetes & AI)',
+  url: canonicalUrl,
+  sameAs: [
+    'https://www.linkedin.com/in/devenes/',
+    'https://github.com/devenes',
+    'https://medium.com/@devenes',
+    'https://speakerdeck.com/devenes',
+  ],
+};
 ---
 
 <!doctype html>
 <html
   lang="en"
-  class="dark bg-[#030712] text-[#F8FAFC] antialiased selection:bg-[#38BDF8]/30 selection:text-white"
+  class="dark bg-[#0B0C0E] text-[#F4F1EA] antialiased selection:bg-[#E2A84B]/30 selection:text-[#F4F1EA]"
 >
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ahmed Enes Turan — Global Speaking Atlas | Google Developer Expert</title>
-    <meta
-      name="description"
-      content={`Ahmed Enes Turan (Google Developer Expert) — Interactive Global Speaking Atlas across ${atlas.metrics.totalTalks} conference talks, ${atlas.metrics.uniqueCountries} countries, and ${atlas.metrics.uniqueCities} physical cities in Cloud, Kubernetes, and AI.`}
-    />
+    <title>{siteTitle}</title>
+    <meta name="description" content={siteDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="Enes Turan" />
+    <meta property="og:title" content={siteTitle} />
+    <meta property="og:description" content={siteDescription} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={siteTitle} />
+    <meta name="twitter:description" content={siteDescription} />
     <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <style is:global>
       :root {
         color-scheme: dark;
+        --bg-canvas: #0b0c0e;
+        --bg-surface: #121417;
+        --ink-primary: #f4f1ea;
+        --ink-secondary: #c6c2b8;
+        --ink-muted: #9c978c;
+        --accent: #e2a84b;
+        --scrollbar-thumb: rgba(198, 194, 184, 0.24);
+        --scrollbar-track: #0b0c0e;
       }
       html,
       body {
         margin: 0;
         padding: 0;
         min-height: 100%;
-        background-color: #030712;
-        color: #f8fafc;
+        line-height: 1.5;
+        background-color: var(--bg-canvas);
+        color: var(--ink-primary);
         overflow-x: hidden;
+        font-size-adjust: from-font;
+        scrollbar-width: thin;
+        scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
       }
-      ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+      .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
       }
-      ::-webkit-scrollbar-track {
-        background: #030712;
+      @supports not (scrollbar-color: auto) {
+        ::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+          background: var(--scrollbar-track);
+        }
+        ::-webkit-scrollbar-thumb {
+          background: var(--scrollbar-thumb);
+          border-radius: 9999px;
+        }
       }
-      ::-webkit-scrollbar-thumb {
-        background: rgba(148, 163, 184, 0.25);
-        border-radius: 9999px;
+      h1,
+      h2 {
+        text-wrap: balance;
+        font-size-adjust: cap-height from-font;
       }
-      ::-webkit-scrollbar-thumb:hover {
-        background: rgba(56, 189, 248, 0.55);
+      p,
+      li {
+        text-wrap: pretty;
+        overflow-wrap: break-word;
+      }
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+      /* Accessible tab indicator driven directly from ARIA state (persists in Forced Colors Mode) */
+      [role='tab'] {
+        position: relative;
+        color: var(--ink-muted);
+      }
+      [role='tab']:hover {
+        color: var(--ink-primary);
+      }
+      [role='tab'][aria-selected='true'] {
+        color: var(--ink-primary);
+      }
+      [role='tab'][aria-selected='true']::after {
+        content: '';
+        position: absolute;
+        inset: auto 0.5rem 0;
+        border-block-end: 2px solid var(--accent);
+      }
+      /* Filter pill toggle state driven from aria-pressed */
+      .filter-pill[aria-pressed='true'] {
+        background-color: rgba(28, 31, 36, 0.95);
+        color: var(--ink-primary);
+        border-color: rgba(226, 168, 75, 0.65);
+        backdrop-filter: blur(8px);
+      }
+      .filter-pill[aria-pressed='false'] {
+        background-color: rgba(18, 20, 23, 0.85);
+        color: var(--ink-secondary);
+        border-color: rgba(244, 241, 234, 0.14);
+        backdrop-filter: blur(8px);
+      }
+      .filter-pill[aria-pressed='false']:hover {
+        background-color: rgba(28, 31, 36, 0.92);
+        color: var(--ink-primary);
+      }
+      dialog:modal {
+        overscroll-behavior: contain;
+      }
+      dialog::backdrop {
+        overflow: hidden;
+        overscroll-behavior: contain;
+        background-color: rgba(8, 9, 11, 0.76);
+        backdrop-filter: blur(8px);
+      }
+      .soft-edge-fade-y {
+        overflow-y: auto;
+        -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+      }
+      .soft-edge-fade-x {
+        overflow-x: auto;
+        -webkit-mask-image: linear-gradient(to right, black 95%, transparent 100%);
+        mask-image: linear-gradient(to right, black 95%, transparent 100%);
+      }
+      .visually-hidden:where(:not(:focus-within, :active)) {
+        position: absolute !important;
+        clip-path: inset(50%) !important;
+        overflow: hidden !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: -1px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        white-space: nowrap !important;
+      }
+      :where(a:any-link, button, select, input, [role='button'], [role='tab']):focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      @media (forced-colors: active) {
+        [role='tab'][aria-selected='true']::after {
+          border-block-end-color: Highlight;
+        }
+        .filter-pill[aria-pressed='true'] {
+          outline: 2px solid Highlight;
+        }
+        :where(a:any-link, button, select, input, [role='button'], [role='tab']):focus-visible {
+          outline-color: Highlight;
+        }
       }
     </style>
   </head>
@@ -66,99 +201,122 @@ const initialEvent = atlas.events[0];
     data-selected-city=""
     data-year="all"
     data-topic="all"
-    class="relative min-h-screen w-full bg-[#030712] text-[#F8FAFC] flex flex-col justify-between overflow-x-hidden"
+    class="relative min-h-screen w-full bg-[#0B0C0E] text-[#F4F1EA] flex flex-col justify-between overflow-x-hidden"
   >
-    <!-- Deep Space & Planetary Atmospheric Backdrop -->
+    <a
+      href="#main-content"
+      class="visually-hidden fixed top-3 left-4 z-[60] rounded-md bg-[#F4F1EA] px-3.5 py-2 text-xs font-semibold text-[#0B0C0E] shadow-lg"
+    >
+      Skip to main content
+    </a>
+
+    <!-- Restrained Dark-Room Vignette Backdrop (No synthetic dot grids) -->
     <div
       class="fixed inset-0 z-0 pointer-events-none"
-      style="background: radial-gradient(circle at 50% 45%, #0B1D42 0%, #061026 38%, #030712 80%);"
+      style="background: radial-gradient(circle at 50% 44%, #151921 0%, #0E1014 44%, #0B0C0E 82%);"
       aria-hidden="true"
     >
-      <div
-        class="absolute inset-0 opacity-35"
-        style="background-image: radial-gradient(rgba(56, 189, 248, 0.16) 1px, transparent 1px), radial-gradient(rgba(253, 224, 71, 0.1) 1px, transparent 1px); background-size: 56px 56px, 112px 112px; background-position: 0 0, 28px 28px;"
-      >
-      </div>
     </div>
 
-    <!-- Center Interactive 3D Earth Viewport (Full-screen interactive WebGL layer) -->
+    <!-- Center Interactive 3D Earth Viewport -->
     <div
       id="orbit-canvas-container"
       data-testid="orbit-canvas-container"
       class="fixed inset-0 z-[1]"
-      aria-label="Interactive 3D Earth Speaking Atlas"
+      aria-label="Interactive 3D Earth map of speaking locations"
     >
     </div>
 
-    <!-- Fixed Glassmorphic Top Navigation Bar -->
+    <!-- Editorial Masthead Navigation -->
     <TopNav totalTalks={atlas.metrics.totalTalks} />
 
-    <!-- First-Viewport Three-Column Hero Composition (Left Identity · Center 3D Earth · Right Destination Panel) -->
+    <!-- Main Three-Zone Workspace -->
     <main
-      class="relative z-20 flex-1 w-full max-w-[1600px] mx-auto pt-20 md:pt-24 lg:pt-[84px] pb-2 px-5 lg:px-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6 pointer-events-none"
+      id="main-content"
+      tabindex="-1"
+      class="relative z-20 flex-1 w-full max-w-[1560px] mx-auto pt-20 md:pt-24 lg:pt-[5.5rem] pb-2 px-5 lg:px-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-8 pointer-events-none focus:outline-none"
     >
-      <!-- Left Column: Identity, Real Metrics & Primary Actions -->
-      <div class="w-full lg:w-[390px] xl:w-[430px] shrink-0">
+      <!-- Left Column: Speaker Identity & Real Numbers -->
+      <div class="w-full lg:w-[380px] xl:w-[410px] shrink-0">
         <HeroOverview atlas={atlas} />
       </div>
 
-      <!-- Center Column: Interactive 3D Earth Viewport Window on Mobile/Tablet & Spacer on Desktop -->
+      <!-- Center Column: Mobile/Tablet Globe Window & Desktop Breathing Space -->
       <div
         id="mobile-globe-viewport"
         class="w-full h-[250px] sm:h-[290px] lg:h-auto lg:flex-1 lg:min-h-[380px] flex items-end justify-center pb-2 pointer-events-none select-none"
-        aria-hidden="true"
       >
-        <span
+        <div
           id="mobile-globe-hint-pill"
-          class="lg:hidden rounded-full px-3 py-1 bg-[#050B1A]/85 backdrop-blur-md border border-white/15 font-mono text-[9px] tracking-[0.14em] uppercase text-[#38BDF8] shadow-lg whitespace-nowrap"
+          class="lg:hidden flex flex-wrap items-center justify-center gap-2 rounded-full px-3.5 py-1.5 bg-[#121417]/90 backdrop-blur-md border border-[#F4F1EA]/18 shadow-lg pointer-events-auto"
         >
-          Drag 3D Earth to rotate · Tap any city
-        </span>
+          <span class="text-xs text-[#C6C2B8]">Drag globe · Tap a city</span>
+          <span class="h-3 w-[1px] bg-[#F4F1EA]/18" aria-hidden="true"></span>
+          <button
+            type="button"
+            data-action="reset-city"
+            class="text-xs text-[#C6C2B8] hover:text-[#F4F1EA] px-1.5 py-0.5 rounded transition-colors cursor-pointer"
+          >
+            Reset
+          </button>
+          <button
+            type="button"
+            data-action="toggle-motion"
+            aria-pressed="false"
+            class="text-xs text-[#C6C2B8] hover:text-[#F4F1EA] px-1.5 py-0.5 rounded transition-colors cursor-pointer"
+          >
+            Pause
+          </button>
+        </div>
       </div>
 
-      <!-- Right Column: 4-Mode View Selector + Contextual Destination Panel + Speaking Impact Card -->
+      <!-- Right Column: Focused Geographic Explorer -->
       <DestinationPanel atlas={atlas} />
     </main>
 
-    <!-- Bottom Chronological Speaking Timeline Strip & Year Selector -->
+    <!-- Bottom Chronological Talk Strip -->
     <RecentSignals atlas={atlas} />
 
-    <!-- Slide-Over Event Detail Dossier Drawer -->
+    <!-- Slide-Over Talk Detail Sheet -->
     <SignalDrawer initialEvent={initialEvent} />
 
-    <!-- Full Searchable & Filterable Speaking Archive Modal -->
+    <!-- Full Searchable Talks Archive Dialog -->
     <ArchiveMatrix atlas={atlas} />
 
-    <!-- Speaker Bio / Dossier Modal -->
+    <!-- Speaker Bio Dialog -->
     <AboutModal atlas={atlas} />
 
-    <!-- Serialized Build-Time Verified Atlas & Land Geometry Payloads -->
+    <!-- Build-Time Atlas Data Payload -->
     <script
       id="speaking-atlas-data"
       type="application/json"
       set:html={JSON.stringify(atlas)}
     />
-    <script
-      id="earth-land-data"
-      type="application/json"
-      set:html={JSON.stringify(rawLand)}
-    />
 
-    <!-- Client-Side 3D Earth & Atlas State Initialization -->
+    <!-- Client-Side 3D Earth & State Initialization -->
     <script>
       import { initSpeakingAtlasApp } from '../scripts/atlasController';
       import type { SpeakingAtlasData } from '../utils/geography';
+      import { withBase } from '../utils/paths';
 
       function bootstrap() {
         const atlasEl = document.getElementById('speaking-atlas-data');
-        const landEl = document.getElementById('earth-land-data');
         if (!atlasEl?.textContent) return;
         try {
           const atlas = JSON.parse(atlasEl.textContent) as SpeakingAtlasData;
-          const land = landEl?.textContent ? JSON.parse(landEl.textContent) : null;
-          initSpeakingAtlasApp(atlas, land);
+          initSpeakingAtlasApp(atlas, null);
+          fetch(withBase('data/land.json'))
+            .then((res) => (res.ok ? res.json() : null))
+            .then((land) => {
+              if (land) {
+                window.__earthGlobe?.loadCoastlineGeoJson(land);
+              }
+            })
+            .catch(() => {
+              // Coastline vectors are progressive enhancement over the 3D Earth texture
+            });
         } catch (err) {
-          console.error('Failed to initialize Global Speaking Atlas:', err);
+          console.error('Failed to initialize speaking map:', err);
         }
       }
 

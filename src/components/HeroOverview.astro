@@ -12,187 +12,95 @@ const { metrics } = atlas;
 <section
   id="hero-overview-panel"
   data-testid="hero-overview-panel"
-  aria-label="Speaker Identity & Global Speaking Statistics"
   class="relative z-20 flex flex-col justify-center pointer-events-none select-none"
 >
   <div
-    class="pointer-events-auto relative rounded-3xl py-2 pr-3"
-    style="background: radial-gradient(ellipse at 32% 50%, rgba(3, 7, 18, 0.78) 0%, rgba(3, 7, 18, 0.42) 65%, transparent 100%); text-shadow: 0 2px 14px rgba(3, 7, 18, 0.95);"
+    class="pointer-events-auto relative rounded-2xl py-2 pr-4"
+    style="background: radial-gradient(ellipse at 30% 50%, rgba(11, 12, 14, 0.84) 0%, rgba(11, 12, 14, 0.48) 68%, transparent 100%);"
   >
-    <!-- Eyebrow -->
-    <p
-      class="font-mono text-[10px] sm:text-xs font-medium tracking-[0.16em] sm:tracking-[0.26em] uppercase text-slate-300/95 mb-2 whitespace-nowrap"
-    >
-      PEOPLE &nbsp;/&nbsp; PLATFORMS &nbsp;/&nbsp; POSSIBILITIES
+    <p class="text-xs font-medium text-[#E2A84B] tracking-wide mb-2">
+      Istanbul · Cloud, Kubernetes &amp; AI
     </p>
 
-    <!-- Primary Editorial Headline matching Reference Image (2 crisp lines) -->
     <h1
-      class="font-display text-3xl sm:text-4xl xl:text-[42px] font-bold tracking-[-0.03em] leading-[1.08] text-[#F8FAFC] drop-shadow-[0_4px_24px_rgba(0,0,0,0.92)]"
+      class="font-display font-medium tracking-[-0.02em] leading-[1.06] text-[#F4F1EA]"
+      style="font-size: clamp(2.35rem, 1.85rem + 1.8vw, 3.25rem);"
     >
-      <span class="block whitespace-nowrap">Ideas travel.</span>
-      <span class="block mt-1 whitespace-nowrap">
-        Technology{' '}
-        <span
-          class="bg-gradient-to-r from-[#60A5FA] via-[#38BDF8] to-[#BAE6FD] bg-clip-text text-transparent drop-shadow-[0_2px_18px_rgba(3,7,18,0.95)]"
-        >
-          connects.
-        </span>
-      </span>
+      Enes Turan
     </h1>
 
-    <!-- Supporting Identity -->
-    <p class="mt-3 text-[13px] sm:text-[15px] font-medium text-slate-200 tracking-wide whitespace-nowrap">
-      <strong class="font-semibold text-white">Ahmed Enes Turan</strong>
-      <span class="mx-1.5 sm:mx-2 text-slate-400">—</span>
-      <span class="text-slate-200">Cloud &nbsp;·&nbsp; Kubernetes &nbsp;·&nbsp; AI</span>
+    <p class="mt-3 max-w-[38ch] text-sm sm:text-[0.9375rem] leading-[1.55] text-[#C6C2B8]">
+      Google Developer Expert sharing practical engineering talks and workshops on production
+      Kubernetes, cloud infrastructure, and AI agent systems.
     </p>
 
-    <!-- Three Prominent Real Data-Driven Metrics (Open Editorial Layout with Vertical Hairline Dividers) -->
-    <div
-      class="mt-4 sm:mt-5 grid grid-cols-3 max-w-[360px] py-1.5 sm:py-2"
-      role="region"
-      aria-label="Verified Speaking Statistics"
-    >
-      <div class="pr-4">
+    <!-- Open Typographic Speaking Ledger -->
+    <div class="mt-5 pt-4 border-t border-[#F4F1EA]/12 grid grid-cols-3 max-w-[340px] gap-4">
+      <div>
         <div
           id="hero-talk-count"
           data-testid="metric-talks"
           data-physical={metrics.physicalTalks}
           data-online={metrics.onlineTalks}
-          class="font-display text-3xl sm:text-[40px] leading-none font-bold tracking-tight text-white"
+          class="font-display text-3xl sm:text-[2.25rem] leading-[1.05] font-medium text-[#F4F1EA] tabular-nums"
         >
           {metrics.totalTalks}
         </div>
-        <div
-          class="mt-1.5 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
-        >
-          TALKS
-        </div>
+        <div class="mt-1 text-xs text-[#9C978C]">Talks</div>
       </div>
 
-      <div class="px-5 border-l border-white/[0.16]">
+      <div class="pl-4 border-l border-[#F4F1EA]/12">
         <div
           data-testid="metric-countries"
-          class="font-display text-3xl sm:text-[40px] leading-none font-bold tracking-tight text-white"
+          class="font-display text-3xl sm:text-[2.25rem] leading-[1.05] font-medium text-[#F4F1EA] tabular-nums"
         >
           {metrics.uniqueCountries}
         </div>
-        <div
-          class="mt-1.5 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
-        >
-          COUNTRIES
-        </div>
+        <div class="mt-1 text-xs text-[#9C978C]">Countries</div>
       </div>
 
-      <div class="pl-5 border-l border-white/[0.16]">
+      <div class="pl-4 border-l border-[#F4F1EA]/12">
         <div
           data-testid="metric-cities"
-          class="font-display text-3xl sm:text-[40px] leading-none font-bold tracking-tight text-white"
+          class="font-display text-3xl sm:text-[2.25rem] leading-[1.05] font-medium text-[#F4F1EA] tabular-nums"
         >
           {metrics.uniqueCities}
         </div>
-        <div
-          class="mt-1.5 font-mono text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-slate-400"
-        >
-          CITIES
-        </div>
+        <div class="mt-1 text-xs text-[#9C978C]">Cities</div>
       </div>
     </div>
 
-    <p class="mt-1 font-mono text-[10px] tracking-wider text-slate-400/90">
-      {metrics.physicalTalks} in-person sessions across {metrics.uniqueCities} physical cities +{' '}
-      {metrics.onlineTalks} global online broadcasts
+    <p class="mt-3 text-xs leading-[1.5] text-[#9C978C] tabular-nums">
+      {metrics.physicalTalks} in-person sessions + {metrics.onlineTalks} online ·{' '}
+      {metrics.keynotesCount} keynotes, {metrics.conferencesCount} conference talks,{' '}
+      {metrics.workshopsCount} workshops
     </p>
 
-    <!-- Session Formats Row with Vector Icons (Single Line on Mobile & Desktop) -->
-    <div
-      class="mt-3.5 sm:mt-4 flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-4 font-mono text-[9.5px] sm:text-[10px] xl:text-[11px] tracking-[0.08em] sm:tracking-[0.15em] uppercase text-slate-300 whitespace-nowrap"
-    >
-      <span class="inline-flex items-center gap-1.5">
-        <svg
-          class="w-3.5 h-3.5 text-[#38BDF8] shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-          <line x1="12" x2="12" y1="19" y2="22"></line>
-        </svg>
-        <span>KEYNOTES ({metrics.keynotesCount})</span>
-      </span>
-
-      <span class="inline-flex items-center gap-1.5">
-        <svg
-          class="w-3.5 h-3.5 text-[#38BDF8] shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <rect width="20" height="14" x="2" y="3" rx="2"></rect>
-          <line x1="8" x2="16" y1="21" y2="21"></line>
-          <line x1="12" x2="12" y1="17" y2="21"></line>
-        </svg>
-        <span>CONFERENCES ({metrics.conferencesCount})</span>
-      </span>
-
-      <span class="inline-flex items-center gap-1.5">
-        <svg
-          class="w-3.5 h-3.5 text-[#38BDF8] shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <span>WORKSHOPS ({metrics.workshopsCount})</span>
-      </span>
-    </div>
-
-    <!-- Primary Direct Action Buttons matching Reference Image -->
-    <div class="mt-5 flex flex-wrap items-center gap-3">
-      <button
-        type="button"
-        data-action="explore-world"
-        data-testid="explore-world-btn"
-        class="inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#1D4ED8] to-[#2563EB] hover:from-[#2563EB] hover:to-[#3B82F6] border border-[#60A5FA]/50 shadow-[0_0_28px_rgba(37,99,235,0.45)] transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
-      >
-        <span>Explore the world</span>
-        <span aria-hidden="true">→</span>
-      </button>
-
+    <!-- Restrained Editorial Actions (No neon drop-shadows) -->
+    <div class="mt-5 flex flex-wrap items-center gap-2.5">
       <button
         type="button"
         data-action="open-archive"
         data-testid="browse-all-talks-btn"
-        class="inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-200 hover:text-white bg-[#070E20]/80 hover:bg-[#0D1833] border border-white/15 hover:border-[#38BDF8]/50 backdrop-blur-md transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+        class="inline-flex items-center gap-2.5 rounded-md px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#0B0C0E] bg-[#F4F1EA] hover:bg-white transition-colors cursor-pointer"
       >
-        <svg
-          class="w-4 h-4 text-[#38BDF8]"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <line x1="8" x2="21" y1="6" y2="6"></line>
-          <line x1="8" x2="21" y1="12" y2="12"></line>
-          <line x1="8" x2="21" y1="18" y2="18"></line>
-          <line x1="3" x2="3.01" y1="6" y2="6"></line>
-          <line x1="3" x2="3.01" y1="12" y2="12"></line>
-          <line x1="3" x2="3.01" y1="18" y2="18"></line>
-        </svg>
         <span>Browse all talks</span>
+        <kbd
+          aria-hidden="true"
+          class="hidden sm:inline-block rounded px-1.5 py-0.5 font-mono text-[0.6875rem] font-medium text-[#0B0C0E]/80 bg-[#0B0C0E]/10 border border-[#0B0C0E]/15"
+        >
+          ⌘K
+        </kbd>
+      </button>
+
+      <button
+        type="button"
+        data-action="explore-world"
+        data-testid="explore-world-btn"
+        class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-xs sm:text-sm font-medium text-[#F4F1EA] bg-[#121417]/85 hover:bg-[#181B20] border border-[#F4F1EA]/20 hover:border-[#F4F1EA]/35 transition-colors cursor-pointer"
+      >
+        <span>Istanbul hub</span>
+        <span aria-hidden="true" class="text-[#E2A84B]">→</span>
       </button>
     </div>
   </div>

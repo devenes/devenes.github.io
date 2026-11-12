@@ -1,5 +1,4 @@
 ---
-import rawLand from '../../data/land.json';
 import type { SpeakingAtlasData } from '../utils/geography';
 import { formatSignalDate } from '../utils/paths';
 
@@ -10,61 +9,12 @@ interface Props {
 const { atlas } = Astro.props;
 const { metrics, cities, regions, topics, years, events } = atlas;
 const prominentCities = cities.slice(0, 8);
-const recentThree = events.slice(0, 2);
-
-// Build real continental SVG path from data/land.json for the Speaking Impact mini-map (200x100 equirectangular)
-function buildMiniMapSvgPath(landData: unknown): string {
-  const fc = landData as {
-    features?: Array<{
-      geometry?: {
-        type: string;
-        coordinates: unknown;
-      };
-    }>;
-  };
-  if (!fc?.features) return '';
-  const segments: string[] = [];
-
-  const ringToPath = (ring: number[][]) => {
-    if (!Array.isArray(ring) || ring.length < 4) return;
-    const pts: string[] = [];
-    for (let i = 0; i < ring.length; i++) {
-      const [lon, lat] = ring[i];
-      if (lat < -62) continue; // omit Antarctica on mini-map
-      if (i > 0 && Math.abs(lon - ring[i - 1][0]) > 170) break;
-      const x = (((lon + 180) / 360) * 200).toFixed(1);
-      const y = (((90 - lat) / 180) * 100).toFixed(1);
-      pts.push(`${pts.length === 0 ? 'M' : 'L'}${x},${y}`);
-    }
-    if (pts.length >= 3) {
-      segments.push(`${pts.join(' ')} Z`);
-    }
-  };
-
-  for (const feat of fc.features) {
-    const geom = feat.geometry;
-    if (!geom) continue;
-    if (geom.type === 'Polygon') {
-      const poly = geom.coordinates as number[][][];
-      if (poly[0]) ringToPath(poly[0]);
-    } else if (geom.type === 'MultiPolygon') {
-      const multi = geom.coordinates as number[][][][];
-      for (const poly of multi) {
-        if (poly[0]) ringToPath(poly[0]);
-      }
-    }
-  }
-  return segments.join(' ');
-}
-
-const miniMapLandPath = buildMiniMapSvgPath(rawLand);
 ---
 
-<!-- 2D Projected City Marker Badges on the 3D Earth (Only Physical Verified Locations) -->
+<!-- 2D Projected City Marker Labels on the 3D Earth -->
 <div
   id="globe-city-labels"
   class="fixed inset-0 z-10 pointer-events-none overflow-hidden"
-  aria-label="Interactive 3D Earth Speaking Destinations"
 >
   {
     cities.map((city) => (
@@ -80,26 +30,26 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
           data-city-id={city.id}
           data-testid={`globe-city-${city.id}`}
           aria-label={`Select ${city.city}, ${city.country} (${city.eventsCount} ${city.eventsCount === 1 ? 'talk' : 'talks'})`}
-          class={`group -translate-x-1/2 -translate-y-full -mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur-md border transition-all cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.75)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+          class={`group -translate-x-1/2 -translate-y-full -mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs backdrop-blur-md border transition-colors cursor-pointer shadow-[0_4px_14px_rgba(0,0,0,0.65)] ${
             city.isBaseHub
-              ? 'bg-[#1D4ED8]/85 text-white border-[#60A5FA] shadow-[0_0_20px_rgba(56,189,248,0.45)]'
-              : 'bg-[#060D1F]/85 hover:bg-[#0F1E3D] text-slate-100 border-white/20 hover:border-[#38BDF8]/70'
+              ? 'bg-[#181B20]/95 text-[#F4F1EA] border-[#E2A84B]/70'
+              : 'bg-[#121417]/88 hover:bg-[#181B20] text-[#E6E2D8] border-[#F4F1EA]/18 hover:border-[#E2A84B]/55'
           }`}
         >
           <span
             class={`h-1.5 w-1.5 rounded-full ${
               city.isBaseHub
-                ? 'bg-white shadow-[0_0_6px_#fff]'
+                ? 'bg-[#E2A84B]'
                 : city.eventsCount >= 2
-                  ? 'bg-[#FDE047]'
-                  : 'bg-[#38BDF8]'
+                  ? 'bg-[#F3D08A]'
+                  : 'bg-[#A39E93]'
             }`}
           />
-          <span class="font-sans font-semibold tracking-tight whitespace-nowrap">
+          <span class="font-medium tracking-tight whitespace-nowrap">
             {city.city}
           </span>
           {city.eventsCount > 1 && (
-            <span class="font-mono text-[9px] text-[#93C5FD] opacity-90">
+            <span class="font-mono text-[0.6875rem] text-[#C6C2B8] tabular-nums">
               {city.eventsCount}
             </span>
           )}
@@ -109,19 +59,19 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
   }
 </div>
 
-<!-- Accessible Floating Globe Camera & Motion Controls (Bottom-Center / Left of Globe) -->
+<!-- Floating Globe Camera & Motion Controls -->
 <div
   id="globe-controls-toolbar"
-  class="fixed bottom-[198px] left-1/2 -translate-x-1/2 z-20 hidden lg:flex items-center gap-1.5 rounded-full px-3 py-1 bg-[#050B1A]/85 backdrop-blur-md border border-white/15 shadow-xl pointer-events-auto"
+  class="fixed bottom-[194px] left-1/2 -translate-x-1/2 z-20 hidden lg:flex items-center gap-1 rounded-full px-3 py-1 bg-[#121417]/90 backdrop-blur-md border border-[#F4F1EA]/16 shadow-lg pointer-events-auto"
   role="toolbar"
-  aria-label="3D Globe Camera and Motion Controls"
+  aria-label="Globe camera and motion controls"
 >
   <button
     type="button"
     data-action="globe-zoom-in"
     data-testid="globe-zoom-in"
     aria-label="Zoom in on globe"
-    class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-mono text-slate-200 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+    class="min-h-[1.625rem] min-w-[1.625rem] px-1.5 rounded-full flex items-center justify-center text-xs font-mono text-[#C6C2B8] hover:text-[#F4F1EA] hover:bg-[#F4F1EA]/10 transition-colors cursor-pointer"
   >
     +
   </button>
@@ -130,132 +80,133 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
     data-action="globe-zoom-out"
     data-testid="globe-zoom-out"
     aria-label="Zoom out on globe"
-    class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-mono text-slate-200 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+    class="min-h-[1.625rem] min-w-[1.625rem] px-1.5 rounded-full flex items-center justify-center text-xs font-mono text-[#C6C2B8] hover:text-[#F4F1EA] hover:bg-[#F4F1EA]/10 transition-colors cursor-pointer"
   >
     −
   </button>
-  <div class="h-3.5 w-[1px] bg-white/15 mx-0.5" aria-hidden="true"></div>
+  <div class="h-3.5 w-[1px] bg-[#F4F1EA]/14 mx-0.5" aria-hidden="true"></div>
   <button
     type="button"
     data-action="reset-city"
     data-testid="globe-reset-view"
-    class="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+    class="px-2.5 py-0.5 rounded-full text-xs text-[#C6C2B8] hover:text-[#F4F1EA] hover:bg-[#F4F1EA]/10 transition-colors cursor-pointer"
   >
-    View all destinations
+    Reset view
   </button>
-  <div class="h-3.5 w-[1px] bg-white/15 mx-0.5" aria-hidden="true"></div>
+  <div class="h-3.5 w-[1px] bg-[#F4F1EA]/14 mx-0.5" aria-hidden="true"></div>
   <button
     type="button"
     id="toggle-motion-btn"
     data-action="toggle-motion"
     data-testid="toggle-motion-btn"
     aria-pressed="false"
-    class="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+    class="px-2.5 py-0.5 rounded-full text-xs text-[#C6C2B8] hover:text-[#F4F1EA] hover:bg-[#F4F1EA]/10 transition-colors cursor-pointer"
   >
     Pause motion
   </button>
 </div>
 
-<!-- Right Column: 4-Mode View Selector + Contextual Destination Panel + Speaking Impact Card -->
+<!-- Right Column: Single Focused Geographic Explorer (No duplicate mini-map widget) -->
 <aside
   id="right-discovery-column"
-  aria-label="Geographic Discovery and Selected Destination Details"
-  class="relative z-20 flex flex-col gap-2 w-full lg:w-[370px] xl:w-[390px] shrink-0 pointer-events-auto"
+  aria-label="Speaking locations and topic filters"
+  class="relative z-20 flex flex-col w-full lg:w-[360px] xl:w-[380px] shrink-0 pointer-events-auto"
 >
-  <!-- Compact 4-Mode View Selector matching Reference Image (Globe · Regions · Timeline · Topics) -->
-  <div
-    id="view-mode-tablist"
-    class="grid grid-cols-4 gap-1 rounded-xl p-1 bg-[#060C1D]/85 backdrop-blur-xl border border-white/15 shadow-lg"
-    role="tablist"
-    aria-label="Discovery View Modes"
-  >
-    <button
-      type="button"
-      role="tab"
-      aria-selected="true"
-      data-view-mode="globe"
-      data-testid="mode-btn-globe"
-      class="view-mode-btn inline-flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 font-mono text-[10px] font-semibold tracking-wider uppercase bg-[#1D4ED8]/45 text-white border border-[#38BDF8]/50 transition-all cursor-pointer"
-    >
-      <span aria-hidden="true">🌐</span>
-      <span>GLOBE</span>
-    </button>
-    <button
-      type="button"
-      role="tab"
-      aria-selected="false"
-      data-view-mode="regions"
-      data-testid="mode-btn-regions"
-      class="view-mode-btn inline-flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 font-mono text-[10px] font-semibold tracking-wider uppercase text-slate-300 hover:text-white border border-transparent transition-all cursor-pointer"
-    >
-      <span aria-hidden="true">📊</span>
-      <span>REGIONS</span>
-    </button>
-    <button
-      type="button"
-      role="tab"
-      aria-selected="false"
-      data-view-mode="timeline"
-      data-testid="mode-btn-timeline"
-      class="view-mode-btn inline-flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 font-mono text-[10px] font-semibold tracking-wider uppercase text-slate-300 hover:text-white border border-transparent transition-all cursor-pointer"
-    >
-      <span aria-hidden="true">📅</span>
-      <span>TIMELINE</span>
-    </button>
-    <button
-      type="button"
-      role="tab"
-      aria-selected="false"
-      data-view-mode="topics"
-      data-testid="mode-btn-topics"
-      class="view-mode-btn inline-flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-2 font-mono text-[10px] font-semibold tracking-wider uppercase text-slate-300 hover:text-white border border-transparent transition-all cursor-pointer"
-    >
-      <span aria-hidden="true">⊞</span>
-      <span>TOPICS</span>
-    </button>
-  </div>
-
-  <!-- Main Contextual Card Container -->
   <div
     id="destination-panel"
     data-testid="destination-panel"
     aria-live="polite"
-    class="rounded-2xl bg-[#070E20]/88 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.75)] overflow-hidden"
+    class="rounded-xl bg-[#121417]/92 backdrop-blur-xl border border-[#F4F1EA]/14 shadow-[0_18px_44px_rgba(0,0,0,0.65)] overflow-hidden"
   >
-    <!-- 1. DEFAULT STATE (When no city is selected in Globe Mode) -->
-    <div id="city-overview-state" data-testid="city-overview-state" class="p-3.5 sm:p-4">
-      <div class="flex items-center justify-between gap-2">
-        <span class="font-mono text-[10px] font-semibold tracking-[0.22em] uppercase text-[#38BDF8]">
-          GLOBAL SPEAKING ATLAS
-        </span>
-        <span class="font-mono text-[10px] text-slate-400">
-          {metrics.uniqueCities} Physical Cities
+    <!-- Editorial 4-Mode Tab Bar (Zero Emojis) -->
+    <div
+      id="view-mode-tablist"
+      class="grid grid-cols-4 border-b border-[#F4F1EA]/12 bg-[#16191E]/80 px-1"
+      role="tablist"
+      aria-label="Browse speaking locations by view"
+    >
+      <button
+        type="button"
+        id="mode-tab-globe"
+        role="tab"
+        aria-selected="true"
+        data-view-mode="globe"
+        data-testid="mode-btn-globe"
+        class="view-mode-btn py-2.5 px-2 text-xs font-medium text-center transition-colors cursor-pointer"
+      >
+        Places
+      </button>
+      <button
+        type="button"
+        id="mode-tab-regions"
+        role="tab"
+        aria-selected="false"
+        data-view-mode="regions"
+        data-testid="mode-btn-regions"
+        class="view-mode-btn py-2.5 px-2 text-xs font-medium text-center transition-colors cursor-pointer"
+      >
+        Regions
+      </button>
+      <button
+        type="button"
+        id="mode-tab-timeline"
+        role="tab"
+        aria-selected="false"
+        data-view-mode="timeline"
+        data-testid="mode-btn-timeline"
+        class="view-mode-btn py-2.5 px-2 text-xs font-medium text-center transition-colors cursor-pointer"
+      >
+        Years
+      </button>
+      <button
+        type="button"
+        id="mode-tab-topics"
+        role="tab"
+        aria-selected="false"
+        data-view-mode="topics"
+        data-testid="mode-btn-topics"
+        class="view-mode-btn py-2.5 px-2 text-xs font-medium text-center transition-colors cursor-pointer"
+      >
+        Topics
+      </button>
+    </div>
+
+    <!-- 1A. DEFAULT PLACES OVERVIEW (When no city is selected) -->
+    <div
+      id="city-overview-state"
+      data-testid="city-overview-state"
+      role="tabpanel"
+      aria-labelledby="mode-tab-globe"
+      class="p-4 sm:p-5"
+    >
+      <div class="flex items-baseline justify-between gap-2">
+        <h2 class="font-display text-lg font-medium text-[#F4F1EA]">
+          Speaking locations
+        </h2>
+        <span class="font-mono text-xs text-[#9C978C] tabular-nums">
+          {metrics.uniqueCities} cities
         </span>
       </div>
-
-      <h2 class="mt-0.5 font-display text-base font-bold text-white">
-        International Speaking Destinations
-      </h2>
-      <p class="mt-0.5 text-[11px] text-slate-300 leading-snug">
-        Select any illuminated marker on the 3D Earth or choose a verified destination below to
-        inspect conferences, abstracts, and session history.
+      <p class="mt-1 text-xs text-[#C6C2B8] leading-[1.5]">
+        Select a pin on the globe or pick a stop below to see talks and session notes from that
+        city.
       </p>
 
-      <!-- Keyboard-Accessible Quick Destination Selector -->
-      <div class="mt-2.5">
+      <!-- City Dropdown -->
+      <div class="mt-3.5">
         <label for="city-selector-dropdown" class="sr-only">
-          Select a speaking destination city
+          Select a speaking city
         </label>
         <select
           id="city-selector-dropdown"
           data-testid="city-selector-dropdown"
-          class="w-full rounded-xl bg-slate-950/90 border border-white/15 focus:border-[#38BDF8] px-3 py-1.5 text-xs text-slate-100 focus:outline-none"
+          class="w-full rounded-lg bg-[#0B0C0E] border border-[#F4F1EA]/20 focus:border-[#E2A84B] px-3 py-2 text-xs text-[#F4F1EA] focus:outline-none"
         >
-          <option value="">Jump to any of the {metrics.uniqueCities} physical cities...</option>
+          <option value="">Jump to any of {metrics.uniqueCities} cities...</option>
           {
             cities.map((c) => (
               <option value={c.id}>
-                {c.flag} {c.city}, {c.country} ({c.eventsCount}{' '}
+                {c.city}, {c.country} ({c.eventsCount}{' '}
                 {c.eventsCount === 1 ? 'talk' : 'talks'})
               </option>
             ))
@@ -263,10 +214,10 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
         </select>
       </div>
 
-      <!-- Prominent Real Destinations Chips -->
-      <div class="mt-2.5">
-        <div class="font-mono text-[9px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">
-          PROMINENT DESTINATIONS
+      <!-- Frequent Stops -->
+      <div class="mt-4">
+        <div class="text-xs font-medium text-[#9C978C] mb-2">
+          Frequent stops
         </div>
         <div class="flex flex-wrap gap-1.5">
           {
@@ -276,50 +227,12 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
                 data-action="select-city"
                 data-city-id={c.id}
                 data-testid={`prominent-city-${c.id}`}
-                class="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[11px] bg-white/[0.05] hover:bg-[#38BDF8]/20 text-slate-200 hover:text-white border border-white/10 hover:border-[#38BDF8]/50 transition-all cursor-pointer"
+                class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs bg-[#181B20] hover:bg-[#22262D] text-[#E6E2D8] hover:text-[#F4F1EA] border border-[#F4F1EA]/12 hover:border-[#E2A84B]/55 transition-colors cursor-pointer"
               >
-                <span>{c.flag}</span>
-                <span class="font-medium">{c.city}</span>
-                <span class="font-mono text-[9px] text-[#38BDF8]">{c.eventsCount}</span>
-              </button>
-            ))
-          }
-        </div>
-      </div>
-
-      <!-- Latest Featured Appearances List -->
-      <div class="mt-3 pt-2.5 border-t border-white/10">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="font-mono text-[9px] tracking-[0.18em] uppercase text-slate-400">
-            LATEST APPEARANCES
-          </span>
-          <button
-            type="button"
-            data-action="open-archive"
-            class="font-mono text-[10px] text-[#38BDF8] hover:underline cursor-pointer"
-          >
-            Full Archive →
-          </button>
-        </div>
-        <div class="space-y-1.5">
-          {
-            recentThree.map((ev) => (
-              <button
-                type="button"
-                data-action="open-event"
-                data-event-id={ev.id}
-                class="w-full flex items-center justify-between gap-2 rounded-xl p-2 bg-slate-900/65 hover:bg-slate-900 border border-white/10 hover:border-[#38BDF8]/40 text-left transition-all cursor-pointer"
-              >
-                <div class="min-w-0">
-                  <div class="font-mono text-[9px] text-[#38BDF8] uppercase">
-                    {formatSignalDate(ev.date)} · {ev.flag} {ev.cityName}
-                  </div>
-                  <div class="text-xs font-semibold text-white truncate">
-                    {ev.event}
-                  </div>
-                  <div class="text-[11px] text-slate-400 truncate">{ev.talk}</div>
-                </div>
-                <span class="text-slate-400 text-xs shrink-0">→</span>
+                <span>{c.city}</span>
+                <span class="font-mono text-[0.6875rem] text-[#E2A84B] tabular-nums">
+                  {c.eventsCount}
+                </span>
               </button>
             ))
           }
@@ -327,71 +240,53 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
       </div>
     </div>
 
-    <!-- 2. SELECTED CITY CONTEXTUAL PANEL (Matches Right Panel of Reference Image) -->
+    <!-- 1B. SELECTED CITY PANEL (Clean Typographic Header, No Fake Skyline SVG) -->
     <div
       id="selected-city-panel"
       data-testid="selected-city-panel"
+      role="tabpanel"
+      aria-labelledby="mode-tab-globe"
+      hidden
       class="hidden flex-col"
     >
-      <!-- Panoramic Architectural / Geographic City Header Banner -->
-      <div
-        class="relative h-28 w-full overflow-hidden border-b border-white/10"
-        style="background: radial-gradient(circle at 75% 25%, rgba(245, 158, 11, 0.28), rgba(29, 78, 216, 0.35) 55%, #050B1A 100%);"
-      >
-        <!-- Stylized Geographic Horizon Grid & Coordinate Telemetry -->
-        <svg
-          class="absolute inset-0 w-full h-full opacity-35"
-          viewBox="0 0 400 120"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M0 95 L60 85 L85 62 L110 85 L145 70 L170 42 L195 72 L240 65 L275 48 L305 74 L355 68 L400 82 L400 120 L0 120 Z"
-            fill="#0F172A"
-            stroke="#38BDF8"
-            stroke-width="1"
-          ></path>
-          <line x1="0" y1="95" x2="400" y2="95" stroke="#38BDF8" stroke-opacity="0.4"></line>
-        </svg>
-
-        <div class="absolute top-3 left-4 right-12 flex items-center gap-2">
+      <div class="relative px-4 sm:px-5 pt-4 pb-3.5 border-b border-[#F4F1EA]/12 bg-[#16191E]/55">
+        <div class="flex items-center justify-between gap-2 pr-9">
           <span
             id="selected-city-region-badge"
-            class="rounded-full px-2.5 py-0.5 font-mono text-[9px] tracking-widest uppercase bg-black/50 text-[#38BDF8] border border-[#38BDF8]/40 backdrop-blur-sm"
+            class="text-xs font-medium text-[#E2A84B]"
           >
-            TÜRKIYE
+            Türkiye
           </span>
           <span
             id="selected-city-coords"
-            class="font-mono text-[9px] text-slate-300 bg-black/40 px-2 py-0.5 rounded-full"
+            class="font-mono text-[0.6875rem] text-[#9C978C] tabular-nums"
           >
             41.01°N, 28.98°E
           </span>
         </div>
 
-        <!-- Close / Reset City Button -->
         <button
           type="button"
           data-action="reset-city"
           data-testid="reset-city-btn"
-          aria-label="Close city panel and view all destinations"
-          class="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 hover:bg-black/85 border border-white/20 text-slate-200 hover:text-white transition-colors cursor-pointer text-sm leading-none"
+          aria-label="Close city panel and view all locations"
+          class="absolute top-3.5 right-3.5 flex min-h-[1.75rem] min-w-[1.75rem] items-center justify-center rounded-md bg-[#0B0C0E]/70 hover:bg-[#22262D] border border-[#F4F1EA]/18 text-[#C6C2B8] hover:text-[#F4F1EA] transition-colors cursor-pointer text-sm leading-none"
         >
           ×
         </button>
 
-        <div class="absolute bottom-2.5 left-4 right-4">
+        <div class="mt-1.5">
           <h2
             id="selected-city-name"
             data-testid="selected-city-name"
-            class="font-display text-2xl font-bold text-white leading-tight drop-shadow"
+            class="font-display text-2xl font-medium text-[#F4F1EA] leading-[1.15]"
           >
             Istanbul
           </h2>
           <p
             id="selected-city-country"
             data-testid="selected-city-country"
-            class="text-xs text-slate-200 flex items-center gap-1.5 mt-0.5"
+            class="text-xs text-[#C6C2B8] flex items-center gap-1.5 mt-0.5"
           >
             <span>🇹🇷</span>
             <span>Türkiye</span>
@@ -399,11 +294,12 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
         </div>
       </div>
 
-      <!-- Sub-Navigation Tabs inside City Panel: N TALKS | PHOTOS | ABOUT -->
+      <!-- City Sub-Tabs (Photos tab stays hidden unless real photos exist for this city) -->
       <div
+        id="selected-city-tablist"
         role="tablist"
-        aria-label="Selected City Sections"
-        class="grid grid-cols-3 border-b border-white/10 bg-slate-950/60 font-mono text-[10px] tracking-[0.18em] uppercase"
+        aria-label="Selected city sections"
+        class="flex border-b border-[#F4F1EA]/12 bg-[#0B0C0E]/45 px-2 text-xs"
       >
         <button
           type="button"
@@ -411,9 +307,9 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
           aria-selected="true"
           data-city-tab="talks"
           id="city-tab-btn-talks"
-          class="py-2.5 text-center font-semibold text-white border-b-2 border-[#38BDF8] cursor-pointer"
+          class="flex-1 py-2 px-3 text-center font-medium cursor-pointer tabular-nums"
         >
-          <span id="selected-city-talks-count">7 TALKS</span>
+          <span id="selected-city-talks-count">7 talks</span>
         </button>
         <button
           type="button"
@@ -421,9 +317,10 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
           aria-selected="false"
           data-city-tab="photos"
           id="city-tab-btn-photos"
-          class="py-2.5 text-center font-semibold text-slate-400 hover:text-slate-200 border-b-2 border-transparent cursor-pointer"
+          hidden
+          class="hidden flex-1 py-2 px-3 text-center font-medium cursor-pointer"
         >
-          PHOTOS
+          Photos
         </button>
         <button
           type="button"
@@ -431,61 +328,75 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
           aria-selected="false"
           data-city-tab="about"
           id="city-tab-btn-about"
-          class="py-2.5 text-center font-semibold text-slate-400 hover:text-slate-200 border-b-2 border-transparent cursor-pointer"
+          class="flex-1 py-2 px-3 text-center font-medium cursor-pointer"
         >
-          ABOUT
+          Details
         </button>
       </div>
 
-      <!-- City Tab Content: TALKS List -->
+      <!-- City Tabpanel: Talks -->
       <div
         id="city-tab-content-talks"
-        class="p-4 space-y-2.5 max-h-[250px] overflow-y-auto"
+        role="tabpanel"
+        aria-labelledby="city-tab-btn-talks"
+        class="p-4 space-y-2 max-h-[250px] overflow-y-auto soft-edge-fade-y"
       >
         <div id="selected-city-events-list" data-testid="selected-city-events-list" class="space-y-2">
         </div>
       </div>
 
-      <!-- City Tab Content: PHOTOS (Authentic repository photos only) -->
-      <div id="city-tab-content-photos" class="hidden p-4 max-h-[250px] overflow-y-auto">
-        <div id="selected-city-photos-content" class="text-xs text-slate-300"></div>
+      <!-- City Tabpanel: Photos (Only reachable when authentic photos exist) -->
+      <div
+        id="city-tab-content-photos"
+        role="tabpanel"
+        aria-labelledby="city-tab-btn-photos"
+        hidden
+        class="hidden p-4 max-h-[250px] overflow-y-auto soft-edge-fade-y"
+      >
+        <div id="selected-city-photos-content" class="text-xs text-[#C6C2B8]"></div>
       </div>
 
-      <!-- City Tab Content: ABOUT (Geographic metadata & regional notes) -->
-      <div id="city-tab-content-about" class="hidden p-4 max-h-[250px] overflow-y-auto">
-        <div id="selected-city-about-content" class="text-xs text-slate-300 space-y-2"></div>
+      <!-- City Tabpanel: Details -->
+      <div
+        id="city-tab-content-about"
+        role="tabpanel"
+        aria-labelledby="city-tab-btn-about"
+        hidden
+        class="hidden p-4 max-h-[250px] overflow-y-auto soft-edge-fade-y"
+      >
+        <div id="selected-city-about-content" class="text-xs text-[#C6C2B8] space-y-2"></div>
       </div>
 
-      <!-- Footer Action: View all talks in City -->
-      <div class="p-3.5 pt-2 border-t border-white/10 bg-slate-950/40">
+      <div class="p-3.5 border-t border-[#F4F1EA]/12 bg-[#0B0C0E]/35">
         <button
           type="button"
           id="selected-city-archive-btn"
           data-testid="selected-city-archive-btn"
-          class="w-full rounded-full py-2 px-4 text-xs font-medium text-slate-200 hover:text-white bg-white/[0.05] hover:bg-[#38BDF8]/20 border border-white/15 hover:border-[#38BDF8]/50 transition-all cursor-pointer"
+          class="w-full rounded-md py-2 px-3.5 text-xs font-medium text-[#E6E2D8] hover:text-[#F4F1EA] bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/16 transition-colors cursor-pointer"
         >
           View all talks in Istanbul →
         </button>
       </div>
     </div>
 
-    <!-- 3. REGIONS DISCOVERY PANEL -->
+    <!-- 2. REGIONS PANEL -->
     <div
       id="view-panel-regions"
       data-testid="view-panel-regions"
-      class="hidden p-4 sm:p-5 space-y-3 max-h-[370px] overflow-y-auto"
+      role="tabpanel"
+      aria-labelledby="mode-tab-regions"
+      hidden
+      class="hidden p-4 sm:p-5 space-y-3 max-h-[380px] overflow-y-auto soft-edge-fade-y"
     >
-      <div class="flex items-center justify-between">
-        <span class="font-mono text-[10px] font-semibold tracking-[0.2em] uppercase text-[#38BDF8]">
-          REGIONAL REACH
-        </span>
+      <div class="flex items-baseline justify-between gap-2">
+        <h2 class="font-display text-lg font-medium text-[#F4F1EA]">Regions</h2>
         <button
           type="button"
           data-action="filter-region"
           data-region-id="all"
-          class="font-mono text-[10px] text-slate-400 hover:text-[#38BDF8] transition-colors cursor-pointer"
+          class="text-xs text-[#9C978C] hover:text-[#E2A84B] transition-colors cursor-pointer tabular-nums"
         >
-          {metrics.uniqueCountries} Countries · {metrics.uniqueCities} Cities (Show All)
+          Show all ({metrics.uniqueCities} cities)
         </button>
       </div>
       <div class="space-y-2.5">
@@ -493,23 +404,23 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
           regions.map((reg) => (
             <div
               data-region-card={reg.id}
-              class="rounded-xl p-3 bg-slate-900/70 border border-white/10 transition-colors"
+              class="rounded-lg p-3 bg-[#181B20]/75 border border-[#F4F1EA]/12 transition-colors"
             >
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-2">
                 <button
                   type="button"
                   data-action="filter-region"
                   data-region-id={reg.id}
                   aria-pressed="false"
-                  class="text-left font-display text-sm font-bold text-white hover:text-[#38BDF8] transition-colors cursor-pointer flex items-center gap-2"
+                  class="text-left text-sm font-semibold text-[#F4F1EA] hover:text-[#E2A84B] transition-colors cursor-pointer flex items-center gap-2"
                 >
                   <span
-                    class="h-2 w-2 rounded-full"
+                    class="h-2 w-2 rounded-full shrink-0"
                     style={`background-color: ${reg.color};`}
                   />
                   <span>{reg.name}</span>
                 </button>
-                <span class="font-mono text-[11px] text-slate-300">
+                <span class="font-mono text-xs text-[#9C978C] tabular-nums">
                   {reg.talksCount} talks · {reg.citiesCount} cities
                 </span>
               </div>
@@ -519,9 +430,9 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
                     type="button"
                     data-action="select-city"
                     data-city-id={c.id}
-                    class="rounded-md px-2 py-0.5 text-[11px] bg-white/[0.06] hover:bg-[#38BDF8]/20 text-slate-200 border border-white/10 cursor-pointer"
+                    class="rounded px-2 py-0.5 text-xs bg-[#0B0C0E]/70 hover:bg-[#22262D] text-[#C6C2B8] hover:text-[#F4F1EA] border border-[#F4F1EA]/10 cursor-pointer tabular-nums"
                   >
-                    {c.flag} {c.city} ({c.eventsCount})
+                    {c.city} ({c.eventsCount})
                   </button>
                 ))}
               </div>
@@ -529,36 +440,35 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
           ))
         }
 
-        <!-- Online & Global Virtual Sessions Summary (Not plotted as physical city) -->
-        <div class="rounded-xl p-3 bg-slate-900/50 border border-emerald-500/25">
-          <div class="flex items-center justify-between">
-            <span class="font-display text-sm font-bold text-emerald-300 flex items-center gap-2">
-              <span>🌐</span>
-              <span>Online & Global Broadcasts</span>
+        <div class="rounded-lg p-3 bg-[#181B20]/50 border border-[#F4F1EA]/12">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-sm font-semibold text-[#E6E2D8]">
+              Online &amp; Global Broadcasts
             </span>
-            <span class="font-mono text-[11px] text-emerald-300">
+            <span class="font-mono text-xs text-[#C6C2B8] tabular-nums">
               {metrics.onlineTalks} talks
             </span>
           </div>
-          <p class="mt-1 text-[11px] text-slate-400">
-            Virtual keynotes, YouTube Live streams, and online campus sessions are counted in total
-            talks ({metrics.totalTalks}) but excluded from physical city/country coordinates.
+          <p class="mt-1 text-xs text-[#9C978C] leading-[1.5]">
+            Remote keynotes, streams, and university sessions—counted in total talks ({metrics.totalTalks}),
+            not pinned to physical coordinates.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- 4. TIMELINE DISCOVERY PANEL -->
+    <!-- 3. YEARS PANEL -->
     <div
       id="view-panel-timeline"
       data-testid="view-panel-timeline"
-      class="hidden p-4 sm:p-5 space-y-3 max-h-[370px] overflow-y-auto"
+      role="tabpanel"
+      aria-labelledby="mode-tab-timeline"
+      hidden
+      class="hidden p-4 sm:p-5 space-y-3 max-h-[380px] overflow-y-auto"
     >
-      <div class="flex items-center justify-between">
-        <span class="font-mono text-[10px] font-semibold tracking-[0.2em] uppercase text-[#38BDF8]">
-          CHRONOLOGICAL TIMELINE
-        </span>
-        <span class="font-mono text-[10px] text-slate-400">2023 – 2026</span>
+      <div class="flex items-baseline justify-between gap-2">
+        <h2 class="font-display text-lg font-medium text-[#F4F1EA]">By year</h2>
+        <span class="font-mono text-xs text-[#9C978C] tabular-nums">2023–2026</span>
       </div>
       <div class="flex flex-wrap gap-1.5">
         <button
@@ -566,7 +476,7 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
           data-action="select-year"
           data-year="all"
           aria-pressed="true"
-          class="year-filter-pill rounded-lg px-2.5 py-1 font-mono text-xs font-semibold bg-[#1D4ED8]/55 text-white border border-[#38BDF8]/70 cursor-pointer transition-all"
+          class="filter-pill year-filter-pill rounded-md px-2.5 py-1 font-mono text-xs border cursor-pointer transition-colors tabular-nums"
         >
           All ({metrics.totalTalks})
         </button>
@@ -577,20 +487,20 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
               data-action="select-year"
               data-year={y.year}
               aria-pressed="false"
-              class="year-filter-pill rounded-lg px-2.5 py-1 font-mono text-xs bg-white/[0.04] text-slate-300 border border-white/10 hover:text-white cursor-pointer transition-all"
+              class="filter-pill year-filter-pill rounded-md px-2.5 py-1 font-mono text-xs border cursor-pointer transition-colors tabular-nums"
             >
               {y.year} ({y.talksCount})
             </button>
           ))
         }
       </div>
-      <p id="timeline-era-narrative" class="text-xs text-slate-300 leading-relaxed">
-        Tracing {metrics.totalTalks} speaking engagements across 4 years: from enterprise
-        Kubernetes and cloud architectures to autonomous AI agents and global reliability.
+      <p id="timeline-era-narrative" class="text-xs text-[#C6C2B8] leading-[1.5]">
+        {metrics.totalTalks} sessions from 2023 to 2026 across cloud architecture, GKE internals,
+        and multi-agent AI systems.
       </p>
       <div
         id="timeline-panel-events-list"
-        class="pt-2 border-t border-white/10 space-y-1.5 max-h-[185px] overflow-y-auto"
+        class="pt-2.5 border-t border-[#F4F1EA]/12 space-y-1.5 max-h-[185px] overflow-y-auto soft-edge-fade-y"
       >
         {
           events.map((ev) => (
@@ -601,46 +511,62 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
               data-timeline-panel-item
               data-year={ev.year}
               data-topics={ev.topicCategories.join(',')}
-              class="w-full flex items-center justify-between gap-2 rounded-xl p-2 bg-slate-900/65 hover:bg-slate-900 border border-white/10 hover:border-[#38BDF8]/40 text-left transition-all cursor-pointer"
+              class="w-full flex items-center justify-between gap-2 rounded-lg p-2.5 bg-[#181B20]/75 hover:bg-[#22262D] border border-[#F4F1EA]/10 hover:border-[#E2A84B]/45 text-left transition-colors cursor-pointer"
             >
               <div class="min-w-0">
-                <div class="font-mono text-[9px] text-[#38BDF8] uppercase">
-                  {formatSignalDate(ev.date)} · {ev.flag} {ev.cityName}
+                <div class="font-mono text-[0.6875rem] text-[#9C978C]">
+                  {formatSignalDate(ev.date)} · {ev.cityName}
                 </div>
-                <div class="text-xs font-semibold text-white truncate">{ev.event}</div>
-                <div class="text-[11px] text-slate-400 truncate">{ev.talk}</div>
+                <div class="text-xs font-semibold text-[#F4F1EA] truncate mt-0.5">
+                  {ev.talk}
+                </div>
+                <div class="text-xs text-[#9C978C] truncate">{ev.event}</div>
               </div>
-              <span class="text-slate-400 text-xs shrink-0" aria-hidden="true">
+              <span class="text-[#9C978C] text-xs shrink-0" aria-hidden="true">
                 →
               </span>
             </button>
           ))
         }
+        <div
+          id="timeline-panel-empty-state"
+          class="hidden py-6 text-center text-xs text-[#9C978C]"
+        >
+          <p>No talks match the active year and topic filters.</p>
+          <button
+            type="button"
+            data-action="clear-timeline-filters"
+            class="mt-2 text-xs font-medium text-[#E2A84B] hover:underline cursor-pointer"
+          >
+            Reset filters
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 5. TOPICS DISCOVERY PANEL -->
+    <!-- 4. TOPICS PANEL -->
     <div
       id="view-panel-topics"
       data-testid="view-panel-topics"
-      class="hidden p-4 sm:p-5 space-y-3 max-h-[370px] overflow-y-auto"
+      role="tabpanel"
+      aria-labelledby="mode-tab-topics"
+      hidden
+      class="hidden p-4 sm:p-5 space-y-3 max-h-[380px] overflow-y-auto soft-edge-fade-y"
     >
-      <div class="flex items-center justify-between">
-        <span class="font-mono text-[10px] font-semibold tracking-[0.2em] uppercase text-[#38BDF8]">
-          TECHNICAL DOMAINS
-        </span>
+      <div class="flex items-baseline justify-between gap-2">
+        <h2 class="font-display text-lg font-medium text-[#F4F1EA]">Topics</h2>
         <button
           type="button"
           data-action="select-topic"
           data-topic="all"
-          class="font-mono text-[10px] text-[#38BDF8] hover:underline cursor-pointer"
+          class="text-xs text-[#9C978C] hover:text-[#E2A84B] transition-colors cursor-pointer"
         >
-          Reset Topic Filter
+          Clear filter
         </button>
       </div>
-      <p class="text-[11px] text-slate-400 leading-snug">
-        Select a domain to filter the globe and archive. Because multi-disciplinary talks span
-        several domains (e.g., <em>Kubernetes for AI</em>), topic counts overlap.
+      <p class="text-xs text-[#C6C2B8] leading-[1.5]">
+        Filter the map and talk list by focus area. Cross-disciplinary sessions (like{' '}
+        <em>Kubernetes for AI</em>) appear in more than one group.
       </p>
       <div class="space-y-2">
         {
@@ -651,96 +577,26 @@ const miniMapLandPath = buildMiniMapSvgPath(rawLand);
               data-topic={t.id}
               data-testid={`topic-card-${t.id}`}
               aria-pressed="false"
-              class="w-full rounded-xl p-3 bg-slate-900/70 hover:bg-slate-900 border border-white/10 hover:border-[#38BDF8]/50 text-left transition-all cursor-pointer"
+              class="filter-pill w-full rounded-lg p-3 border text-left transition-colors cursor-pointer"
             >
-              <div class="flex items-center justify-between">
-                <span class="font-display text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs sm:text-sm font-semibold text-[#F4F1EA] flex items-center gap-2">
                   <span
-                    class="h-2 w-2 rounded-full"
+                    class="h-2 w-2 rounded-full shrink-0"
                     style={`background-color: ${t.color};`}
                   />
                   <span>{t.label}</span>
                 </span>
-                <span class="font-mono text-xs font-semibold text-[#38BDF8]">
-                  {t.talksCount} talks
+                <span class="font-mono text-xs text-[#E2A84B] tabular-nums">
+                  {t.talksCount}
                 </span>
               </div>
-              <div class="mt-1 font-mono text-[10px] text-slate-400">
+              <div class="mt-1 text-xs text-[#9C978C] pl-4">
                 {t.subLabel} · {t.citiesCount} cities
               </div>
             </button>
           ))
         }
-      </div>
-    </div>
-  </div>
-
-  <!-- Bottom-Right Card: SPEAKING IMPACT Summary Card matching Reference Image -->
-  <div
-    id="speaking-impact-card"
-    class="rounded-2xl p-4 bg-[#060C1D]/85 backdrop-blur-xl border border-white/15 shadow-lg"
-    aria-label="Global Speaking Impact Summary"
-  >
-    <div class="font-mono text-[10px] font-semibold tracking-[0.22em] uppercase text-slate-300 mb-2.5">
-      SPEAKING IMPACT
-    </div>
-    <div class="grid grid-cols-12 gap-3 items-center">
-      <!-- Authentic GeoJSON Continental World Map Silhouette with Verified Speaking Coordinates -->
-      <div class="col-span-6 relative aspect-[2/1] rounded-lg bg-[#030712]/95 border border-white/10 overflow-hidden p-1">
-        <svg viewBox="0 0 200 100" class="w-full h-full" aria-hidden="true">
-          <path
-            d={miniMapLandPath}
-            fill="#0F213E"
-            stroke="#38BDF8"
-            stroke-width="0.35"
-            stroke-opacity="0.45"
-          ></path>
-          {
-            cities.map((c) => {
-              const cx = ((c.lon + 180) / 360) * 200;
-              const cy = ((90 - c.lat) / 180) * 100;
-              return (
-                <g>
-                  {c.isBaseHub && (
-                    <circle
-                      cx={cx.toFixed(1)}
-                      cy={cy.toFixed(1)}
-                      r="4.5"
-                      fill="#F59E0B"
-                      fill-opacity="0.28"
-                    />
-                  )}
-                  <circle
-                    cx={cx.toFixed(1)}
-                    cy={cy.toFixed(1)}
-                    r={c.isBaseHub ? '2.2' : '1.45'}
-                    fill={c.isBaseHub ? '#FDE047' : '#38BDF8'}
-                  />
-                </g>
-              );
-            })
-          }
-        </svg>
-      </div>
-
-      <!-- 4 Impact Metrics -->
-      <div class="col-span-6 space-y-1.5 font-mono text-[11px]">
-        <div class="flex items-center justify-between text-slate-300">
-          <span class="text-slate-400">🌐 Countries</span>
-          <strong class="text-white">{metrics.uniqueCountries}</strong>
-        </div>
-        <div class="flex items-center justify-between text-slate-300">
-          <span class="text-slate-400">📍 Cities</span>
-          <strong class="text-white">{metrics.uniqueCities}</strong>
-        </div>
-        <div class="flex items-center justify-between text-slate-300">
-          <span class="text-slate-400">🎙️ Talks</span>
-          <strong class="text-white">{metrics.totalTalks}</strong>
-        </div>
-        <div class="flex items-center justify-between text-slate-300">
-          <span class="text-slate-400">🧭 Regions</span>
-          <strong class="text-white">{metrics.uniqueRegions}</strong>
-        </div>
       </div>
     </div>
   </div>

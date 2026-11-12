@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
-  "description": "ORBIT — The Speaker Network: Personal speaker portfolio for Ahmed Enes Turan (Google Developer Expert in Cloud, Kubernetes, and AI)",
+  "description": "ORBIT — The Speaker Network: Personal speaker portfolio for Enes Turan (Google Developer Expert in Cloud, Kubernetes, and AI)",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",

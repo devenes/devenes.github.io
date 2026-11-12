@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
-  test('1. Initial Overview Metrics, 3D Earth Presence & Online Event Exclusion', async ({
+test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => {
+  test('1. Initial Identity, Editorial Hierarchy, Real Metrics & Online Event Exclusion', async ({
     page,
   }) => {
     const pageErrors: string[] = [];
@@ -10,10 +10,11 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    // Verify immediate identity and headline without user interaction
-    await expect(page.getByText('GOOGLE DEVELOPER EXPERT').first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Ideas travel\./i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Technology connects\./i })).toBeVisible();
+    // Verify immediate personal identity without generic AI slogans
+    await expect(page.getByText(/Google Developer Expert/i).first()).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Enes Turan' })).toBeVisible();
+    await expect(page.getByText(/Ideas travel\./i)).toHaveCount(0);
+    await expect(page.locator('#speaking-impact-card')).toHaveCount(0);
 
     // Verify exact data-driven metrics from data/events.json (44 talks, 12 countries, 23 physical cities)
     await expect(page.getByTestId('metric-talks')).toHaveText('44');
@@ -25,33 +26,42 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
     await expect(globeLabels).toHaveCount(23);
     await expect(page.locator('[data-globe-city-label="online"]')).toHaveCount(0);
 
-    // Verify default destination overview panel is visible before selecting any city
+    // Verify default places overview panel is visible before selecting any city
     await expect(page.getByTestId('city-overview-state')).toBeVisible();
 
     expect(pageErrors).toEqual([]);
   });
 
-  test('2. Selecting Real Cities Displays Accurate Associated Events & Resets Cleanly', async ({
+  test('2. Selecting Real Cities Displays Talks, Hides Empty Photos Tab & Resets Cleanly', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    // Select Istanbul via prominent destination chip
+    // Select Istanbul via frequent stop chip
     await page.getByTestId('prominent-city-istanbul-tr').click();
 
     await expect(page.locator('body')).toHaveAttribute('data-selected-city', 'istanbul-tr');
     const cityPanel = page.getByTestId('selected-city-panel');
     await expect(cityPanel).toBeVisible();
     await expect(page.getByTestId('selected-city-name')).toHaveText('Istanbul');
-    await expect(cityPanel).toContainText('7 TALKS');
+    await expect(cityPanel).toContainText(/7 talks/i);
+
+    // Verify empty Photos tab stays hidden when city has 0 photos (no data/events.json prompt leak)
+    await expect(page.locator('#city-tab-btn-photos')).toBeHidden();
+    await expect(cityPanel).not.toContainText('data/events.json');
 
     const istanbulEvents = page
       .getByTestId('selected-city-events-list')
       .locator('[data-city-event-id]');
     await expect(istanbulEvents).toHaveCount(7);
 
-    // Select Almaty via dropdown selector
+    // Switch to Details sub-tab and verify regional metadata renders cleanly
+    await page.locator('#city-tab-btn-about').click();
+    await expect(page.locator('#city-tab-content-about')).toBeVisible();
+    await expect(page.locator('#city-tab-content-about')).toContainText('Topics covered in Istanbul');
+
+    // Reset and select Almaty via dropdown selector
     await page.getByTestId('reset-city-btn').click();
     await expect(page.locator('body')).toHaveAttribute('data-selected-city', '');
     await expect(page.getByTestId('city-overview-state')).toBeVisible();
@@ -59,11 +69,11 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
     await page.getByTestId('city-selector-dropdown').selectOption('almaty-kz');
     await expect(page.locator('body')).toHaveAttribute('data-selected-city', 'almaty-kz');
     await expect(page.getByTestId('selected-city-name')).toHaveText('Almaty');
-    await expect(cityPanel).toContainText('2 TALKS');
+    await expect(cityPanel).toContainText(/2 talks/i);
     await expect(cityPanel).toContainText('DevFest Almaty 2025');
   });
 
-  test('3. Discovery Modes (Globe · Regions · Timeline · Topics) & Year/Topic Filtering', async ({
+  test('3. Discovery Modes (Places · Regions · Years · Topics) & Year/Topic Filtering', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -96,13 +106,22 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
     }
   });
 
-  test('4. Event Dossier Drawer, Full Archive Matrix & Responsive Viewports (Desktop, Tablet, Mobile)', async ({
+  test('4. Session Drawer, First-Person About Modal, Full Archive & Responsive Viewports', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    // Open an event dossier from the timeline strip
+    // Open About modal and verify first-person human bio
+    await page.getByTestId('nav-about-btn').click();
+    const aboutModal = page.getByTestId('about-modal');
+    await expect(aboutModal).toBeVisible();
+    await expect(aboutModal).toContainText("I'm a cloud and platform engineer in Istanbul");
+    await expect(aboutModal).not.toContainText('SPEAKER DOSSIER');
+    await page.getByTestId('close-about-btn').click();
+    await expect(aboutModal).toBeHidden();
+
+    // Open a session details sheet from the timeline strip
     const dubaiCard = page.getByTestId('timeline-card-devfest-dubai-2026');
     await expect(dubaiCard).toBeVisible();
     await dubaiCard.click();
@@ -117,7 +136,7 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
     await page.keyboard.press('Escape');
     await expect(drawer).toBeHidden();
 
-    // Open Full Archive directly via "Browse all talks" without touching the globe
+    // Open Full Archive directly via "Browse all talks"
     await page.getByTestId('browse-all-talks-btn').click();
     const archiveModal = page.getByTestId('archive-matrix-modal');
     await expect(archiveModal).toBeVisible();
@@ -152,19 +171,25 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
     await expect(page.getByTestId('metric-talks')).toBeVisible();
     await expect(page.getByTestId('destination-panel')).toBeVisible();
 
-    // Mobile viewport check (390x844)
+    // Mobile viewport check (390x844) & 320px reflow check (no horizontal overflow)
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByTestId('metric-talks')).toBeVisible();
     await expect(page.getByTestId('browse-all-talks-btn')).toBeVisible();
+
+    await page.setViewportSize({ width: 320, height: 700 });
+    const hasHorizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    );
+    expect(hasHorizontalOverflow).toBe(false);
   });
 
-  test('5. Orbit World View Geometry, Western Coordinates, Archive Filter Reset & Non-Occluding Labels', async ({
+  test('5. Layout Geometry, Western Coordinates, Archive Filter Reset & Non-Occluding Labels', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    // Ensure 4-mode view selector tablist sits completely below the 80px desktop header
+    // Ensure 4-mode view selector tablist sits completely below the desktop header
     const tablistBox = await page.locator('#view-mode-tablist').boundingBox();
     expect(tablistBox).not.toBeNull();
     expect(tablistBox!.y).toBeGreaterThanOrEqual(80);
@@ -182,7 +207,7 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
     await expect(visibleRows).toHaveCount(1);
     await page.getByTestId('close-archive-btn').click();
 
-    // Now click global "Browse all talks" and verify archive resets city filter back to all 44 talks
+    // Click global "Browse all talks" and verify archive resets city filter back to all 44 talks
     await page.getByTestId('browse-all-talks-btn').click();
     await expect(visibleRows).toHaveCount(44);
     await page.getByTestId('close-archive-btn').click();
@@ -204,5 +229,45 @@ test.describe('Global Speaking Atlas — E2E Verification Suite', () => {
       }
     }
   });
-});
 
+  test('6. URL Hash Deep-Linking, Slash Keyboard Shortcut, Active Topic Filter Pill & Static Asset Serving', async ({
+    page,
+    request,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    // Verify root static assets and async land geometry are served with 200 OK
+    const landRes = await request.get('/data/land.json');
+    expect(landRes.status()).toBe(200);
+    const eventsAssetRes = await request.get('/assets/events/README.md');
+    expect(eventsAssetRes.status()).toBe(200);
+
+    // Deep-link directly to a talk via #<event-id>
+    await page.goto('/#devfest-dubai-2026');
+    const drawer = page.getByTestId('signal-drawer');
+    await expect(drawer).toBeVisible();
+    await expect(page.getByTestId('signal-drawer-title')).toHaveText('Kubernetes for AI');
+    await expect(page.locator('body')).toHaveAttribute('data-selected-city', 'dubai-ae');
+
+    // Close drawer via Escape and verify hash falls back to selected city
+    await page.keyboard.press('Escape');
+    await expect(drawer).toBeHidden();
+
+    // Select a topic and verify the active topic filter pill appears in the timeline bar and clears cleanly
+    await page.getByTestId('mode-btn-topics').click();
+    await page.getByTestId('topic-card-kubernetes').click();
+    const topicPill = page.locator('#active-topic-filter-pill');
+    await expect(topicPill).toBeVisible();
+    await expect(topicPill).toContainText('Topic:');
+    await topicPill.click();
+    await expect(topicPill).toBeHidden();
+    await expect(page.locator('body')).toHaveAttribute('data-topic', 'all');
+
+    // Press '/' shortcut to open the full archive dialog
+    await page.keyboard.press('/');
+    const archiveModal = page.getByTestId('archive-matrix-modal');
+    await expect(archiveModal).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(archiveModal).toBeHidden();
+  });
+});
