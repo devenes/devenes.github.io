@@ -128,7 +128,7 @@ export class SpeakingAtlasController {
   }
 
   private setActiveNavLink(navId: NavLinkId): void {
-    document.querySelectorAll<HTMLButtonElement>('[data-nav-link]').forEach((btn) => {
+    document.querySelectorAll<HTMLElement>('[data-nav-link]').forEach((btn) => {
       const isMatch = btn.dataset.navLink === navId;
       if (isMatch) {
         btn.setAttribute('aria-current', 'page');
@@ -200,10 +200,15 @@ export class SpeakingAtlasController {
 
   public applyHashRoute(rawHash: string): void {
     const cleaned = decodeURIComponent(rawHash.replace(/^#/, '').trim());
-    if (!cleaned || cleaned === 'main-content') return;
+    if (!cleaned || cleaned === 'main-content' || cleaned === 'top') return;
 
     if (cleaned === 'talks' || cleaned === 'archive') {
       this.openArchive();
+      return;
+    }
+
+    if (cleaned === 'about') {
+      this.openAboutModal();
       return;
     }
 
@@ -636,7 +641,7 @@ export class SpeakingAtlasController {
     if (!ev) return;
 
     this.closeArchiveInternal();
-    this.closeAboutModal();
+    this.closeAboutModalInternal();
 
     if (!ev.isOnline && ev.locationId) {
       this.selectCity(ev.locationId);
@@ -779,15 +784,19 @@ export class SpeakingAtlasController {
     }
   }
 
-  public closeEventDrawer(): void {
+  private closeEventDrawerInternal(): void {
     const drawer = document.getElementById('signal-drawer') as HTMLDialogElement | null;
     this.closeDialogElement(drawer);
+  }
+
+  public closeEventDrawer(): void {
+    this.closeEventDrawerInternal();
     this.setUrlHash(this.selectedCityId);
   }
 
   public openArchive(options?: { cityId?: string; topicId?: string }): void {
-    this.closeEventDrawer();
-    this.closeAboutModal();
+    this.closeEventDrawerInternal();
+    this.closeAboutModalInternal();
 
     this.archiveQuery = '';
     const searchInput = document.getElementById(
@@ -827,6 +836,7 @@ export class SpeakingAtlasController {
     ) as HTMLDialogElement | null;
     this.openDialogElement(modal, true);
     this.setActiveNavLink('talks');
+    this.setUrlHash('talks');
 
     searchInput?.focus();
   }
@@ -838,23 +848,38 @@ export class SpeakingAtlasController {
     this.closeDialogElement(modal);
   }
 
+  private closeAboutModalInternal(): void {
+    const modal = document.getElementById('about-modal') as HTMLDialogElement | null;
+    this.closeDialogElement(modal);
+  }
+
+  private clearModalHashIfMatches(expectedHashes: string[]): void {
+    if (typeof window === 'undefined') return;
+    const currentHash = decodeURIComponent(window.location.hash.replace(/^#/, '').trim());
+    if (expectedHashes.includes(currentHash)) {
+      this.setUrlHash(this.selectedCityId);
+    }
+  }
+
   public closeArchive(): void {
     this.closeArchiveInternal();
     this.setActiveNavLink('home');
+    this.clearModalHashIfMatches(['talks', 'archive']);
   }
 
   public openAboutModal(): void {
-    this.closeEventDrawer();
+    this.closeEventDrawerInternal();
     this.closeArchiveInternal();
     const modal = document.getElementById('about-modal') as HTMLDialogElement | null;
     this.openDialogElement(modal, false);
     this.setActiveNavLink('about');
+    this.setUrlHash('about');
   }
 
   public closeAboutModal(): void {
-    const modal = document.getElementById('about-modal') as HTMLDialogElement | null;
-    this.closeDialogElement(modal);
+    this.closeAboutModalInternal();
     this.setActiveNavLink('home');
+    this.clearModalHashIfMatches(['about']);
   }
 
   private filterArchiveMatrix(): void {
@@ -986,15 +1011,34 @@ export class SpeakingAtlasController {
     }
   }
 
+  private isPlainLeftClick(event: Event): boolean {
+    if (!(event instanceof MouseEvent)) return true;
+    return (
+      event.button === 0 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      !event.altKey
+    );
+  }
+
   private bindEvents(): void {
     this.bindDialogLifecycle('signal-drawer', () => {
-      this.setUrlHash(this.selectedCityId);
+      if (!this.isDialogOpen('archive-matrix-modal') && !this.isDialogOpen('about-modal')) {
+        this.setUrlHash(this.selectedCityId);
+      }
     });
     this.bindDialogLifecycle('archive-matrix-modal', () => {
-      this.setActiveNavLink('home');
+      if (!this.isDialogOpen('signal-drawer') && !this.isDialogOpen('about-modal')) {
+        this.setActiveNavLink('home');
+        this.clearModalHashIfMatches(['talks', 'archive']);
+      }
     });
     this.bindDialogLifecycle('about-modal', () => {
-      this.setActiveNavLink('home');
+      if (!this.isDialogOpen('signal-drawer') && !this.isDialogOpen('archive-matrix-modal')) {
+        this.setActiveNavLink('home');
+        this.clearModalHashIfMatches(['about']);
+      }
     });
 
     // 4-Mode View Selector Tabs (Places · Regions · Years · Topics)
@@ -1041,6 +1085,7 @@ export class SpeakingAtlasController {
       .querySelectorAll<HTMLElement>('[data-action="reset-city"], [data-action="reset-atlas"]')
       .forEach((el) => {
         el.addEventListener('click', (e) => {
+          if (!this.isPlainLeftClick(e)) return;
           e.preventDefault();
           this.selectYear('all');
           this.selectTopic('all');
@@ -1192,7 +1237,11 @@ export class SpeakingAtlasController {
 
     // Archive Matrix open/close triggers
     document.querySelectorAll<HTMLElement>('[data-action="open-archive"]').forEach((el) => {
-      el.addEventListener('click', () => this.openArchive());
+      el.addEventListener('click', (e) => {
+        if (!this.isPlainLeftClick(e)) return;
+        e.preventDefault();
+        this.openArchive();
+      });
     });
     document.querySelectorAll<HTMLElement>('[data-action="close-archive"]').forEach((el) => {
       el.addEventListener('click', () => this.closeArchive());
@@ -1203,7 +1252,11 @@ export class SpeakingAtlasController {
       el.addEventListener('click', () => this.closeEventDrawer());
     });
     document.querySelectorAll<HTMLElement>('[data-action="open-about"]').forEach((el) => {
-      el.addEventListener('click', () => this.openAboutModal());
+      el.addEventListener('click', (e) => {
+        if (!this.isPlainLeftClick(e)) return;
+        e.preventDefault();
+        this.openAboutModal();
+      });
     });
     document.querySelectorAll<HTMLElement>('[data-action="close-about"]').forEach((el) => {
       el.addEventListener('click', () => this.closeAboutModal());

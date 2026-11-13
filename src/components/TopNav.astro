@@ -3,27 +3,48 @@ import { withBase } from '../utils/paths';
 
 interface Props {
   totalTalks: number;
+  currentPage?: 'home' | 'sessions' | 'speaker';
 }
 
-const { totalTalks } = Astro.props;
+const { totalTalks, currentPage = 'home' } = Astro.props;
+const isHome = currentPage === 'home';
+const headerTestId =
+  currentPage === 'sessions'
+    ? 'sessions-header'
+    : currentPage === 'speaker'
+      ? 'speaker-header'
+      : 'site-header';
+const contactDesktopLabel = currentPage === 'sessions' ? 'Invite to speak' : 'Get in touch';
 ---
 
 <header
-  data-testid="site-header"
-  class="fixed top-0 inset-x-0 z-30 min-h-16 md:min-h-20 px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-2 pointer-events-none select-none"
+  data-testid={headerTestId}
+  class={
+    isHome
+      ? 'fixed top-0 inset-x-0 z-30 min-h-16 md:min-h-20 px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-2 pointer-events-none select-none'
+      : 'sticky top-0 z-30 min-h-16 md:min-h-20 px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-2 bg-[#0B0C0E]/92 backdrop-blur-md border-b border-[#F4F1EA]/[0.08] select-none'
+  }
 >
-  <div
-    class="absolute inset-0 bg-gradient-to-b from-[#0B0C0E]/95 via-[#0B0C0E]/75 to-transparent backdrop-blur-[6px] border-b border-[#F4F1EA]/[0.07] pointer-events-none"
-  >
-  </div>
+  {
+    isHome && (
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-[#0B0C0E]/95 via-[#0B0C0E]/75 to-transparent backdrop-blur-[6px] border-b border-[#F4F1EA]/[0.07] pointer-events-none"
+      />
+    )
+  }
 
   <!-- Left: Personal Wordmark & Role (Single-line on narrow viewports) -->
   <div class="relative z-10 flex items-center shrink-0 pointer-events-auto">
     <a
-      href="#top"
-      data-action="reset-atlas"
+      href={withBase('')}
+      data-testid="nav-brand-link"
+      data-action={isHome ? 'reset-atlas' : undefined}
       class="group flex items-baseline gap-2.5 text-left rounded-sm py-0.5 whitespace-nowrap"
-      aria-label="Enes Turan — Google Developer Expert (Reset map view)"
+      aria-label={
+        isHome
+          ? 'Enes Turan — Google Developer Expert (Reset map view)'
+          : 'Enes Turan — Google Developer Expert (Home)'
+      }
     >
       <span class="font-display text-base sm:text-xl font-medium tracking-[-0.015em] text-[#F4F1EA]">
         Enes Turan
@@ -37,93 +58,168 @@ const { totalTalks } = Astro.props;
 
   <!-- Center: Calm Editorial Navigation -->
   <nav
-    class="relative z-10 hidden md:flex items-center gap-5 lg:gap-7 pointer-events-auto text-sm whitespace-nowrap"
+    class="relative z-10 hidden md:flex items-center pointer-events-auto text-sm whitespace-nowrap"
     aria-label="Primary"
   >
-    <button
-      type="button"
-      data-action="reset-atlas"
-      data-nav-link="home"
-      aria-current="page"
-      class="relative py-1 text-[#F4F1EA] border-b-2 border-[#E2A84B] transition-colors cursor-pointer"
-    >
-      Overview
-    </button>
-    <button
-      type="button"
-      data-action="open-archive"
-      data-nav-link="talks"
-      data-testid="nav-talks-btn"
-      class="relative py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors cursor-pointer tabular-nums"
-    >
-      Talks ({totalTalks})
-    </button>
-    <button
-      type="button"
-      data-action="open-about"
-      data-nav-link="about"
-      data-testid="nav-about-btn"
-      class="relative py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors cursor-pointer"
-    >
-      About
-    </button>
-    <a
-      href={withBase('sessions/')}
-      data-testid="nav-sessions-link"
-      class="relative py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
-    >
-      Topics &amp; Abstracts
-    </a>
-    <a
-      href={withBase('speaker/')}
-      data-testid="nav-speaker-kit-link"
-      class="relative py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
-    >
-      Speaker Kit
-    </a>
-    <a
-      href="https://medium.com/@devenes"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="hidden xl:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
-    >
-      Writing <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
-    </a>
-    <a
-      href="https://speakerdeck.com/devenes"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="hidden xl:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
-    >
-      Slides <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
-    </a>
+    <ul class="flex items-center gap-4 lg:gap-7 list-none m-0 p-0">
+      <li>
+        <a
+          href={withBase('')}
+          data-action={isHome ? 'reset-atlas' : undefined}
+          data-nav-link={isHome ? 'home' : undefined}
+          data-testid="nav-overview-link"
+          aria-current={isHome ? 'page' : undefined}
+          class={`relative inline-block py-1 border-b-2 transition-colors ${
+            isHome
+              ? 'text-[#F4F1EA] border-[#E2A84B]'
+              : 'text-[#A39E93] hover:text-[#F4F1EA] border-transparent'
+          }`}
+        >
+          Overview
+        </a>
+      </li>
+      <li>
+        <a
+          href={withBase('#talks')}
+          data-action={isHome ? 'open-archive' : undefined}
+          data-nav-link={isHome ? 'talks' : undefined}
+          data-testid="nav-talks-btn"
+          class="relative inline-block py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors tabular-nums"
+        >
+          Talks ({totalTalks})
+        </a>
+      </li>
+      <li>
+        <a
+          href={withBase('#about')}
+          data-action={isHome ? 'open-about' : undefined}
+          data-nav-link={isHome ? 'about' : undefined}
+          data-testid="nav-about-btn"
+          class="relative inline-block py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
+        >
+          About
+        </a>
+      </li>
+      <li>
+        <a
+          href={withBase('sessions/')}
+          data-testid="nav-sessions-link"
+          aria-current={currentPage === 'sessions' ? 'page' : undefined}
+          class={`relative inline-block py-1 border-b-2 transition-colors ${
+            currentPage === 'sessions'
+              ? 'text-[#F4F1EA] border-[#E2A84B]'
+              : 'text-[#A39E93] hover:text-[#F4F1EA] border-transparent'
+          }`}
+        >
+          Topics &amp; Abstracts
+        </a>
+      </li>
+      <li>
+        <a
+          href={withBase('speaker/')}
+          data-testid="nav-speaker-kit-link"
+          aria-current={currentPage === 'speaker' ? 'page' : undefined}
+          class={`relative inline-block py-1 border-b-2 transition-colors ${
+            currentPage === 'speaker'
+              ? 'text-[#F4F1EA] border-[#E2A84B]'
+              : 'text-[#A39E93] hover:text-[#F4F1EA] border-transparent'
+          }`}
+        >
+          Speaker Kit
+        </a>
+      </li>
+      <li class="hidden xl:block">
+        <a
+          href="https://medium.com/@devenes"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
+        >
+          Writing <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
+        </a>
+      </li>
+      <!-- Slides button commented out for now (not ready yet)
+      <li class="hidden xl:block">
+        <a
+          href="https://speakerdeck.com/devenes"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
+        >
+          Slides <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
+        </a>
+      </li>
+      -->
+    </ul>
   </nav>
 
   <!-- Right: Mobile Triggers & Contact Link -->
   <div class="relative z-10 flex items-center gap-1.5 sm:gap-2.5 shrink-0 pointer-events-auto">
-    <button
-      type="button"
-      data-action="open-archive"
-      class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#F4F1EA] bg-[#181B20] border border-[#F4F1EA]/18 cursor-pointer tabular-nums whitespace-nowrap"
-    >
-      Talks ({totalTalks})
-    </button>
-    <button
-      type="button"
-      data-action="open-about"
-      class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#C6C2B8] bg-[#121417] border border-[#F4F1EA]/14 cursor-pointer whitespace-nowrap"
-    >
-      About
-    </button>
+    {
+      isHome ? (
+        <>
+          <a
+            href={withBase('#talks')}
+            data-action="open-archive"
+            class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#F4F1EA] bg-[#181B20] border border-[#F4F1EA]/18 tabular-nums whitespace-nowrap"
+          >
+            Talks ({totalTalks})
+          </a>
+          <a
+            href={withBase('#about')}
+            data-action="open-about"
+            class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#C6C2B8] bg-[#121417] border border-[#F4F1EA]/14 whitespace-nowrap"
+          >
+            About
+          </a>
+        </>
+      ) : (
+        <>
+          <a
+            href={withBase('')}
+            data-testid="mobile-nav-map-link"
+            class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#F4F1EA] bg-[#181B20] border border-[#F4F1EA]/18 whitespace-nowrap transition-colors"
+          >
+            ← Map
+          </a>
+          {currentPage === 'sessions' ? (
+            <a
+              href={withBase('speaker/')}
+              data-testid="mobile-nav-speaker-link"
+              class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#C6C2B8] hover:text-[#F4F1EA] bg-[#121417] border border-[#F4F1EA]/14 whitespace-nowrap transition-colors"
+            >
+              <span class="sm:hidden">Bio</span>
+              <span class="hidden sm:inline">Speaker Kit</span>
+            </a>
+          ) : (
+            <a
+              href={withBase('sessions/')}
+              data-testid="mobile-nav-sessions-link"
+              class="md:hidden rounded-md px-2 sm:px-2.5 py-1.5 text-[0.6875rem] sm:text-xs text-[#C6C2B8] hover:text-[#F4F1EA] bg-[#121417] border border-[#F4F1EA]/14 whitespace-nowrap transition-colors"
+            >
+              Topics
+            </a>
+          )}
+        </>
+      )
+    }
     <a
       href="https://www.linkedin.com/in/devenes/"
       target="_blank"
       rel="noopener noreferrer"
-      class="inline-flex items-center gap-1 sm:gap-1.5 rounded-md px-2.5 sm:px-3.5 py-1.5 text-[0.6875rem] sm:text-xs font-medium text-[#F4F1EA] bg-[#181B20]/90 hover:bg-[#22262D] border border-[#F4F1EA]/20 hover:border-[#F4F1EA]/35 transition-colors whitespace-nowrap"
+      class="inline-flex items-center gap-1 sm:gap-1.5 rounded-md px-2 sm:px-3.5 py-1.5 text-[0.6875rem] sm:text-xs font-medium text-[#F4F1EA] bg-[#181B20]/90 hover:bg-[#22262D] border border-[#F4F1EA]/20 hover:border-[#F4F1EA]/35 transition-colors whitespace-nowrap"
     >
-      <span class="sr-only sm:not-sr-only">Get in touch</span>
+      <span class="sr-only sm:not-sr-only">{contactDesktopLabel}</span>
       <span aria-hidden="true" class="sm:hidden">Contact</span>
       <span aria-hidden="true" class="text-[#E2A84B]">↗</span>
     </a>
   </div>
 </header>
+
+<style>
+  @media (forced-colors: active) {
+    nav[aria-label='Primary'] [aria-current='page'] {
+      border-block-end-color: Highlight;
+    }
+  }
+</style>

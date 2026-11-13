@@ -455,4 +455,62 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     );
     expect(sessionsOverflow).toBe(false);
   });
+
+  test('9. Top Navigation Hrefs Across All Pages (/ · /sessions/ · /speaker/) & Slides Button Commented Out', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    for (const route of ['/', '/sessions/', '/speaker/']) {
+      await page.goto(route);
+      const header = page.locator('header').first();
+
+      // Slides button must not be rendered in top navigation on any page
+      await expect(header.getByRole('link', { name: /^Slides/i })).toHaveCount(0);
+
+      // Every anchor inside the header must have a non-empty valid href
+      const anchors = header.locator('a');
+      const anchorCount = await anchors.count();
+      expect(anchorCount).toBeGreaterThan(0);
+      for (let i = 0; i < anchorCount; i++) {
+        const href = await anchors.nth(i).getAttribute('href');
+        expect(href, `Empty href on ${route} anchor #${i}`).toBeTruthy();
+      }
+
+      await expect(header.getByTestId('nav-brand-link')).toHaveAttribute('href', '/');
+      await expect(header.getByTestId('nav-overview-link')).toHaveAttribute('href', '/');
+      await expect(header.getByTestId('nav-talks-btn')).toHaveAttribute('href', '/#talks');
+      await expect(header.getByTestId('nav-about-btn')).toHaveAttribute('href', '/#about');
+      await expect(header.getByTestId('nav-sessions-link')).toHaveAttribute('href', '/sessions/');
+      await expect(header.getByTestId('nav-speaker-kit-link')).toHaveAttribute('href', '/speaker/');
+    }
+
+    // Navigate cross-page via top nav links: /sessions/ -> Overview (/) -> Speaker Kit (/speaker/) -> About (/#about) -> Talks (/#talks)
+    await page.goto('/sessions/');
+    await page.getByTestId('nav-overview-link').click();
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.getByTestId('nav-speaker-kit-link').click();
+    await expect(page).toHaveURL(/\/speaker\/?$/);
+
+    await page.getByTestId('nav-about-btn').click();
+    await expect(page).toHaveURL(/\/#about$/);
+    await expect(page.getByTestId('about-modal')).toBeVisible();
+    await page.getByTestId('close-about-btn').click();
+    await expect(page.getByTestId('about-modal')).toBeHidden();
+
+    await page.goto('/sessions/');
+    await page.getByTestId('nav-talks-btn').click();
+    await expect(page).toHaveURL(/\/#talks$/);
+    await expect(page.getByTestId('archive-matrix-modal')).toBeVisible();
+
+    // Verify mobile navigation links and 320px single-row header on /speaker/ and /sessions/
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.goto('/speaker/');
+    const speakerHeader320 = await page.getByTestId('speaker-header').boundingBox();
+    expect(speakerHeader320).not.toBeNull();
+    expect(speakerHeader320!.height).toBeLessThanOrEqual(68);
+    await page.getByTestId('mobile-nav-map-link').click();
+    await expect(page).toHaveURL(/\/$/);
+  });
 });

@@ -4,6 +4,13 @@ import { formatCoordinates, formatSignalDate, withBase } from '../../src/utils/p
 
 describe('ORBIT Path & Signal Date Utilities', () => {
   it('resolves relative paths against root and subpath BASE_URL values', () => {
+    expect(withBase('', '/')).toBe('/');
+    expect(withBase('/', '/')).toBe('/');
+    expect(withBase('', '/devenes.github.io/')).toBe('/devenes.github.io/');
+    expect(withBase('#talks', '/')).toBe('/#talks');
+    expect(withBase('#about', '/')).toBe('/#about');
+    expect(withBase('sessions/', '/')).toBe('/sessions/');
+    expect(withBase('speaker/', '/')).toBe('/speaker/');
     expect(withBase('images/talks/devfest-almaty.svg', '/')).toBe(
       '/images/talks/devfest-almaty.svg'
     );

@@ -4,7 +4,6 @@
  * subpath deployments (https://username.github.io/repo/).
  */
 export function withBase(relativePath: string, customBase?: string): string {
-  if (!relativePath) return '';
   if (/^(https?:)?\/\//i.test(relativePath) || relativePath.startsWith('data:')) {
     return relativePath;
   }
@@ -17,7 +16,7 @@ export function withBase(relativePath: string, customBase?: string): string {
         : '/';
 
   const normalizedBase = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
-  const cleanRelative = relativePath.replace(/^\/+/, '');
+  const cleanRelative = (relativePath ?? '').replace(/^\/+/, '');
   return `${normalizedBase}${cleanRelative}`;
 }
 

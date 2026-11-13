@@ -2,6 +2,7 @@
 import rawEvents from '../../data/events.json';
 import rawLocations from '../../data/locations.json';
 import CopyButton from '../components/CopyButton.astro';
+import TopNav from '../components/TopNav.astro';
 import { SESSION_PROPOSALS } from '../data/sessionCatalog';
 import { SPEAKER_PROFILE } from '../data/speakerProfile';
 import { buildSpeakingAtlas } from '../utils/geography';
@@ -152,78 +153,7 @@ const jsonLd = {
     </a>
 
     <!-- Top Navigation Bar -->
-    <header
-      class="sticky top-0 z-30 min-h-16 md:min-h-20 px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-3 bg-[#0B0C0E]/92 backdrop-blur-md border-b border-[#F4F1EA]/[0.08]"
-    >
-      <a
-        href={withBase('')}
-        class="group flex items-baseline gap-2.5 whitespace-nowrap rounded-sm py-0.5 shrink-0"
-      >
-        <span class="font-display text-base sm:text-xl font-medium tracking-[-0.015em] text-[#F4F1EA]">
-          Enes Turan
-        </span>
-        <span class="hidden lg:inline text-[#6E6A61]" aria-hidden="true">/</span>
-        <span class="hidden lg:inline text-xs text-[#A39E93] group-hover:text-[#C6C2B8] transition-colors">
-          Google Developer Expert
-        </span>
-      </a>
-
-      <nav class="hidden md:flex items-center gap-5 lg:gap-6 text-sm whitespace-nowrap" aria-label="Primary">
-        <a
-          href={withBase('')}
-          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors"
-        >
-          ← Interactive Map
-        </a>
-        <a
-          href={withBase('#talks')}
-          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors tabular-nums"
-        >
-          Past Talks ({metrics.totalTalks})
-        </a>
-        <a
-          href={withBase('sessions/')}
-          data-testid="speaker-kit-sessions-nav-link"
-          class="py-1 text-[#A39E93] hover:text-[#F4F1EA] border-b-2 border-transparent transition-colors tabular-nums"
-        >
-          Session Proposals ({SESSION_PROPOSALS.length})
-        </a>
-        <a
-          href={withBase('speaker/')}
-          aria-current="page"
-          class="py-1 text-[#F4F1EA] border-b-2 border-[#E2A84B] transition-colors"
-        >
-          Speaker Kit
-        </a>
-        <a
-          href="https://speakerdeck.com/devenes"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="hidden xl:inline py-1 text-[#A39E93] hover:text-[#F4F1EA] transition-colors"
-        >
-          Slides <span aria-hidden="true" class="text-xs text-[#6E6A61]">↗</span>
-        </a>
-      </nav>
-
-      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-        <a
-          href={withBase('')}
-          class="md:hidden rounded-md px-2.5 py-1.5 text-xs text-[#C6C2B8] hover:text-[#F4F1EA] bg-[#121417] border border-[#F4F1EA]/14 whitespace-nowrap transition-colors"
-        >
-          ← Map
-        </a>
-        <a
-          href="https://www.linkedin.com/in/devenes/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-1.5 rounded-md px-2.5 sm:px-3.5 py-1.5 text-xs font-medium text-[#F4F1EA] bg-[#181B20] hover:bg-[#22262D] border border-[#F4F1EA]/20 hover:border-[#F4F1EA]/35 transition-colors whitespace-nowrap"
-        >
-          <span class="sr-only sm:not-sr-only">Get in touch</span>
-          <span aria-hidden="true" class="sm:hidden">Contact</span>
-          <span aria-hidden="true" class="text-[#E2A84B]">↗</span>
-        </a>
-      </div>
-    </header>
+    <TopNav totalTalks={metrics.totalTalks} currentPage="speaker" />
 
     <main id="main-content" class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-10 py-10 sm:py-14 space-y-14 sm:space-y-16">
       <!-- Hero Summary for Event Organizers -->
