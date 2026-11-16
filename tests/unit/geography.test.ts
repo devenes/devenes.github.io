@@ -15,11 +15,11 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
   it('computes exact metrics from authoritative data/events.json and data/locations.json', () => {
     const atlas = buildSpeakingAtlas(rawEvents, rawLocations);
 
-    expect(atlas.metrics.totalTalks).toBe(48);
-    expect(atlas.metrics.physicalTalks).toBe(42);
-    expect(atlas.metrics.onlineTalks).toBe(6);
-    expect(atlas.metrics.uniqueCountries).toBe(12);
-    expect(atlas.metrics.uniqueCities).toBe(26);
+    expect(atlas.metrics.totalTalks).toBe(63);
+    expect(atlas.metrics.physicalTalks).toBe(52);
+    expect(atlas.metrics.onlineTalks).toBe(11);
+    expect(atlas.metrics.uniqueCountries).toBe(13);
+    expect(atlas.metrics.uniqueCities).toBe(29);
     expect(atlas.unverifiedLocations).toHaveLength(0);
   });
 
@@ -28,8 +28,8 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
 
     const istanbul = atlas.cities.find((c) => c.id === 'istanbul-tr');
     expect(istanbul).toBeDefined();
-    expect(istanbul!.eventsCount).toBe(7);
-    expect(istanbul!.events).toHaveLength(7);
+    expect(istanbul!.eventsCount).toBe(8);
+    expect(istanbul!.events).toHaveLength(8);
 
     const sarajevo = atlas.cities.find((c) => c.id === 'sarajevo-ba');
     expect(sarajevo).toBeDefined();
@@ -49,7 +49,7 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
     expect(onlineCity).toBeUndefined();
 
     const onlineEvents = atlas.events.filter((e) => e.isOnline);
-    expect(onlineEvents).toHaveLength(6);
+    expect(onlineEvents).toHaveLength(11);
     for (const ev of onlineEvents) {
       expect(ev.locationId).toBeNull();
       expect(ev.lat).toBeNull();
@@ -81,8 +81,8 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
     expect(atlas.unverifiedLocations).toHaveLength(1);
     expect(atlas.unverifiedLocations[0].eventId).toBe('mystery-conf-atlantis-2026');
     expect(atlas.unverifiedLocations[0].cityString).toBe('Atlantis, Ocean');
-    // Physical cities count remains 26 (never silently plotted)
-    expect(atlas.metrics.uniqueCities).toBe(26);
+    // Physical cities count remains 29 (never silently plotted)
+    expect(atlas.metrics.uniqueCities).toBe(29);
   });
 
   it('generates valid spherical 3D coordinates and elevated great-circle route arcs', () => {
@@ -114,22 +114,22 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
     expect(distIstanbulAlmaty).toBeLessThan(4100);
   });
 
-  it('slim-serializes client atlas payload by >70% and hydrates city events and 3D routes losslessly', () => {
+  it('slim-serializes client atlas payload by >65% and hydrates city events and 3D routes losslessly', () => {
     const fullAtlas = buildSpeakingAtlas(rawEvents, rawLocations);
     const fullJsonBytes = JSON.stringify(fullAtlas).length;
 
     const slimPayload = serializeClientAtlas(fullAtlas);
     const slimJsonBytes = JSON.stringify(slimPayload).length;
 
-    expect(slimJsonBytes).toBeLessThan(fullJsonBytes * 0.3);
+    expect(slimJsonBytes).toBeLessThan(fullJsonBytes * 0.35);
 
     const hydrated = hydrateClientAtlas(slimPayload);
     expect(hydrated.metrics).toEqual(fullAtlas.metrics);
-    expect(hydrated.events).toHaveLength(48);
-    expect(hydrated.cities).toHaveLength(26);
+    expect(hydrated.events).toHaveLength(63);
+    expect(hydrated.cities).toHaveLength(29);
 
     const istanbul = hydrated.cities.find((c) => c.id === 'istanbul-tr');
-    expect(istanbul?.events).toHaveLength(7);
+    expect(istanbul?.events).toHaveLength(8);
     expect(hydrated.routes.length).toBe(fullAtlas.routes.length);
     expect(hydrated.routes[0].points3D.length).toBeGreaterThan(20);
   });

@@ -16,14 +16,14 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await expect(page.getByText(/Ideas travel\./i)).toHaveCount(0);
     await expect(page.locator('#speaking-impact-card')).toHaveCount(0);
 
-    // Verify exact data-driven metrics from data/events.json (48 talks, 12 countries, 26 physical cities)
-    await expect(page.getByTestId('metric-talks')).toHaveText('48');
-    await expect(page.getByTestId('metric-countries')).toHaveText('12');
-    await expect(page.getByTestId('metric-cities')).toHaveText('26');
+    // Verify exact data-driven metrics from data/events.json (63 talks, 13 countries, 29 physical cities)
+    await expect(page.getByTestId('metric-talks')).toHaveText('63');
+    await expect(page.getByTestId('metric-countries')).toHaveText('13');
+    await expect(page.getByTestId('metric-cities')).toHaveText('29');
 
     // Verify Online events are NOT plotted as physical destinations on the globe
     const globeLabels = page.locator('[data-globe-city-label]');
-    await expect(globeLabels).toHaveCount(26);
+    await expect(globeLabels).toHaveCount(29);
     await expect(page.locator('[data-globe-city-label="online"]')).toHaveCount(0);
 
     // Verify default places overview panel is visible before selecting any city
@@ -45,7 +45,7 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     const cityPanel = page.getByTestId('selected-city-panel');
     await expect(cityPanel).toBeVisible();
     await expect(page.getByTestId('selected-city-name')).toHaveText('Istanbul');
-    await expect(cityPanel).toContainText(/7 talks/i);
+    await expect(cityPanel).toContainText(/8 talks/i);
 
     // Verify empty Photos tab stays hidden when city has 0 photos (no data/events.json prompt leak)
     await expect(page.locator('#city-tab-btn-photos')).toBeHidden();
@@ -54,7 +54,7 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     const istanbulEvents = page
       .getByTestId('selected-city-events-list')
       .locator('[data-city-event-id]');
-    await expect(istanbulEvents).toHaveCount(7);
+    await expect(istanbulEvents).toHaveCount(8);
 
     // Switch to Details sub-tab and verify regional metadata renders cleanly
     await page.locator('#city-tab-btn-about').click();
@@ -144,7 +144,7 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await expect(archiveModal).toBeVisible();
 
     const visibleRows = archiveModal.locator('tbody tr:not(.hidden)');
-    await expect(visibleRows).toHaveCount(48);
+    await expect(visibleRows).toHaveCount(63);
 
     // Search for "Almaty" in Archive
     const searchInput = page.getByTestId('archive-search-input');
@@ -154,7 +154,7 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
 
     // Reset filters and filter by workshop session format
     await page.getByTestId('archive-reset-filters-btn').click();
-    await expect(visibleRows).toHaveCount(48);
+    await expect(visibleRows).toHaveCount(63);
 
     await page.getByTestId('archive-type-select').selectOption('workshop');
     const workshopCount = await visibleRows.count();
@@ -207,17 +207,17 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await expect(page.getByTestId('selected-city-name')).toHaveText('Agadir');
     await expect(page.locator('#selected-city-coords')).toHaveText('30.43°N, 9.60°W');
 
-    // Open city-scoped archive ("View all talks in Agadir →") -> 1 talk
+    // Open city-scoped archive ("View all talks in Agadir →") -> 2 talks
     await page.locator('#selected-city-archive-btn').click();
     const archiveModal = page.getByTestId('archive-matrix-modal');
     await expect(archiveModal).toBeVisible();
     const visibleRows = archiveModal.locator('tbody tr:not(.hidden)');
-    await expect(visibleRows).toHaveCount(1);
+    await expect(visibleRows).toHaveCount(2);
     await page.getByTestId('close-archive-btn').click();
 
-    // Click global "Browse all talks" and verify archive resets city filter back to all 48 talks
+    // Click global "Browse all talks" and verify archive resets city filter back to all 63 talks
     await page.getByTestId('browse-all-talks-btn').click();
-    await expect(visibleRows).toHaveCount(48);
+    await expect(visibleRows).toHaveCount(63);
     await page.getByTestId('close-archive-btn').click();
 
     // Verify visible 2D globe city labels never overlap the right-hand destination panel

@@ -81,7 +81,25 @@
       "Healthcare AI",
       "Computer Vision",
       "Google AI"
-    ]
+    ],
+    "eventUrl": "https://uyzck.com/google-kursu"
+  },
+  {
+    "id": "ai-surgery-congress-keynote-istanbul-2026",
+    "date": "2026-10-10",
+    "event": "1st National AI in Surgery Congress (1. Ulusal Yapay Zeka Cerrahi Kongresi)",
+    "city": "Istanbul, Türkiye",
+    "talk": "The Next Era of AI in Healthcare",
+    "photos": [],
+    "description": "As part of the First National Congress on Artificial Intelligence in Surgery (UYZCK 2026), the keynote session The Next Era of AI in Healthcare explored the evolving role of artificial intelligence in healthcare and its potential to transform clinical practice, medical research, and surgical workflows.\n\nThe session highlighted Google's healthcare AI initiatives and research, including Gemini, Google DeepMind's work in health, AMIE, and MedGemma. It also introduced key Google Cloud capabilities, including Vertex AI and agentic AI technologies, demonstrating how these tools can support the development of intelligent applications, clinical decision-support systems, medical research workflows, and next-generation healthcare solutions.\n\nThe session emphasized practical opportunities for healthcare professionals to use Google's AI ecosystem to explore new ideas and translate clinical challenges into technology-enabled solutions.",
+    "topics": [
+      "Healthcare AI",
+      "AI Agents",
+      "Generative AI",
+      "Vertex AI",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://uyzck.com/google-kursu"
   },
   {
     "id": "devfest-dubai-2026",
@@ -96,7 +114,25 @@
       "AI",
       "GKE",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-dubai-presents-devfest-dubai-2026/"
+  },
+  {
+    "id": "build-with-ai-alexandria-2026",
+    "date": "2026-06-20",
+    "event": "Build with AI Alexandria 2026",
+    "city": "Alexandria, Egypt",
+    "talk": "Building Google Agent Development Kit Agents Workshop",
+    "photos": [],
+    "description": "Hands-on workshop at Build with AI Alexandria exploring how to design and build intelligent AI agents using Google Agent Development Kit (ADK), Google AI Studio, and Gemini models.\n\nParticipants worked through practical agent development workflows, tool integrations, and real-world patterns for building AI-powered applications on Google Cloud.",
+    "topics": [
+      "AI Agents",
+      "Google ADK",
+      "Gemini",
+      "Build with AI",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-alexandria-presents-build-with-ai-alexandria/"
   },
   {
     "id": "io-extended-cairo-2026",
@@ -111,7 +147,8 @@
       "AI",
       "Platform Engineering",
       "Developer Experience"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-cairo-presents-google-io-extended-cairo-2026/"
   },
   {
     "id": "build-with-ai-prishtina-hackathon-2026",
@@ -126,7 +163,41 @@
       "AI Agents",
       "Hackathon",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-prishtina-presents-build-with-ai-prishtina-from-ideas-to-impact/"
+  },
+  {
+    "id": "build-with-ai-prishtina-workshop-2026",
+    "date": "2026-05-14",
+    "event": "Build with AI Prishtina 2026",
+    "city": "Pristina, Kosovo",
+    "talk": "Building Google Agent Development Kit Agents with Skills and Tools Workshop",
+    "photos": [],
+    "description": "A hands-on workshop focused on the practical application of Google's Agent Development Kit (ADK) for building intelligent agents, emphasizing the use of skills and tools to enhance agent capabilities and performance.",
+    "topics": [
+      "AI Agents",
+      "Google ADK",
+      "Build with AI",
+      "Tools & Skills"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-prishtina-presents-build-with-ai-prishtina-from-ideas-to-impact/"
+  },
+  {
+    "id": "techfest-build-with-ai-monastir-2026",
+    "date": "2026-05-03",
+    "event": "TechFest 1.0 - Build with AI Monastir",
+    "city": "Monastir, Tunisia",
+    "talk": "Build With AI Workshop: Google ADK, Skills, and MCP",
+    "photos": [],
+    "description": "A hands-on AI workshop focused on building Google Agent Development Kit (ADK) agents with skills, tools, and Model Context Protocol (MCP).\n\nParticipants built AI agents step by step, worked with Google Cloud tools and Gemini models, and gained practical skills through a guided real-world project.",
+    "topics": [
+      "AI Agents",
+      "Google ADK",
+      "MCP",
+      "Gemini",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-monastir-presents-techfest-10-buildwithai-workshop-enes-turan/"
   },
   {
     "id": "sre-summit-istanbul-2026",
@@ -141,7 +212,25 @@
       "Reliability",
       "Google Cloud",
       "Observability"
-    ]
+    ],
+    "linkedinUrl": "https://www.linkedin.com/posts/hilmiyekutup_resiliencesummit-rezilyans-resilience-ugcPost-7450607031956271104-BQem?utm_source=share&utm_medium=member_desktop&rcm=ACoAADc-DugBz78ywD3RATWE5OPBpAM1NUsKN2I"
+  },
+  {
+    "id": "build-with-ai-taldykorgan-2026",
+    "date": "2026-03-30",
+    "event": "Build with AI Taldykorgan 2026",
+    "city": "Taldykorgan, Kazakhstan",
+    "talk": "Running AI Agents on Google Cloud with Google ADK Workshop",
+    "photos": [],
+    "description": "In this hands-on workshop, participants explored how AI agents are designed, built, and deployed using modern tools and frameworks.\n\nAttendees worked through practical exercises developing intelligent agents with Google ADK, integrating essential tools, and deploying scalable AI-driven solutions to Google Cloud.",
+    "topics": [
+      "AI Agents",
+      "Google ADK",
+      "Gemini",
+      "Build with AI",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-taldykorgan-presents-empowering-kazakhstans-future-it-amp-ai-insights-2026/"
   },
   {
     "id": "devfest-bursa-2025",
@@ -156,7 +245,8 @@
       "ADK",
       "Generative AI",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-bursa-presents-devfest-bursa-2025/"
   },
   {
     "id": "devfest-denizli-2025",
@@ -171,7 +261,8 @@
       "ADK",
       "Generative AI",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-denizli-presents-devfest-denizli25/"
   },
   {
     "id": "devfest-almaty-2025",
@@ -186,7 +277,8 @@
       "AI Agents",
       "Google Cloud",
       "Machine Learning"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-almaty-presents-google-devfest-almaty-2025/"
   },
   {
     "id": "devfest-kashkadarya-2025",
@@ -201,7 +293,8 @@
       "Vertex AI",
       "Generative AI",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-qarshi-presents-devfest-kashkadarya-2025-gdg-karshi/"
   },
   {
     "id": "pre-devfest-tashkent-2025",
@@ -216,7 +309,8 @@
       "GKE",
       "Kubernetes",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-tashkent-presents-pre-devfest-event-series/cohost-gdg-tashkent"
   },
   {
     "id": "devfest-sousse-2025",
@@ -231,7 +325,8 @@
       "GKE",
       "Kubernetes",
       "Machine Learning"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-sousse-presents-devfest-sousse-2025/cohost-gdg-sousse"
   },
   {
     "id": "devfest-sarajevo-2025",
@@ -246,7 +341,25 @@
       "Architecture",
       "Google Cloud",
       "Generative AI"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-cloud-sarajevo-presents-3rd-google-devfest-sarajevo-2025/cohost-gdg-cloud-sarajevo"
+  },
+  {
+    "id": "devfest-beirut-2025",
+    "date": "2025-10-25",
+    "event": "DevFest Beirut 2025",
+    "city": "Beirut, Lebanon",
+    "talk": "Developing Generative AI Applications with Vertex AI Workshop",
+    "photos": [],
+    "description": "This workshop introduced participants to the end-to-end process of developing Generative AI applications using Google Cloud Vertex AI.\n\nIt focused on leveraging multimodal models, Gemini, Gemma, and agent workflows to create intelligent, production-ready AI solutions through conceptual sessions and hands-on labs.",
+    "topics": [
+      "Generative AI",
+      "Vertex AI",
+      "Gemini",
+      "AI Agents",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-coast-lebanon-presents-devfest-beirut-2025/"
   },
   {
     "id": "devfest-kastamonu-2025",
@@ -260,7 +373,8 @@
       "AI Agents",
       "Google Cloud",
       "Generative AI"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-kastamonu-presents-devfest25-kastamonu/"
   },
   {
     "id": "devfest-taldykorgan-2025",
@@ -275,7 +389,8 @@
       "AI",
       "Generative AI",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-taldykorgan-presents-devfest-taldykorgan-2025/"
   },
   {
     "id": "devfest-bishkek-2025",
@@ -290,7 +405,8 @@
       "GKE",
       "Kubernetes",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-bishkek-presents-devfest-bishkek-2025/"
   },
   {
     "id": "ai-day-egypt-2025",
@@ -305,7 +421,24 @@
       "GKE",
       "Build with AI",
       "Kubernetes"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-cairo-presents-ai-day-in-egypt/"
+  },
+  {
+    "id": "ai-day-egypt-workshop-2025",
+    "date": "2025-08-23",
+    "event": "AI Day in Egypt - Build with AI",
+    "city": "Cairo, Egypt",
+    "talk": "Building Multi-Model Gen AI Apps on Google Cloud Workshop",
+    "photos": [],
+    "description": "Hands-on workshop at AI Day in Egypt hosted by GDG Cairo, focused on building multi-model generative AI applications using Google's AI technologies, Generative AI models, and Google Cloud Platform.",
+    "topics": [
+      "Generative AI",
+      "Gemini",
+      "Build with AI",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-cairo-presents-ai-day-in-egypt/"
   },
   {
     "id": "build-with-ai-kosovo-2025",
@@ -320,7 +453,25 @@
       "AI",
       "Build with AI",
       "Community"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-prishtina-presents-build-with-ai-kosovo-2025/"
+  },
+  {
+    "id": "build-with-ai-kosovo-workshop-2025",
+    "date": "2025-06-14",
+    "event": "Build With AI Kosovo 2025",
+    "city": "Pristina, Kosovo",
+    "talk": "Building Scalable Generative AI Apps Workshop",
+    "photos": [],
+    "description": "In this hands-on workshop, we explored how to build and deploy scalable generative AI applications using Google Cloud Run and Gemini models.\n\nParticipants learned to use Gemini APIs for text generation, summarization, and conversational interfaces, built cloud-native applications on serverless Cloud Run infrastructure, managed API requests securely, and applied prompt engineering and evaluation best practices.",
+    "topics": [
+      "Generative AI",
+      "Gemini",
+      "Cloud Run",
+      "Build with AI",
+      "Serverless"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-prishtina-presents-build-with-ai-kosovo-2025/"
   },
   {
     "id": "selcuk-tech-summit-2025",
@@ -334,7 +485,25 @@
       "Google Cloud",
       "Keynote",
       "Cloud Architecture"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-on-campus-selcuk-university-konya-turkiye-presents-yazilim-zirvesi/"
+  },
+  {
+    "id": "build-with-ai-codebrew-gaziantep-2025",
+    "date": "2025-05-24",
+    "event": "Build With AI CodeBrew Gaziantep",
+    "city": "Gaziantep, Türkiye",
+    "talk": "Building Scalable Generative AI Apps with Cloud Run and Gemini API on Vertex AI Workshop",
+    "photos": [],
+    "description": "Practical, hands-on session guiding developers, data scientists, and cloud engineers through building and deploying a generative AI web application using Gemini API on Vertex AI, Docker, and Google Cloud Run.\n\nParticipants integrated Gemini Pro and Gemini Flash models into a Python and Streamlit application, containerized the service with Docker, and deployed it to Cloud Run for serverless scalability.",
+    "topics": [
+      "Generative AI",
+      "Gemini",
+      "Vertex AI",
+      "Cloud Run",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-gaziantep-presents-build-with-ai-codebrew-gaziantep/"
   },
   {
     "id": "digifest-agadir-2025",
@@ -349,7 +518,25 @@
       "GKE",
       "AI/ML",
       "Scale"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-on-campus-universiapolis-agadir-morocco-presents-digifest/"
+  },
+  {
+    "id": "digifest-agadir-workshop-2025",
+    "date": "2025-05-04",
+    "event": "DigiFest Agadir 2025",
+    "city": "Agadir, Morocco",
+    "talk": "Seamless ML Model Deployments with TensorFlow on Google Kubernetes Engine Workshop",
+    "photos": [],
+    "description": "In this hands-on workshop, attendees gained practical experience deploying TensorFlow models using TensorFlow Serving on Google Kubernetes Engine (GKE) for scalable and reliable inference workflows.\n\nParticipants also learned how to leverage Cloud Service Mesh to manage microservices, improve deployment reliability, and streamline safe traffic transitions between model versions.",
+    "topics": [
+      "MLOps",
+      "TensorFlow",
+      "GKE",
+      "Kubernetes",
+      "Cloud Service Mesh"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-on-campus-universiapolis-agadir-morocco-presents-digifest/"
   },
   {
     "id": "devfest-6th-of-october-2024",
@@ -364,7 +551,8 @@
       "GKE",
       "AI/ML",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-6-october-presents-devfest24-gdg-6-october/"
   },
   {
     "id": "devfest-atyrau-2024",
@@ -378,7 +566,8 @@
       "Generative AI",
       "Google Cloud",
       "Vertex AI"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-atyrau-presents-google-dev-fest-atyrau-2024/"
   },
   {
     "id": "devfest-sarajevo-2024",
@@ -393,7 +582,8 @@
       "GKE",
       "Kubernetes",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-cloud-sarajevo-presents-2nd-google-devfest-sarajevo-2024/"
   },
   {
     "id": "gdg-on-campus-gtu-2024",
@@ -407,7 +597,8 @@
       "Google Cloud",
       "Infrastructure",
       "Cloud Computing"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-on-campus-gebze-technical-university-kocaeli-turkiye-presents-introduction-to-google-cloud-infrastructure/"
   },
   {
     "id": "build-with-ai-hackathon-caucasus-2024",
@@ -422,7 +613,8 @@
       "Build with AI",
       "Google Cloud",
       "Sustainability"
-    ]
+    ],
+    "eventUrl": "https://hackathon.strategeast.org/"
   },
   {
     "id": "io-extended-baku-2024",
@@ -437,7 +629,8 @@
       "GKE",
       "Kubernetes",
       "Platform Engineering"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-baku-presents-google-io-extended-2024-baku/"
   },
   {
     "id": "io-extended-pavlodar-2024",
@@ -452,7 +645,8 @@
       "AI/ML",
       "Kubernetes",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-pavlodar-presents-google-io-pavlodar-2024/"
   },
   {
     "id": "io-extended-almaty-stream-2024",
@@ -466,7 +660,8 @@
       "Google Cloud",
       "AI",
       "Cloud Architecture"
-    ]
+    ],
+    "recordingUrl": "https://www.youtube.com/watch?v=RphNgs9NzMs&t"
   },
   {
     "id": "io-extended-almaty-2024",
@@ -481,7 +676,8 @@
       "AI/ML",
       "Platform Engineering",
       "Kubernetes"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-cloud-almaty-presents-google-io-extended-2024-almaty/"
   },
   {
     "id": "hi-tech-summit-iku-2024",
@@ -495,7 +691,8 @@
       "Cloud Engineering",
       "DevOps",
       "Kubernetes"
-    ]
+    ],
+    "linkedinUrl": "https://www.linkedin.com/posts/ikuasimov_hitech-activity-7192915763609907201-Eeuz?utm_source=share&utm_medium=member_desktop"
   },
   {
     "id": "career-paths-cloud-engineering-2024",
@@ -509,7 +706,8 @@
       "Career",
       "Cloud Engineering",
       "DevOps"
-    ]
+    ],
+    "linkedinUrl": "https://www.linkedin.com/posts/cengaorg_herkese-merhaba-cenga-olarak-yeni-bir-etkinlikle-activity-7191004613297192960-RXAN?utm_source=share&utm_medium=member_desktop"
   },
   {
     "id": "gdsc-tarsus-gcp-intro-2024",
@@ -523,7 +721,42 @@
       "Google Cloud",
       "Infrastructure",
       "Cloud Computing"
-    ]
+    ],
+    "eventUrl": "https://gdsc.community.dev/events/details/developer-student-clubs-tarsus-university-presents-introduction-to-google-cloud-infrastructure/"
+  },
+  {
+    "id": "gdsc-samsun-serverless-2024",
+    "date": "2024-03-23",
+    "event": "GDSC Samsun University",
+    "city": "Online",
+    "talk": "Serverless Computing with Google Cloud Workshop",
+    "photos": [],
+    "description": "Hands-on serverless computing workshop with GDSC Samsun University covering Cloud Run, App Engine, Cloud Functions, Google Kubernetes Engine, Pub/Sub, and Cloud Firestore.",
+    "topics": [
+      "Serverless",
+      "Cloud Run",
+      "App Engine",
+      "Cloud Functions",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdsc.community.dev/events/details/developer-student-clubs-samsun-university-presents-serverless-computing-with-google-cloud/"
+  },
+  {
+    "id": "gdsc-hasan-kalyoncu-cloud-workshop-2023",
+    "date": "2023-12-29",
+    "event": "GDSC Hasan Kalyoncu University",
+    "city": "Online",
+    "talk": "Google Cloud Platform, Kubernetes, and BigQuery Cloud Workshop",
+    "photos": [],
+    "description": "Hands-on cloud workshop with GDSC Hasan Kalyoncu University covering:\n\n- Google Cloud Platform (GCP): Core concepts and benefits of Google Cloud.\n- Firebase: Capabilities for accelerating application development.\n- Kubernetes: Container orchestration and application management.\n- BigQuery: Key concepts and practical applications for big data analytics.",
+    "topics": [
+      "Google Cloud",
+      "Kubernetes",
+      "Cloud Run",
+      "BigQuery",
+      "Cloud Functions"
+    ],
+    "eventUrl": "https://gdsc.community.dev/events/details/developer-student-clubs-hasan-kalyoncu-university-presents-cloud-workshop/"
   },
   {
     "id": "duzce-university-google-cloud-2023",
@@ -537,7 +770,8 @@
       "Google Cloud",
       "Cloud Architecture",
       "DevOps"
-    ]
+    ],
+    "linkedinUrl": "https://www.linkedin.com/posts/google-dsc-duzce-university-926229220_ge%C3%A7ti%C4%9Fimiz-g%C3%BCnlerde-google-dsc-duzce-university-activity-7146470741079752704-YQj4?utm_source=share&utm_medium=member_desktop"
   },
   {
     "id": "study-jam-piri-reis-2023",
@@ -551,7 +785,8 @@
       "Google Cloud",
       "Study Jam",
       "Cloud Computing"
-    ]
+    ],
+    "eventUrl": "https://gdsc.community.dev/events/details/developer-student-clubs-piri-reis-university-presents-google-cloud-study-jam/"
   },
   {
     "id": "serverless-app-dev-iauv-2023",
@@ -565,7 +800,8 @@
       "Serverless",
       "Cloud Run",
       "Google Cloud"
-    ]
+    ],
+    "linkedinUrl": "https://www.linkedin.com/posts/gdsc-iau_cloudhorizon-exploring-google-technospace-activity-7139320124016156672-ajDk/"
   },
   {
     "id": "gke-best-practices-bursa-2023",
@@ -580,7 +816,8 @@
       "GKE",
       "Best Practices",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-bursa-presents-devfest23-bursa/"
   },
   {
     "id": "devfest-sarajevo-2023",
@@ -595,7 +832,8 @@
       "GKE Enterprise",
       "Multi-Cluster",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-cloud-sarajevo-presents-devfest-sarajevo-2023/"
   },
   {
     "id": "president-tech-award-tashkent-2023",
@@ -609,7 +847,8 @@
       "Cloud Architecture",
       "Scaling",
       "Google Cloud"
-    ]
+    ],
+    "recordingUrl": "https://www.youtube.com/live/AuzxRNH1ONg?si=84efVjgsqy6HJkdN"
   },
   {
     "id": "devfest-ulaanbaatar-2023",
@@ -623,7 +862,8 @@
       "Kubernetes",
       "GKE Enterprise",
       "Hybrid Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-ulaanbaatar-presents-devfest-2023-ulaanbaatar/"
   },
   {
     "id": "community-safety-panel-ulaanbaatar-2023",
@@ -637,7 +877,8 @@
       "Panel",
       "Community",
       "Digital Safety"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-ulaanbaatar-presents-devfest-2023-ulaanbaatar/"
   },
   {
     "id": "devfest-kocaeli-2023",
@@ -651,7 +892,8 @@
       "Kubernetes",
       "GKE Enterprise",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-kocaeli-presents-devfest-kocaeli/"
   },
   {
     "id": "devfest-astana-2023",
@@ -665,7 +907,8 @@
       "Kubernetes",
       "GKE Autopilot",
       "Cloud Operations"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-nur-sultan-astana-presents-devfest-astana-2023/"
   },
   {
     "id": "digital-bridge-astana-2023",
@@ -680,7 +923,8 @@
       "AI Trends",
       "Innovation",
       "Google Cloud"
-    ]
+    ],
+    "eventUrl": "https://digitalbridge.kz/programs.html?lang=EN"
   },
   {
     "id": "kubernetes-scheduling-istanbul-2023",
@@ -694,7 +938,8 @@
       "Kubernetes",
       "Scheduling",
       "Cloud Native"
-    ]
+    ],
+    "eventUrl": "https://community.cncf.io/events/details/cncf-kcd-turkey-presents-kcd-istanbul-2023/"
   },
   {
     "id": "serverless-cloud-run-knative-2023",
@@ -709,6 +954,58 @@
       "Cloud Run",
       "Knative",
       "Containers"
-    ]
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-cloud-istanbul-presents-google-cloud-cloud-community-event-12-haziran/"
+  },
+  {
+    "id": "gdsc-bandirma-architecting-gcp-2023",
+    "date": "2023-05-30",
+    "event": "GDSC Bandırma Onyedi Eylül University",
+    "city": "Online",
+    "talk": "Architecting with Google Cloud Platform Workshop",
+    "photos": [],
+    "description": "After examining the historical evolution, conceptual background, and technical architecture of virtualization and cloud technologies, we explored in detail what can be built with compute services on Google Cloud Platform.",
+    "topics": [
+      "Google Cloud",
+      "Cloud Architecture",
+      "Compute Engine",
+      "App Engine",
+      "Cloud Functions"
+    ],
+    "eventUrl": "https://gdsc.community.dev/events/details/developer-student-clubs-bandirma-onyedi-eylul-university-presents-architecting-with-google-cloud-platform/"
+  },
+  {
+    "id": "google-tech-days-serverless-2023",
+    "date": "2023-05-27",
+    "event": "Google Tech Days",
+    "city": "Online",
+    "talk": "Serverless Development with Google Cloud Workshop",
+    "photos": [],
+    "description": "Comparative overview of Google Cloud service categories and serverless service models in software development, discussing their advantages and trade-offs.\n\nConcluded with a live App Engine demo covering traffic splitting and version management in practice.",
+    "topics": [
+      "Serverless",
+      "App Engine",
+      "Cloud Run",
+      "Cloud Functions",
+      "Google Cloud"
+    ],
+    "recordingUrl": "https://www.youtube.com/live/gxJpTfC1SGY?feature=share"
+  },
+  {
+    "id": "gdsc-iauv-managing-apps-gcp-2023",
+    "date": "2023-05-18",
+    "event": "GDSC İstanbul Aydın University",
+    "city": "Online",
+    "talk": "Managing Applications on Google Cloud Workshop",
+    "photos": [],
+    "description": "In-depth exploration of the application development lifecycle on Google Cloud, emphasizing serverless deployment across App Engine, Cloud Run, Google Kubernetes Engine (GKE), and Cloud Functions.\n\nCovered auto-scaling, load balancing, container orchestration, and event-driven serverless architectures, followed by a hands-on workshop demonstrating application deployment and management on App Engine.",
+    "topics": [
+      "Google Cloud",
+      "App Engine",
+      "Cloud Run",
+      "GKE",
+      "Serverless"
+    ],
+    "eventUrl": "https://gdsc.community.dev/events/details/developer-student-clubs-istanbul-aydin-university-presents-managing-applications-on-google-cloud/"
   }
 ]

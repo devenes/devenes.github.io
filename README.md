@@ -10,7 +10,7 @@ Live site: [https://devenes.github.io](https://devenes.github.io)
 
 The website combines an interactive 3D WebGL Earth globe with a structured multi-mode discovery deck, synchronized from a single authoritative data source ([`data/events.json`](data/events.json) and [`data/locations.json`](data/locations.json)):
 
-1. **Interactive 3D Earth Globe (`Three.js`)**: Plots 26 verified physical speaking destinations across 12 countries using spherical latitude/longitude conversion, great-circle geodesic flight arcs (`Slerp`), custom atmospheric Fresnel shaders, Natural Earth 110m vector coastlines ([`data/land.json`](data/land.json)), and occlusion-aware 2D city markers.
+1. **Interactive 3D Earth Globe (`Three.js`)**: Plots 29 verified physical speaking destinations across 13 countries using spherical latitude/longitude conversion, great-circle geodesic flight arcs (`Slerp`), custom atmospheric Fresnel shaders, Natural Earth 110m vector coastlines ([`data/land.json`](data/land.json)), and occlusion-aware 2D city markers.
 2. **4-Mode Discovery Deck**:
    - **Globe View**: Prominent speaking hubs, full destination selector, and a tabbed city inspector (**Talks**, **Photos**, **About**).
    - **Regions View**: Geographic distribution across **Türkiye**, **Central Asia**, **Middle East & North Africa**, **Europe, Balkans & Caucasus**, and **Online & Global Broadcasts**.
@@ -31,8 +31,8 @@ The website combines an interactive 3D WebGL Earth globe with a structured multi
 ├── README.md                       # Site documentation & maintenance guide
 │
 ├── data/
-│   ├── events.json                 # Authoritative speaking event database (48 talks)
-│   ├── locations.json              # Verified city coordinates, country codes & regional notes (26 physical cities)
+│   ├── events.json                 # Authoritative speaking event database (63 talks)
+│   ├── locations.json              # Verified city coordinates, country codes & regional notes (29 physical cities)
 │   └── land.json                   # Public-domain Natural Earth 110m vector land geometry
 │
 ├── assets/

@@ -97,6 +97,18 @@
     "lon": 36.33
   },
   {
+    "id": "gaziantep-tr",
+    "cityKey": "Gaziantep, Türkiye",
+    "city": "Gaziantep",
+    "country": "Türkiye",
+    "countryCode": "TR",
+    "flag": "🇹🇷",
+    "regionId": "turkiye",
+    "regionName": "Türkiye",
+    "lat": 37.0662,
+    "lon": 37.3833
+  },
+  {
     "id": "almaty-kz",
     "cityKey": "Almaty, Kazakhstan",
     "city": "Almaty",
@@ -243,6 +255,18 @@
     "note": "Satellite city in Greater Cairo metropolitan area, Giza Governorate"
   },
   {
+    "id": "alexandria-eg",
+    "cityKey": "Alexandria, Egypt",
+    "city": "Alexandria",
+    "country": "Egypt",
+    "countryCode": "EG",
+    "flag": "🇪🇬",
+    "regionId": "mena",
+    "regionName": "Middle East & North Africa",
+    "lat": 31.2001,
+    "lon": 29.9187
+  },
+  {
     "id": "sousse-tn",
     "cityKey": "Sousse, Tunisia",
     "city": "Sousse",
@@ -277,6 +301,18 @@
     "regionName": "Middle East & North Africa",
     "lat": 30.4278,
     "lon": -9.5981
+  },
+  {
+    "id": "beirut-lb",
+    "cityKey": "Beirut, Lebanon",
+    "city": "Beirut",
+    "country": "Lebanon",
+    "countryCode": "LB",
+    "flag": "🇱🇧",
+    "regionId": "mena",
+    "regionName": "Middle East & North Africa",
+    "lat": 33.8938,
+    "lon": 35.5018
   },
   {
     "id": "pristina-xk",
