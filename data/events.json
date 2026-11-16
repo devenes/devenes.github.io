@@ -57,7 +57,7 @@
     "city": "Taldykorgan, Kazakhstan",
     "talk": "Orchestrating Intelligence Behind the Scenes",
     "photos": [],
-    "description": "As part of the Jetisu Digital Forum 2026 DevFest, held in Taldykorgan, Kazakhstan, the session “Orchestrating Intelligence Behind the Scenes” explored the engineering and infrastructure that powered high-scale AI and machine learning workloads on Google Kubernetes Engine (GKE). The talk took a closer look at how intelligent workload orchestration and autoscaling worked behind the scenes, bringing together GPUs, TPUs, networking, compute resources, and inference systems to support demanding AI applications. It shed light on the complex interplay between Kubernetes, accelerated computing, and cloud infrastructure, revealing how these components worked together to deliver scalable, efficient, and reliable AI-powered solutions.",
+    "description": "Delivered at Jetisu Digital Forum DevFest Taldykorgan 2026, this session explored the systems engineering powering high-scale AI and machine learning workloads on Google Kubernetes Engine (GKE).\n\nThe talk examined intelligent workload orchestration and autoscaling across GPUs and TPUs, high-throughput networking, and LLM inference stacks (including Gemini, Gemma, and vLLM), showing how Kubernetes and accelerated cloud infrastructure combine to deliver scalable, cost-efficient AI platforms.",
     "topics": [
       "Kubernetes",
       "GKE",
@@ -108,7 +108,7 @@
     "city": "Dubai, UAE",
     "talk": "Kubernetes for AI",
     "photos": [],
-    "description": "Architecting and managing scalable Kubernetes infrastructure and GKE clusters for artificial intelligence and machine learning workloads.",
+    "description": "Architecting and scaling Kubernetes infrastructure on Google Kubernetes Engine (GKE) for modern AI agents and large-scale model inference workloads.\n\nCovers isolated agent execution with Agent Sandbox, hardware-aware GPU/TPU scheduling via Dynamic Resource Allocation (DRA), fast pod startup, and intelligent LLM traffic routing with GKE Inference Gateway and vLLM.",
     "topics": [
       "Kubernetes",
       "AI",
@@ -124,7 +124,7 @@
     "city": "Alexandria, Egypt",
     "talk": "Building Google Agent Development Kit Agents Workshop",
     "photos": [],
-    "description": "Hands-on workshop at Build with AI Alexandria exploring how to design and build intelligent AI agents using Google Agent Development Kit (ADK), Google AI Studio, and Gemini models.\n\nParticipants worked through practical agent development workflows, tool integrations, and real-world patterns for building AI-powered applications on Google Cloud.",
+    "description": "Hands-on developer workshop at Build with AI Alexandria focused on designing, testing, and shipping intelligent AI agents using Google's open-source Agent Development Kit (ADK), Google AI Studio, and Gemini models.\n\nParticipants scaffolded Python agent projects, practiced structured system instructions and tool calling, inspected multi-turn execution traces locally, and deployed containerized agent endpoints to Google Cloud.",
     "topics": [
       "AI Agents",
       "Google ADK",
@@ -141,7 +141,7 @@
     "city": "Cairo, Egypt",
     "talk": "From Cloud to Code: Navigating Google’s 2026 AI and Platform Innovations",
     "photos": [],
-    "description": "Keynote exploring Google Cloud's latest AI advancements, developer experience enhancements, and cloud platform innovations.",
+    "description": "Keynote synthesizing the highest-impact engineering releases from Google Cloud Next and Google I/O into practical architecture guidance for software and platform teams.\n\nUnpacks Gemini and open Gemma model advancements, standardized agent interoperability via Model Context Protocol (MCP), Google Agent Development Kit (ADK), AI Studio developer workflows, and GKE platform upgrades.",
     "topics": [
       "Google Cloud",
       "AI",
@@ -157,7 +157,7 @@
     "city": "Pristina, Kosovo",
     "talk": "Build with AI: Architecting Intelligent Systems",
     "photos": [],
-    "description": "Opening keynote and technical architecture mentoring for participants building intelligent applications with Google AI.",
+    "description": "Opening keynote and hands-on technical architecture mentoring at the two-day hybrid Build with AI Prishtina Hackathon hosted at Gjirafa.\n\nGuided developers, students, and startup teams on designing tool-using AI agents with Google ADK, integrating Gemini APIs cleanly, and shipping working cloud prototypes for the final demo showcase.",
     "topics": [
       "Build with AI",
       "AI Agents",
@@ -173,7 +173,7 @@
     "city": "Pristina, Kosovo",
     "talk": "Building Google Agent Development Kit Agents with Skills and Tools Workshop",
     "photos": [],
-    "description": "A hands-on workshop focused on the practical application of Google's Agent Development Kit (ADK) for building intelligent agents, emphasizing the use of skills and tools to enhance agent capabilities and performance.",
+    "description": "Hands-on engineering workshop dedicated to building production-ready AI agents with Google's Agent Development Kit (ADK) in Python.\n\nParticipants practiced modular skill loading, deterministic tool functions, Model Context Protocol (MCP) server integrations, and local trace debugging to improve multi-step agent reliability and capability.",
     "topics": [
       "AI Agents",
       "Google ADK",
@@ -189,7 +189,7 @@
     "city": "Monastir, Tunisia",
     "talk": "Build With AI Workshop: Google ADK, Skills, and MCP",
     "photos": [],
-    "description": "A hands-on AI workshop focused on building Google Agent Development Kit (ADK) agents with skills, tools, and Model Context Protocol (MCP).\n\nParticipants built AI agents step by step, worked with Google Cloud tools and Gemini models, and gained practical skills through a guided real-world project.",
+    "description": "Step-by-step hands-on Build with AI workshop centered on constructing modular AI agents using Google Agent Development Kit (ADK), reusable skills, and Model Context Protocol (MCP) tool servers such as Google Maps Platform.\n\nAttendees worked with Gemini and open Gemma models, Gemini CLI, and Google AI Studio to build a complete agent project and deploy it to Google Cloud.",
     "topics": [
       "AI Agents",
       "Google ADK",
@@ -206,7 +206,7 @@
     "city": "Istanbul, Türkiye",
     "talk": "SRE at Global Scale at Google",
     "photos": [],
-    "description": "Site Reliability Engineering principles, production resilience patterns, and operational practices running systems at Google scale.",
+    "description": "Technical talk on Site Reliability Engineering (SRE) practices for operating resilient, low-latency distributed systems at global scale on Google Cloud.\n\nExplores actionable SLIs, SLOs, and error budgets, multi-region fault tolerance, observability across infrastructure and application layers, and security-conscious operational automation.",
     "topics": [
       "SRE",
       "Reliability",
@@ -222,7 +222,7 @@
     "city": "Taldykorgan, Kazakhstan",
     "talk": "Running AI Agents on Google Cloud with Google ADK Workshop",
     "photos": [],
-    "description": "In this hands-on workshop, participants explored how AI agents are designed, built, and deployed using modern tools and frameworks.\n\nAttendees worked through practical exercises developing intelligent agents with Google ADK, integrating essential tools, and deploying scalable AI-driven solutions to Google Cloud.",
+    "description": "Hands-on workshop covering the full lifecycle of designing, building, and running autonomous AI agents on Google Cloud using Google Agent Development Kit (ADK) and Gemini LLMs.\n\nParticipants implemented tool-augmented agents in practical lab exercises, wired external APIs, containerized the services, and deployed scalable serverless endpoints to Cloud Run.",
     "topics": [
       "AI Agents",
       "Google ADK",
@@ -239,7 +239,7 @@
     "city": "Bursa, Türkiye",
     "talk": "Building Intelligent Agents and ADK",
     "photos": [],
-    "description": "Designing and deploying production-ready autonomous agents using the Google Agent Development Kit (ADK).",
+    "description": "Conference session at DevFest Bursa exploring how to design, structure, and deploy production-ready autonomous agents using Google's open-source Agent Development Kit (ADK) and Gemini models.\n\nCovers agentic reasoning loops, tool orchestration, context and memory management, and architectural patterns for running reliable ADK services on Google Cloud.",
     "topics": [
       "AI Agents",
       "ADK",
@@ -255,7 +255,7 @@
     "city": "Denizli, Türkiye",
     "talk": "AI Agents and ADK",
     "photos": [],
-    "description": "Exploring agentic workflows, memory structures, tool calling, and integration using Agent Development Kit.",
+    "description": "Technical talk unpacking agentic AI workflows with Google Agent Development Kit (ADK) and the Gemini platform.\n\nExamines short- and long-term memory structures, deterministic tool calling, multi-agent delegation, and evaluation guardrails for moving LLM applications from prototype to production.",
     "topics": [
       "AI Agents",
       "ADK",
@@ -271,7 +271,7 @@
     "city": "Almaty, Kazakhstan",
     "talk": "Building and Deploying AI Agents with Vertex AI",
     "photos": [],
-    "description": "End-to-end implementation of intelligent agent workflows deployed on Google Cloud Vertex AI infrastructure.",
+    "description": "End-to-end engineering walkthrough of building, evaluating, and deploying intelligent AI agents on Google Cloud Vertex AI.\n\nCovers Vertex AI Agent Engine, Google ADK integration, enterprise data grounding, tool-call observability, and best practices for operating scalable agent workloads in production.",
     "topics": [
       "Vertex AI",
       "AI Agents",
@@ -287,7 +287,7 @@
     "city": "Kashkadarya, Uzbekistan",
     "talk": "AI Agents and Vertex AI",
     "photos": [],
-    "description": "Leveraging Google Cloud Vertex AI and foundation models to build robust, multi-step intelligent agents.",
+    "description": "Technical session at DevFest Kashkadarya (GDG Karshi) on leveraging Google Cloud Vertex AI, Gemini models, and Google ADK to build reliable multi-step AI agents.\n\nDemonstrates how structured instructions, grounded knowledge sources, and typed tool integrations turn single-prompt prototypes into maintainable cloud-native applications.",
     "topics": [
       "AI Agents",
       "Vertex AI",
@@ -303,7 +303,7 @@
     "city": "Tashkent, Uzbekistan",
     "talk": "AI Agents and GKE",
     "photos": [],
-    "description": "Deploying, scaling, and managing containerized AI agents and inference pipelines on Google Kubernetes Engine.",
+    "description": "Technical talk during the Pre-DevFest Tashkent series focused on deploying, scaling, and operating containerized AI agents and inference pipelines on Google Kubernetes Engine (GKE).\n\nCovers Kubernetes pod isolation, accelerator-backed node pools, autoscaling bursty agent traffic, and connecting ADK services with managed Vertex AI and Gemini APIs.",
     "topics": [
       "AI Agents",
       "GKE",
@@ -319,7 +319,7 @@
     "city": "Sousse, Tunisia",
     "talk": "MLOps with GKE",
     "photos": [],
-    "description": "Streamlining ML lifecycle management, model training automation, and high-availability serving with GKE.",
+    "description": "Deep dive into building portable, vendor-neutral MLOps platforms on Google Kubernetes Engine (GKE).\n\nExplores reproducible training pipelines, multi-team GPU scheduling, CI/CD/CT model promotion, and high-availability model serving architectures for production machine learning teams.",
     "topics": [
       "MLOps",
       "GKE",
@@ -335,7 +335,7 @@
     "city": "Sarajevo, Bosnia and Herzegovina",
     "talk": "End-to-End AI Agent Architectures",
     "photos": [],
-    "description": "Architectural blueprints for resilient, enterprise-grade AI agent systems from prompt orchestration to cloud serving.",
+    "description": "Architectural blueprint for designing resilient, enterprise-grade AI agent systems on Google Cloud and Vertex AI.\n\nTraces the full stack from prompt orchestration, RAG grounding, and ADK tool boundaries through containerized serving, observability, and cost/latency guardrails on Cloud Run and GKE.",
     "topics": [
       "AI Agents",
       "Architecture",
@@ -351,7 +351,7 @@
     "city": "Beirut, Lebanon",
     "talk": "Developing Generative AI Applications with Vertex AI Workshop",
     "photos": [],
-    "description": "This workshop introduced participants to the end-to-end process of developing Generative AI applications using Google Cloud Vertex AI.\n\nIt focused on leveraging multimodal models, Gemini, Gemma, and agent workflows to create intelligent, production-ready AI solutions through conceptual sessions and hands-on labs.",
+    "description": "Hands-on workshop introducing the end-to-end lifecycle of developing Generative AI applications with Google Cloud Vertex AI.\n\nCombined conceptual sessions and guided labs using multimodal Gemini models, open Gemma models, and agent workflows to customize, evaluate, and deploy production-ready AI applications.",
     "topics": [
       "Generative AI",
       "Vertex AI",
@@ -368,7 +368,7 @@
     "city": "Kastamonu, Türkiye",
     "talk": "Building AI Agents",
     "photos": [],
-    "description": "Core concepts and architectural patterns for creating intelligent agents with Gemini and modern AI toolkits.",
+    "description": "Conference talk introducing core concepts and engineering patterns for building intelligent AI agents with Gemini, Google ADK, and Vertex AI.\n\nWalks through tool calling, grounding with external APIs, serverless container deployment, and practical ways to avoid common agent failure modes in production.",
     "topics": [
       "AI Agents",
       "Google Cloud",
@@ -383,7 +383,7 @@
     "city": "Taldykorgan, Kazakhstan",
     "talk": "AI Keynote: The Next Frontier of Generative AI",
     "photos": [],
-    "description": "Conference opening keynote covering emerging AI paradigms, agentic systems, and developer platform evolution.",
+    "description": "Opening AI keynote at DevFest Taldykorgan (organized with Jetisu Digital IT Hub) examining the next frontier of generative and agentic AI on Google Cloud.\n\nExplored the Vertex AI ecosystem in depth—including Model Garden, Agent Garden, and the Vertex AI Agent Landscape—showing how unified foundation models, tooling, and managed runtimes accelerate production AI delivery.",
     "topics": [
       "Keynote",
       "AI",
@@ -399,7 +399,7 @@
     "city": "Bishkek, Kyrgyzstan",
     "talk": "MLOps with Google Kubernetes Engine",
     "photos": [],
-    "description": "Operationalizing machine learning workflows and deploying scalable inference endpoints on Google Kubernetes Engine.",
+    "description": "Technical session on operationalizing end-to-end machine learning workflows and scalable model inference on Google Kubernetes Engine (GKE).\n\nCovers TensorFlow and open-model serving, GPU and TPU node pool management, cluster observability, security hardening, and autoscaling strategies for ML workloads.",
     "topics": [
       "MLOps",
       "GKE",
@@ -415,7 +415,7 @@
     "city": "Cairo, Egypt",
     "talk": "MLOps with Google Kubernetes Engine",
     "photos": [],
-    "description": "Best practices for production MLOps, GPU scheduling, and model serving architectures on GKE.",
+    "description": "Technical talk at AI Day in Egypt examining production MLOps architectures on Google Kubernetes Engine (GKE).\n\nHighlights multi-tenant GPU and TPU scheduling, workload queuing, container image streaming for faster cold starts, and high-throughput model serving patterns.",
     "topics": [
       "MLOps",
       "GKE",
@@ -431,7 +431,7 @@
     "city": "Cairo, Egypt",
     "talk": "Building Multi-Model Gen AI Apps on Google Cloud Workshop",
     "photos": [],
-    "description": "Hands-on workshop at AI Day in Egypt hosted by GDG Cairo, focused on building multi-model generative AI applications using Google's AI technologies, Generative AI models, and Google Cloud Platform.",
+    "description": "Hands-on workshop at AI Day in Egypt hosted by GDG Cairo, guiding builders through creating multi-model generative AI applications on Google Cloud.\n\nParticipants worked with Gemini models, Gemini CLI, and Google Agent Development Kit (ADK) patterns to combine multimodal reasoning, tool execution, and cloud-hosted endpoints.",
     "topics": [
       "Generative AI",
       "Gemini",
@@ -447,7 +447,7 @@
     "city": "Pristina, Kosovo",
     "talk": "Panel Discussion and Q&A",
     "photos": [],
-    "description": "Interactive panel discussion and audience Q&A tackling generative AI adoption, engineering hurdles, and developer tools.",
+    "description": "Opening panel discussion and live audience Q&A at Build With AI Kosovo 2025 in Pristina.\n\nDiscussed practical generative AI adoption, open-source vs. managed Google Cloud and Firebase AI tooling, production reliability challenges, and how local developer communities can build with modern AI stacks.",
     "topics": [
       "Panel",
       "AI",
@@ -463,7 +463,7 @@
     "city": "Pristina, Kosovo",
     "talk": "Building Scalable Generative AI Apps Workshop",
     "photos": [],
-    "description": "In this hands-on workshop, we explored how to build and deploy scalable generative AI applications using Google Cloud Run and Gemini models.\n\nParticipants learned to use Gemini APIs for text generation, summarization, and conversational interfaces, built cloud-native applications on serverless Cloud Run infrastructure, managed API requests securely, and applied prompt engineering and evaluation best practices.",
+    "description": "Hands-on workshop on building and deploying scalable generative AI applications with Gemini models and Google Cloud Run.\n\nParticipants implemented Gemini APIs for text generation, summarization, and chat interfaces, applied prompt engineering and evaluation practices, secured API access, and shipped autoscaling serverless containers to Cloud Run.",
     "topics": [
       "Generative AI",
       "Gemini",
@@ -480,7 +480,7 @@
     "city": "Konya, Türkiye",
     "talk": "Google Cloud Solutions Keynote",
     "photos": [],
-    "description": "Keynote presentation detailing Google Cloud architectural solutions, enterprise scalability, and cloud engineering careers.",
+    "description": "Keynote presentation at Selçuk University Tech Summit exploring Google Cloud architectural solutions, digital transformation patterns, and cloud engineering careers.\n\nCovered compute, serverless containers, managed databases, data storage, Gemini AI integration, and proven strategies for scaling applications reliably.",
     "topics": [
       "Google Cloud",
       "Keynote",
@@ -495,7 +495,7 @@
     "city": "Gaziantep, Türkiye",
     "talk": "Building Scalable Generative AI Apps with Cloud Run and Gemini API on Vertex AI Workshop",
     "photos": [],
-    "description": "Practical, hands-on session guiding developers, data scientists, and cloud engineers through building and deploying a generative AI web application using Gemini API on Vertex AI, Docker, and Google Cloud Run.\n\nParticipants integrated Gemini Pro and Gemini Flash models into a Python and Streamlit application, containerized the service with Docker, and deployed it to Cloud Run for serverless scalability.",
+    "description": "Hands-on CodeBrew workshop guiding developers, data scientists, and cloud engineers through building and shipping a multimodal generative AI web application from scratch.\n\nParticipants integrated Gemini Pro and Gemini Flash via the Vertex AI Gemini API into a Python and Streamlit frontend, packaged the app with Docker, and deployed it to Google Cloud Run for scale-to-zero serverless hosting.",
     "topics": [
       "Generative AI",
       "Gemini",
@@ -512,7 +512,7 @@
     "city": "Agadir, Morocco",
     "talk": "Deploying High-Scale AI/ML Workloads on Google Kubernetes Engine",
     "photos": [],
-    "description": "Strategies for running, autoscaling, and optimizing resource utilization for large-scale AI/ML workloads on GKE.",
+    "description": "Technical talk at DigiFest Agadir addressing the systems challenges of running high-scale AI/ML training and inference workloads on Google Kubernetes Engine (GKE).\n\nCovered distributed training setup, GPU and TPU resource allocation, dataset throughput, minimizing container startup bottlenecks, and autoscaling production AI services.",
     "topics": [
       "Kubernetes",
       "GKE",
@@ -528,7 +528,7 @@
     "city": "Agadir, Morocco",
     "talk": "Seamless ML Model Deployments with TensorFlow on Google Kubernetes Engine Workshop",
     "photos": [],
-    "description": "In this hands-on workshop, attendees gained practical experience deploying TensorFlow models using TensorFlow Serving on Google Kubernetes Engine (GKE) for scalable and reliable inference workflows.\n\nParticipants also learned how to leverage Cloud Service Mesh to manage microservices, improve deployment reliability, and streamline safe traffic transitions between model versions.",
+    "description": "Hands-on MLOps workshop focused on deploying TensorFlow models reliably on Google Kubernetes Engine (GKE) using TensorFlow Serving and Cloud Service Mesh (managed Istio).\n\nParticipants configured progressive canary traffic splitting, monitored revision telemetry, and practiced zero-downtime rollouts and instant rollbacks between model versions.",
     "topics": [
       "MLOps",
       "TensorFlow",
@@ -545,7 +545,7 @@
     "city": "6th of October City, Egypt",
     "talk": "Working with High-Scale AI/ML Workloads on Google Kubernetes Engine",
     "photos": [],
-    "description": "Deep dive into orchestrating distributed AI/ML training and inference at scale using Google Kubernetes Engine.",
+    "description": "Deep dive into designing portable, flexible, and cost-efficient AI/ML platforms on Google Kubernetes Engine (GKE).\n\nExamines distributed training and inference architectures, GPU sharing and partitioning, fast model weight loading with Cloud Storage FUSE, and workload autoscaling at scale.",
     "topics": [
       "Kubernetes",
       "GKE",
@@ -561,7 +561,7 @@
     "city": "Online",
     "talk": "Generative AI with Google Cloud",
     "photos": [],
-    "description": "Harnessing Vertex AI and Google Cloud foundational models to build real-world generative AI applications.",
+    "description": "Virtual session at Google DevFest Atyrau 2024 exploring how to build practical generative AI applications with Google Cloud Vertex AI and Gemini models.\n\nCovered foundation model selection, prompt design, enterprise grounding patterns, and deploying scalable GenAI endpoints on Google Cloud.",
     "topics": [
       "Generative AI",
       "Google Cloud",
@@ -576,7 +576,7 @@
     "city": "Sarajevo, Bosnia and Herzegovina",
     "talk": "MLOps with GKE",
     "photos": [],
-    "description": "Building continuous delivery pipelines for machine learning models using Google Kubernetes Engine and cloud-native tools.",
+    "description": "Conference talk at the 2nd Google DevFest Sarajevo detailing continuous delivery (CI/CD/CT) pipelines for machine learning models on Google Kubernetes Engine (GKE).\n\nDemonstrates automated model containerization, validation gates, artifact lineage, and cloud-native observability for reliable ML operations.",
     "topics": [
       "MLOps",
       "GKE",
@@ -592,7 +592,7 @@
     "city": "Online",
     "talk": "Introduction to Google Cloud Infrastructure",
     "photos": [],
-    "description": "Fundamental overview of Google Cloud core services, computing options, networking, and security primitives.",
+    "description": "Foundational cloud infrastructure session for GDG On Campus Gebze Technical University covering Google Cloud's core compute, storage, networking, and security building blocks.\n\nCompared Compute Engine, GKE, Cloud Run, App Engine, and Cloud Functions alongside Cloud Firestore, VPC networking, and IAM least-privilege fundamentals.",
     "topics": [
       "Google Cloud",
       "Infrastructure",
@@ -607,7 +607,7 @@
     "city": "Online",
     "talk": "Google Cloud Keynote: Build With AI for Sustainable Growth",
     "photos": [],
-    "description": "Keynote address inspiring hackathon builders across Caucasus and Central Asia to architect sustainable AI platforms.",
+    "description": "Opening keynote for the Strategeast Build With AI for Sustainable Growth Hackathon across Central Asia and the Caucasus.\n\nChallenged hackathon builders to harness Gemini models and scalable Google Cloud architectures to tackle environmental sustainability and regional climate challenges.",
     "topics": [
       "Keynote",
       "Build with AI",
@@ -623,7 +623,7 @@
     "city": "Baku, Azerbaijan",
     "talk": "AI/ML Platforms with Google Kubernetes Engine",
     "photos": [],
-    "description": "Architecting developer platforms on top of GKE tailored for high-demand AI and machine learning workloads.",
+    "description": "Technical session at Google I/O Extended 2024 Baku on architecting developer-ready AI/ML platforms with Google Kubernetes Engine (GKE).\n\nExplored TPU and GPU cluster orchestration, integrating Google AI Studio and Gemini into cloud-native workflows, and scaling inference workloads reliably.",
     "topics": [
       "AI/ML",
       "GKE",
@@ -639,7 +639,7 @@
     "city": "Pavlodar, Kazakhstan",
     "talk": "AI/ML with GKE",
     "photos": [],
-    "description": "Practical patterns for deploying, autoscaling, and operating machine learning workloads on Google Kubernetes Engine.",
+    "description": "Session at Google I/O Extended Pavlodar focused on building, adapting, and serving AI/ML models on Google Kubernetes Engine (GKE).\n\nShared practical resource-optimization techniques across GPUs and TPUs, node auto-provisioning, and autoscaling to achieve strong price-performance in production.",
     "topics": [
       "GKE",
       "AI/ML",
@@ -655,7 +655,7 @@
     "city": "Online",
     "talk": "Google Cloud & AI Platform Innovations",
     "photos": [],
-    "description": "Live-streamed broadcast sharing Google Cloud developer announcements, AI updates, and cloud engineering tips.",
+    "description": "Live-streamed YouTube session alongside Google I/O Extended 2024 Almaty sharing Google Cloud developer updates and AI platform innovations.\n\nHighlighted Gemini capabilities, rapid prototyping with Google AI Studio, and cloud-native engineering practices for modern application teams.",
     "topics": [
       "Google Cloud",
       "AI",
@@ -670,7 +670,7 @@
     "city": "Almaty, Kazakhstan",
     "talk": "AI/ML Platform on Google Kubernetes Engine",
     "photos": [],
-    "description": "Designing and maintaining enterprise AI/ML platforms using Google Kubernetes Engine and cloud-native practices.",
+    "description": "In-person talk at Google I/O Extended 2024 Almaty examining how Google Kubernetes Engine (GKE) streamlines enterprise AI/ML deployment and platform operations.\n\nCovered TPU-accelerated workloads, multi-tenant cluster isolation, workload autoscaling, and cost-effective infrastructure patterns for ML teams.",
     "topics": [
       "GKE",
       "AI/ML",
@@ -686,7 +686,7 @@
     "city": "Istanbul, Türkiye",
     "talk": "Transforming Modern Software Delivery with Cloud & Kubernetes",
     "photos": [],
-    "description": "Campus tech summit keynote on the evolution of cloud platforms, developer experience, and Kubernetes adoption.",
+    "description": "Campus tech summit talk at Istanbul Kültür University's Hi-Tech Teknoloji Zirvesi on modernizing software delivery with Google Cloud and Kubernetes.\n\nDiscussed cloud security fundamentals, cloud-native ML engineering culture, Gemini-era developer productivity, and practical pathways into platform engineering.",
     "topics": [
       "Cloud Engineering",
       "DevOps",
@@ -701,7 +701,7 @@
     "city": "Online",
     "talk": "Exploring Career Paths in Cloud Engineering",
     "photos": [],
-    "description": "Guidance on technical skills, certifications, and career progression paths in cloud infrastructure and platform engineering.",
+    "description": "Community career session with CENGA breaking down specializations, daily responsibilities, and skill roadmaps across cloud and platform engineering.\n\nExplored hands-on paths across Google Cloud, Cloud Run, GKE, and App Engine alongside DevOps, SRE, and cloud architecture certifications.",
     "topics": [
       "Career",
       "Cloud Engineering",
@@ -716,7 +716,7 @@
     "city": "Online",
     "talk": "Introduction to Google Cloud Infrastructure",
     "photos": [],
-    "description": "Student developer workshop explaining cloud fundamentals, compute options, and hands-on Google Cloud practices.",
+    "description": "Virtual workshop for GDSC Tarsus University introducing cloud computing fundamentals and Google Cloud infrastructure services.\n\nCovered compute tiers, VPC networking and security basics, and guided hands-on exercises using Google Cloud Skills Boost labs.",
     "topics": [
       "Google Cloud",
       "Infrastructure",
@@ -731,7 +731,7 @@
     "city": "Online",
     "talk": "Serverless Computing with Google Cloud Workshop",
     "photos": [],
-    "description": "Hands-on serverless computing workshop with GDSC Samsun University covering Cloud Run, App Engine, Cloud Functions, Google Kubernetes Engine, Pub/Sub, and Cloud Firestore.",
+    "description": "Hands-on serverless computing workshop with GDSC Samsun University comparing event-driven and containerized execution models on Google Cloud.\n\nCovered Cloud Run, App Engine, Cloud Functions, GKE integration, Pub/Sub messaging, and Cloud Firestore through guided Google Cloud Skills Boost labs.",
     "topics": [
       "Serverless",
       "Cloud Run",
@@ -748,7 +748,7 @@
     "city": "Online",
     "talk": "Google Cloud Platform, Kubernetes, and BigQuery Cloud Workshop",
     "photos": [],
-    "description": "Hands-on cloud workshop with GDSC Hasan Kalyoncu University covering:\n\n- Google Cloud Platform (GCP): Core concepts and benefits of Google Cloud.\n- Firebase: Capabilities for accelerating application development.\n- Kubernetes: Container orchestration and application management.\n- BigQuery: Key concepts and practical applications for big data analytics.",
+    "description": "Hands-on cloud workshop with GDSC Hasan Kalyoncu University introducing core cloud-native services across compute, containers, and analytics:\n\n- Google Cloud Platform (GCP): Core infrastructure concepts, IAM, and managed services.\n- Firebase & Serverless: Accelerating app delivery with Cloud Run and Cloud Functions.\n- Kubernetes (GKE): Container orchestration, scaling, and application management.\n- BigQuery: Serverless data warehousing and practical large-scale analytics.",
     "topics": [
       "Google Cloud",
       "Kubernetes",
@@ -765,7 +765,7 @@
     "city": "Düzce, Türkiye",
     "talk": "Google Cloud Ecosystem & Modern Cloud Architecture",
     "photos": [],
-    "description": "University session introducing cloud computing paradigms, managed services, and Google Cloud platform capabilities.",
+    "description": "University session at Düzce University introducing modern cloud architecture, managed platform services, and developer workflows on Google Cloud.\n\nCombined architectural fundamentals with practical advice on cloud engineering roles, DevOps skills, and building portfolio projects.",
     "topics": [
       "Google Cloud",
       "Cloud Architecture",
@@ -780,7 +780,7 @@
     "city": "Istanbul, Türkiye",
     "talk": "Google Cloud Study Jam: Hands-On Fundamentals",
     "photos": [],
-    "description": "Interactive study jam guiding students through practical cloud labs, compute instances, and cloud security basics.",
+    "description": "Interactive Google Cloud Study Jam at Piri Reis University guiding students through foundational cloud engineering labs.\n\nCovered provisioning workloads across GKE, Cloud Run, and App Engine, along with cloud networking and security fundamentals.",
     "topics": [
       "Google Cloud",
       "Study Jam",
@@ -795,7 +795,7 @@
     "city": "Istanbul, Türkiye",
     "talk": "Serverless App Development with Google Cloud",
     "photos": [],
-    "description": "Modern serverless development workflows leveraging Google Cloud Run, Cloud Functions, and managed microservices.",
+    "description": "Technical session at GDSC İstanbul Aydın University on modern serverless application development with Google Cloud.\n\nDemonstrated containerized microservices on Cloud Run, managed PaaS deployments on App Engine, and how serverless services integrate with GKE clusters.",
     "topics": [
       "Serverless",
       "Cloud Run",
@@ -810,7 +810,7 @@
     "city": "Bursa, Türkiye",
     "talk": "Understanding Best Practices for Google Kubernetes Engine",
     "photos": [],
-    "description": "Production hardening, autoscaling strategies, cost optimization, and networking best practices for GKE clusters.",
+    "description": "Technical talk at GDG Bursa Tech Day on hardening, optimizing, and operating production Google Kubernetes Engine (GKE) clusters.\n\nCovered Shielded GKE Nodes, least-privilege IAM service accounts, GKE Dataplane V2 (eBPF) networking, container-native load balancing, autoscaling, and cost optimization.",
     "topics": [
       "Kubernetes",
       "GKE",
@@ -826,7 +826,7 @@
     "city": "Sarajevo, Bosnia and Herzegovina",
     "talk": "Best Practices for Google Kubernetes Engine with GKE Enterprise",
     "photos": [],
-    "description": "Fleet management, unified security policies, and multi-cluster Kubernetes operations powered by GKE Enterprise.",
+    "description": "Conference talk at DevFest Sarajevo 2023 exploring GKE Enterprise (Anthos) for unified multi-cluster and hybrid-cloud Kubernetes operations.\n\nCovered fleet management, multi-tenancy and security policy enforcement, cross-cluster networking, day-2 automation, and running AI workloads on enterprise GKE.",
     "topics": [
       "Kubernetes",
       "GKE Enterprise",
@@ -842,7 +842,7 @@
     "city": "Tashkent, Uzbekistan",
     "talk": "Google Cloud Architecture for Scaling Projects",
     "photos": [],
-    "description": "Architectural patterns and scaling methodologies on Google Cloud for high-growth tech ventures and startups.",
+    "description": "Keynote at the President Tech Award Finals (organized by Google and IT Park Uzbekistan) on cloud architectures built for high-growth startups.\n\nFocused on Google Kubernetes Engine (GKE) and GKE Autopilot for reducing operational overhead while scaling resiliently from early product launch to enterprise demand.",
     "topics": [
       "Cloud Architecture",
       "Scaling",
@@ -857,7 +857,7 @@
     "city": "Ulaanbaatar, Mongolia",
     "talk": "The Next Evolution of Kubernetes: GKE Enterprise",
     "photos": [],
-    "description": "Deep dive into GKE Enterprise features, multi-cloud cluster governance, and enterprise container platform patterns.",
+    "description": "Technical talk at DevFest 2023 Ulaanbaatar examining the evolution of Kubernetes fleet management with GKE Enterprise.\n\nWalked through multi-tenancy boundaries, centralized policy and security governance, multi-cluster networking, and consistent operations across hybrid cloud environments.",
     "topics": [
       "Kubernetes",
       "GKE Enterprise",
@@ -872,7 +872,7 @@
     "city": "Ulaanbaatar, Mongolia",
     "talk": "The Role of Technology in Enhancing the Safety of Children and Communities",
     "photos": [],
-    "description": "Panel discussion examining ethical technology development, digital safety tools, and community resilience.",
+    "description": "Panel discussion at DevFest 2023 Ulaanbaatar examining the responsibility of engineers and platforms in strengthening digital safety for children and local communities.\n\nDiscussed privacy-by-design engineering, online harm mitigation, ethical AI guardrails, and cross-sector collaboration between technologists, educators, and community leaders.",
     "topics": [
       "Panel",
       "Community",
@@ -887,7 +887,7 @@
     "city": "İzmit, Türkiye",
     "talk": "A New Era for Kubernetes: Google Kubernetes Engine Enterprise",
     "photos": [],
-    "description": "Exploring next-generation Kubernetes management and enterprise multi-cluster operations with GKE Enterprise.",
+    "description": "Technical session at DevFest Kocaeli 2023 on architecting and operating secure, reliable multi-cluster Kubernetes platforms with GKE and GKE Enterprise.\n\nShared production best practices covering cluster security, performance tuning, fleet-wide policy governance, and lessons learned from real-world deployments.",
     "topics": [
       "Kubernetes",
       "GKE Enterprise",
@@ -902,7 +902,7 @@
     "city": "Astana, Kazakhstan",
     "talk": "Introduction to Best Practices for Google Kubernetes Engine and GKE Autopilot",
     "photos": [],
-    "description": "Best practices for deploying workloads on GKE Standard and GKE Autopilot with built-in security and operational automation.",
+    "description": "Talk at DevFest Astana 2023 introducing production best practices for Google Kubernetes Engine (GKE) Standard and GKE Autopilot.\n\nExplored how GKE Autopilot automates node provisioning, workload rightsizing, and security hardening while keeping Kubernetes workloads portable and cost-efficient.",
     "topics": [
       "Kubernetes",
       "GKE Autopilot",
@@ -917,7 +917,7 @@
     "city": "Astana, Kazakhstan",
     "talk": "Opportunities and Trends with Generative AI",
     "photos": [],
-    "description": "Analyzing enterprise trends, generative AI model adoption, and practical developer integration paths.",
+    "description": "Session at Digital Bridge 2023 in Astana analyzing enterprise generative AI trends, multimodal model adoption, and practical integration paths on Google Cloud.\n\nHighlighted Vertex AI, Gemini, and Cloud AI building blocks for turning generative models into reliable business and developer applications.",
     "topics": [
       "Generative AI",
       "AI Trends",
@@ -933,7 +933,7 @@
     "city": "Istanbul, Türkiye",
     "talk": "Unraveling the Mystery Behind Kubernetes Scheduling",
     "photos": [],
-    "description": "Deep architectural walkthrough of the Kubernetes scheduler, scoring algorithms, taints, tolerations, and affinity.",
+    "description": "Deep-dive talk at KCD Istanbul 2023 (CNCF) demystifying the internals of `kube-scheduler` and workload placement in Kubernetes.\n\nWalked through scheduling queues, filtering and scoring plugins, node affinity and anti-affinity, taints and tolerations, topology spread constraints, and cluster bin-packing optimization.",
     "topics": [
       "Kubernetes",
       "Scheduling",
@@ -948,7 +948,7 @@
     "city": "Istanbul, Türkiye",
     "talk": "Serverless Application Deployment Processes: Cloud Run and Knative",
     "photos": [],
-    "description": "Comprehensive comparison and implementation guide for containerized serverless workflows on Cloud Run and Knative.",
+    "description": "Technical session at GDG Cloud Istanbul (Google Turkey office) comparing managed serverless containers on Google Cloud Run against Kubernetes-native Knative Serving.\n\nConcluded with a live runtime-security demo integrating Falco Sidekick with GKE and Cloud Run to detect unauthorized cluster activity and automatically mitigate risky operations.",
     "topics": [
       "Serverless",
       "Cloud Run",
@@ -964,7 +964,7 @@
     "city": "Online",
     "talk": "Architecting with Google Cloud Platform Workshop",
     "photos": [],
-    "description": "After examining the historical evolution, conceptual background, and technical architecture of virtualization and cloud technologies, we explored in detail what can be built with compute services on Google Cloud Platform.",
+    "description": "Virtual workshop with GDSC Bandırma Onyedi Eylül University tracing the evolution from hardware virtualization to modern cloud-native infrastructure on Google Cloud.\n\nCompared Compute Engine, App Engine, and Cloud Functions to show how to choose and architect the right compute layer for different application workloads.",
     "topics": [
       "Google Cloud",
       "Cloud Architecture",
@@ -981,7 +981,7 @@
     "city": "Online",
     "talk": "Serverless Development with Google Cloud Workshop",
     "photos": [],
-    "description": "Comparative overview of Google Cloud service categories and serverless service models in software development, discussing their advantages and trade-offs.\n\nConcluded with a live App Engine demo covering traffic splitting and version management in practice.",
+    "description": "Live Google Tech Days workshop comparing Google Cloud compute and serverless service models—Cloud Run, App Engine, Cloud Functions, Compute Engine, and GKE—alongside Cloud Storage and Cloud Shell.\n\nEvaluated serverless trade-offs for software teams and concluded with a live App Engine demo covering traffic splitting and zero-downtime version management.",
     "topics": [
       "Serverless",
       "App Engine",
@@ -998,7 +998,7 @@
     "city": "Online",
     "talk": "Managing Applications on Google Cloud Workshop",
     "photos": [],
-    "description": "In-depth exploration of the application development lifecycle on Google Cloud, emphasizing serverless deployment across App Engine, Cloud Run, Google Kubernetes Engine (GKE), and Cloud Functions.\n\nCovered auto-scaling, load balancing, container orchestration, and event-driven serverless architectures, followed by a hands-on workshop demonstrating application deployment and management on App Engine.",
+    "description": "In-depth workshop with GDSC İstanbul Aydın University covering the full application lifecycle on Google Cloud across App Engine, Cloud Run, Google Kubernetes Engine (GKE), and Cloud Functions.\n\nExplored auto-scaling, load balancing, container orchestration, and event-driven serverless patterns, concluding with a hands-on lab deploying and managing live applications on App Engine.",
     "topics": [
       "Google Cloud",
       "App Engine",
