@@ -1,5 +1,73 @@
 [
   {
+    "id": "devfest-atyrau-2026",
+    "date": "2026-11-11",
+    "event": "DevFest Atyrau 2026",
+    "city": "Atyrau, Kazakhstan",
+    "talk": "From Agents to Scale: Engineering AI Infrastructure on GKE",
+    "photos": [],
+    "description": "As AI agents and inference workloads continued to evolve, the session explored how Kubernetes infrastructure had adapted to meet the growing demands of modern AI applications.\n\nThe talk examined how Google Kubernetes Engine (GKE) enabled the development of scalable AI infrastructure through secure, isolated execution environments for agents, faster workload initialization, dynamic resource adjustments, and hardware-aware scheduling. It also highlighted how intelligent inference traffic routing helped optimize model-serving workloads.\n\nBy bringing together innovations across agent execution, compute orchestration, and networking, the session demonstrated how Kubernetes capabilities could be combined to build more flexible, efficient, and scalable infrastructure for AI workloads.",
+    "topics": [
+      "Kubernetes",
+      "GKE",
+      "AI Agents",
+      "AI Infrastructure",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-atyrau-presents-devfest-atyrau-2026-from-build-to-scale/"
+  },
+  {
+    "id": "devfest-monastir-2026",
+    "date": "2026-10-31",
+    "event": "DevFest Monastir 2026",
+    "city": "Monastir, Tunisia",
+    "talk": "Engineering the Future of Kubernetes with AI",
+    "photos": [],
+    "description": "The rapid adoption of AI agents and large-scale model inference is introducing new infrastructure challenges that traditional Kubernetes architectures were not designed to address alone. Workloads now require stronger isolation, faster provisioning, flexible resource management, specialized hardware access, and more sophisticated traffic distribution.\n\nThis talk explores the capabilities of Google Kubernetes Engine (GKE) that address these emerging requirements. We look at how agent workloads can run in isolated execution environments, how workload startup can be accelerated, how compute resources can be adjusted dynamically, and how hardware-aware scheduling and intelligent inference routing improve overall infrastructure efficiency.\n\nBy examining innovations across the execution, compute, and networking layers, this session demonstrates how Kubernetes can serve as a foundation for operating modern AI platforms with greater flexibility, performance, and scalability.",
+    "topics": [
+      "Kubernetes",
+      "GKE",
+      "AI Agents",
+      "AI Infrastructure",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-monastir-presents-devfest-monastir-2026/"
+  },
+  {
+    "id": "devfest-samsun-2026",
+    "date": "2026-10-25",
+    "event": "DevFest Samsun 2026",
+    "city": "Samsun, Türkiye",
+    "talk": "Building AI Infrastructure at Scale with Kubernetes on Google Kubernetes Engine",
+    "photos": [],
+    "description": "As AI agents and model inference systems continue to evolve, their growing complexity and fluctuating resource demands are pushing Kubernetes beyond the boundaries of traditional container orchestration.\n\nThis session examines how Google Kubernetes Engine (GKE) provides a foundation for building the next generation of AI infrastructure. We explore secure, isolated environments for agent execution, optimized workload initialization, live resource resizing, accelerator-aware scheduling, and intelligent inference request distribution.\n\nThrough a unified view of the agent, compute, and networking layers, we present practical architectural approaches for creating more efficient, responsive, and adaptable Kubernetes platforms capable of supporting AI workloads at scale.",
+    "topics": [
+      "Kubernetes",
+      "GKE",
+      "AI Agents",
+      "AI Infrastructure",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-samsun-presents-devfest-2026-samsun/"
+  },
+  {
+    "id": "devfest-taldykorgan-2026",
+    "date": "2026-10-16",
+    "event": "Jetisu Digital Forum DevFest Taldykorgan 2026",
+    "city": "Taldykorgan, Kazakhstan",
+    "talk": "Orchestrating Intelligence Behind the Scenes",
+    "photos": [],
+    "description": "As part of the Jetisu Digital Forum 2026 DevFest, held in Taldykorgan, Kazakhstan, the session “Orchestrating Intelligence Behind the Scenes” explored the engineering and infrastructure that powered high-scale AI and machine learning workloads on Google Kubernetes Engine (GKE). The talk took a closer look at how intelligent workload orchestration and autoscaling worked behind the scenes, bringing together GPUs, TPUs, networking, compute resources, and inference systems to support demanding AI applications. It shed light on the complex interplay between Kubernetes, accelerated computing, and cloud infrastructure, revealing how these components worked together to deliver scalable, efficient, and reliable AI-powered solutions.",
+    "topics": [
+      "Kubernetes",
+      "GKE",
+      "AI/ML",
+      "Machine Learning",
+      "Google Cloud"
+    ],
+    "eventUrl": "https://gdg.community.dev/events/details/google-gdg-taldykorgan-presents-jetisu-digital-forum/"
+  },
+  {
     "id": "ai-surgery-congress-istanbul-2026",
     "date": "2026-10-10",
     "event": "1st National AI in Surgery Congress (1. Ulusal Yapay Zeka Cerrahi Kongresi)",

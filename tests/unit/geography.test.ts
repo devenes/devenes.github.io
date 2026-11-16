@@ -15,11 +15,11 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
   it('computes exact metrics from authoritative data/events.json and data/locations.json', () => {
     const atlas = buildSpeakingAtlas(rawEvents, rawLocations);
 
-    expect(atlas.metrics.totalTalks).toBe(44);
-    expect(atlas.metrics.physicalTalks).toBe(38);
+    expect(atlas.metrics.totalTalks).toBe(48);
+    expect(atlas.metrics.physicalTalks).toBe(42);
     expect(atlas.metrics.onlineTalks).toBe(6);
     expect(atlas.metrics.uniqueCountries).toBe(12);
-    expect(atlas.metrics.uniqueCities).toBe(23);
+    expect(atlas.metrics.uniqueCities).toBe(26);
     expect(atlas.unverifiedLocations).toHaveLength(0);
   });
 
@@ -81,8 +81,8 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
     expect(atlas.unverifiedLocations).toHaveLength(1);
     expect(atlas.unverifiedLocations[0].eventId).toBe('mystery-conf-atlantis-2026');
     expect(atlas.unverifiedLocations[0].cityString).toBe('Atlantis, Ocean');
-    // Physical cities count remains 23 (never silently plotted)
-    expect(atlas.metrics.uniqueCities).toBe(23);
+    // Physical cities count remains 26 (never silently plotted)
+    expect(atlas.metrics.uniqueCities).toBe(26);
   });
 
   it('generates valid spherical 3D coordinates and elevated great-circle route arcs', () => {
@@ -125,8 +125,8 @@ describe('Global Speaking Atlas Geographic & Aggregation Engine', () => {
 
     const hydrated = hydrateClientAtlas(slimPayload);
     expect(hydrated.metrics).toEqual(fullAtlas.metrics);
-    expect(hydrated.events).toHaveLength(44);
-    expect(hydrated.cities).toHaveLength(23);
+    expect(hydrated.events).toHaveLength(48);
+    expect(hydrated.cities).toHaveLength(26);
 
     const istanbul = hydrated.cities.find((c) => c.id === 'istanbul-tr');
     expect(istanbul?.events).toHaveLength(7);

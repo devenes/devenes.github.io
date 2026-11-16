@@ -16,14 +16,14 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await expect(page.getByText(/Ideas travel\./i)).toHaveCount(0);
     await expect(page.locator('#speaking-impact-card')).toHaveCount(0);
 
-    // Verify exact data-driven metrics from data/events.json (44 talks, 12 countries, 23 physical cities)
-    await expect(page.getByTestId('metric-talks')).toHaveText('44');
+    // Verify exact data-driven metrics from data/events.json (48 talks, 12 countries, 26 physical cities)
+    await expect(page.getByTestId('metric-talks')).toHaveText('48');
     await expect(page.getByTestId('metric-countries')).toHaveText('12');
-    await expect(page.getByTestId('metric-cities')).toHaveText('23');
+    await expect(page.getByTestId('metric-cities')).toHaveText('26');
 
     // Verify Online events are NOT plotted as physical destinations on the globe
     const globeLabels = page.locator('[data-globe-city-label]');
-    await expect(globeLabels).toHaveCount(23);
+    await expect(globeLabels).toHaveCount(26);
     await expect(page.locator('[data-globe-city-label="online"]')).toHaveCount(0);
 
     // Verify default places overview panel is visible before selecting any city
@@ -144,7 +144,7 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await expect(archiveModal).toBeVisible();
 
     const visibleRows = archiveModal.locator('tbody tr:not(.hidden)');
-    await expect(visibleRows).toHaveCount(44);
+    await expect(visibleRows).toHaveCount(48);
 
     // Search for "Almaty" in Archive
     const searchInput = page.getByTestId('archive-search-input');
@@ -154,7 +154,7 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
 
     // Reset filters and filter by workshop session format
     await page.getByTestId('archive-reset-filters-btn').click();
-    await expect(visibleRows).toHaveCount(44);
+    await expect(visibleRows).toHaveCount(48);
 
     await page.getByTestId('archive-type-select').selectOption('workshop');
     const workshopCount = await visibleRows.count();
@@ -215,9 +215,9 @@ test.describe('Enes Turan Speaking Portfolio — E2E Verification Suite', () => 
     await expect(visibleRows).toHaveCount(1);
     await page.getByTestId('close-archive-btn').click();
 
-    // Click global "Browse all talks" and verify archive resets city filter back to all 44 talks
+    // Click global "Browse all talks" and verify archive resets city filter back to all 48 talks
     await page.getByTestId('browse-all-talks-btn').click();
-    await expect(visibleRows).toHaveCount(44);
+    await expect(visibleRows).toHaveCount(48);
     await page.getByTestId('close-archive-btn').click();
 
     // Verify visible 2D globe city labels never overlap the right-hand destination panel

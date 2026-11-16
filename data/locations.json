@@ -85,6 +85,18 @@
     "lon": 29.9408
   },
   {
+    "id": "samsun-tr",
+    "cityKey": "Samsun, Türkiye",
+    "city": "Samsun",
+    "country": "Türkiye",
+    "countryCode": "TR",
+    "flag": "🇹🇷",
+    "regionId": "turkiye",
+    "regionName": "Türkiye",
+    "lat": 41.2867,
+    "lon": 36.33
+  },
+  {
     "id": "almaty-kz",
     "cityKey": "Almaty, Kazakhstan",
     "city": "Almaty",
@@ -131,6 +143,18 @@
     "regionName": "Central Asia",
     "lat": 45.0156,
     "lon": 78.3739
+  },
+  {
+    "id": "atyrau-kz",
+    "cityKey": "Atyrau, Kazakhstan",
+    "city": "Atyrau",
+    "country": "Kazakhstan",
+    "countryCode": "KZ",
+    "flag": "🇰🇿",
+    "regionId": "central-asia",
+    "regionName": "Central Asia",
+    "lat": 47.1016,
+    "lon": 51.9133
   },
   {
     "id": "tashkent-uz",
@@ -229,6 +253,18 @@
     "regionName": "Middle East & North Africa",
     "lat": 35.8256,
     "lon": 10.6084
+  },
+  {
+    "id": "monastir-tn",
+    "cityKey": "Monastir, Tunisia",
+    "city": "Monastir",
+    "country": "Tunisia",
+    "countryCode": "TN",
+    "flag": "🇹🇳",
+    "regionId": "mena",
+    "regionName": "Middle East & North Africa",
+    "lat": 35.778,
+    "lon": 10.8262
   },
   {
     "id": "agadir-ma",
